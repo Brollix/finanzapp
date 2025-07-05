@@ -69,7 +69,7 @@ def format_ticket_with_local_gpt(ocr_text):
 
 def main():
     """Main function to read OCR text, format it, and save the JSON."""
-    input_filename = '..\\ocr-apiresponse.txt'
+    input_filename = 'ocr-apiresponse.txt'
     output_filename = 'formatted_ticket.json'
 
     ocr_text = ""

@@ -1,32 +1,29 @@
-from llama_cpp import Llama
-from llama_cpp.server import create_app
-import uvicorn
+import subprocess
+import sys
+import os
 
 # --- Configuration ---
-MODEL_NAME = "nous-hermes-2-mistral-7b-dpo.Q4_K_M.gguf"
-MODEL_PATH = "."  # Assumes model is in the same directory as api.py
+# Cambia el nombre del modelo aquí para usar otro archivo GGUF
+# Ejemplo: "mistral-7b-instruct-v0.2.Q4_K_M.gguf" o "nous-hermes-2-mistral-7b-dpo.Q4_K_M.gguf"
+MODEL_NAME = os.environ.get("MODEL_NAME", "mistral-7b-instruct-v0.2.Q4_K_M.gguf")
+MODEL_PATH = "."  # Directorio donde está el modelo
+MODEL_FILE = os.path.join(MODEL_PATH, MODEL_NAME)
 
-# --- Load the Llama model with GPU offloading ---
-# n_gpu_layers=-1 attempts to offload all possible layers to the GPU.
-# This is the key to using your RTX 3060.
-try:
-    llm = Llama(
-        model_path=f"{MODEL_PATH}/{MODEL_NAME}",
-        n_gpu_layers=-1,  # Offload all layers to GPU
-        n_ctx=2048,       # Context window size
-        verbose=True      # Enable verbose logging to see details
-    )
-    print("✅ Model loaded successfully on GPU.")
-except Exception as e:
-    print(f"❌ Error loading model: {e}")
-    print("Please ensure the model file is present and CUDA is correctly configured.")
-    exit()
-
-# --- Create and run the OpenAI-compatible server ---
-# This creates a server that works with our existing main.py script.
-app = create_app(llm=llm)
+PORT = 4891
 
 if __name__ == "__main__":
-    print(f"✅ Starting Llama-CPP server on http://localhost:4891")
-    # Use uvicorn to run the app, which is standard for modern Python web apps
-    uvicorn.run(app, host="0.0.0.0", port=4891)
+    print(f"✅ Starting Llama-CPP OpenAI-compatible server on http://localhost:{PORT}")
+    print(f"Using model: {MODEL_FILE}")
+    try:
+        subprocess.run([
+            sys.executable, "-m", "llama_cpp.server",
+            "--model", MODEL_FILE,
+            "--host", "0.0.0.0",
+            "--port", str(PORT),
+            "--n_threads", "-1",
+            "--n_threads_batch", "-1",
+            "--n_gpu_layers", "-1"
+        ], check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"❌ Failed to launch llama-cpp-python server: {e}")
+        sys.exit(1)
