@@ -1,47 +1,47 @@
 {
-    "datetime": "16/09/1980 IVA RESPONSABLE INSCRIPTO 04/03/2025 21:36:57 MR0.C0MP: 14021-00076365 NRO. TIENDA: 15 NRO,CAJA: NRO.TICKET: 232 CAJERO: 837O COND. VENTA: CONTADO EACTURA B ORIGINAL (COd. 006) Consumidor Final Papas Clasicas Tradicional MC CAIN 700g (21.00)",
+    "supermarket": "C.A.B.A DOM.LEGAL SUIPACHA",
+    "datetime": "16/09/2022 21:36:57",
+    "total": 43913.59,
     "items": [
         {
-            "description": "Papas Clasicas Tradicional MC CAIN 700g",
-            "price": 21,
-            "quantity": 1
+            "description": "Papas Clasicas Tradicional MC CAIN",
+            "quantity": 1,
+            "price": 5850.0
         },
         {
-            "description": "Hamburguesas PATY de carne_× 960 grs CJ",
-            "price": 154,
-            "quantity": 1
+            "description": "hamburguesas PATY de carne_× 960 grs CJ",
+            "quantity": 1,
+            "price": 15400.0
         },
         {
-            "description": "Banana Ecuador S/E 1 Kg",
-            "price": 105,
-            "quantity": 1
+            "description": "Banana Ecuador S/E",
+            "quantity": 3,
+            "price": 5786.13
         },
         {
-            "description": "Lechuga francesa hidroponica VEQUA BSA",
-            "price": 2699,
-            "quantity": 1
+            "description": "lechuga francesa hidroponica VEQUA BSA",
+            "quantity": 1,
+            "price": 2699.0
         },
         {
-            "description": "Queso mozzarela rallada S0B 1 Kg Mayori",
-            "price": 578613,
-            "quantity": 1
+            "description": "queso mozzarela rallada S0B",
+            "quantity": 4,
+            "price": 5786.13
         },
         {
             "description": "Pan p hamb Artesano BIMBO de papa x 240",
-            "price": 3550,
-            "quantity": 1
+            "quantity": 4,
+            "price": 9850.0
         },
         {
-            "description": "Jugo en polyo TANG_Pomelo Rosado 15gr S (21.00)",
-            "price": 390,
-            "quantity": 1
+            "description": "jugo en polyo TANG_Pomelo Rosado 15gr S",
+            "quantity": 1,
+            "price": 390.0
         },
         {
-            "description": "Jugg.,en polyo CLIGht bimonada 8gr S0B 8",
-            "price": 395,
-            "quantity": 1
+            "description": "jugo en polyo CLIGht bimonada 8gr S0B 8",
+            "quantity": 1,
+            "price": 395.0
         }
-    ],
-    "supermarket": "C.A.B.A DOM.LEGAL SUIPACHA 1I11 PISO 18 CABA",
-    "total": 4391359
+    ]
 }

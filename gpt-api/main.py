@@ -2,7 +2,7 @@ import os
 import json
 import requests  # Use requests to call the local API
 
-# URL of the local GPT4All API
+# URL of the local API
 API_URL = "http://localhost:4891/v1/completions"
 
 def read_ocr_output(file_path):
@@ -56,7 +56,7 @@ def format_ticket_with_local_gpt(ocr_text):
     }
 
     try:
-        response = requests.post("http://localhost:4891/v1/completions", json=payload)
+        response = requests.post(API_URL, json=payload)
         response.raise_for_status()
         return response.json() # The api should return a valid json
     except requests.exceptions.RequestException as e:

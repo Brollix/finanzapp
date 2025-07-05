@@ -15,7 +15,7 @@ echo "✅ Virtual environment activated."
 # 2. Install llama-cpp-python with CUDA support
 # This is the most critical step. It compiles the library for your specific GPU.
 echo "--- Installing llama-cpp-python with CUDA support (this may take a few minutes) ---"
-CMAKE_ARGS="-DLLAMA_CUBLAS=on" FORCE_CMAKE=1 pip install llama-cpp-python --force-reinstall --no-cache-dir
+CMAKE_ARGS="-DGGML_CUDA=on" pip install llama-cpp-python --force-reinstall --no-cache-dir
 echo "✅ llama-cpp-python installed."
 
 # 3. Install other dependencies
