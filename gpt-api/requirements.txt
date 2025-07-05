@@ -3,3 +3,5 @@
 requests
 llama-cpp-python
 uvicorn
+matplotlib
+# Para Windows y CPU, estos son suficientes. Para GPU en Windows/Linux, instalar CUDA Toolkit y drivers NVIDIA.
