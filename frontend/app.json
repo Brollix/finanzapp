@@ -1,0 +1,40 @@
+{
+  "expo": {
+    "name": "finanzapp-frontend",
+    "slug": "finanzapp-frontend",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "myapp",
+    "userInterfaceStyle": "automatic",
+    "extra": {
+      "supabaseUrl": "https://bluhllaqxvvflaguamwe.supabase.co",
+      "supabaseAnonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJsdWhsbGFxeHZ2ZmxhZ3VhbXdlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE5MDUzMTgsImV4cCI6MjA1NzQ4MTMxOH0.ms-6xCZRDm2BD1LvTCb9kt4-21CKpcolq07Crx3ggJw",
+      "eas": {
+        "projectId": "your-eas-project-id"
+      }
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.anonymous.finanzappfrontend"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

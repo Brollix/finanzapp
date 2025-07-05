@@ -1,0 +1,5 @@
+# System-level dependencies: NVIDIA CUDA Toolkit is required for GPU acceleration.
+
+requests
+llama-cpp-python
+uvicorn
