@@ -31,7 +31,7 @@ async def ocr_endpoint(
 
         # Resize image for optimal OCR performance and accuracy
         min_size = 600
-        max_size = 2000  # Reduced for faster processing
+        max_size = 1000 # Reduced for faster processing
 
         # Downscale if too large
         if image.width > max_size or image.height > max_size:
