@@ -37,9 +37,9 @@ export default function TicketScreen() {
         keyExtractor={(item: any, index: number) => index.toString()}
         renderItem={({ item }: any) => (
           <Card style={[core.card, { marginHorizontal: theme.spacing.md, marginTop: theme.spacing.sm }]}>
-            <Text style={core.text}>{item.description}</Text>
-            <Text style={core.text}>Qty: {item.quantity}</Text>
-            <Text style={core.text}>${item.price}</Text>
+            <Text style={core.cardText}>{item.description}</Text>
+            <Text style={core.cardText}>Qty: {item.quantity}</Text>
+            <Text style={core.cardText}>${item.price}</Text>
           </Card>
         )}
       />

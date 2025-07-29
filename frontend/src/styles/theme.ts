@@ -1,16 +1,16 @@
 export const theme = {
   colors: {
     // Colores base
-    primary:         "rgb(40, 200, 100)",   // Verde principal
-    secondary:       "rgb(145, 40, 200)",   // Violeta triádico
-    success:         "rgb(40, 200, 100)",   // Igual al primary, semántico
-    warning:         "rgb(200, 140, 40)",   // Naranja triádico
-    error:           "rgb(240, 39, 76)",    // Rojo fuerte
+    primary:         "rgb(40, 255, 100)",   
+    secondary:       "rgb(145, 40, 255)",   
+    success:         "rgb(40, 200, 100)",  
+    warning:         "rgb(200, 140, 40)",   
+    error:           "rgb(240, 39, 76)",    
   
     // Superficies
-    background:      "rgb(20, 20, 20)",
-    surface:         "rgb(40, 40, 40)",
-    surfaceVariant:  "rgb(50, 50, 50)",
+    background:      "rgb(19, 19, 19)",       
+    surface:         "rgb(32, 172, 86)",      
+    surfaceVariant:  "rgb(27, 27, 27)",       
   
     // Texto
     text:            "rgb(255, 255, 255)",
@@ -18,14 +18,14 @@ export const theme = {
     onPrimary:       "rgb(0, 0, 0)",
     onSecondary:     "rgb(0, 0, 0)",
     onBackground:    "rgb(255, 255, 255)",
-    onSurface:       "rgb(255, 255, 255)",
+    onSurface:       "rgb(0, 0, 0)",
     onError:         "rgb(0, 0, 0)",
   
     // UI
     placeholder:     "rgba(255, 255, 255, 0.5)",
-    inputBackground: "rgba(43, 43, 43, 0.5)",
-    inputBorder:     "rgba(213, 213, 213, 0.5)",
-    border:          "rgba(255, 255, 255, 0.12)",
+    inputBackground: "rgba(0, 0, 0, 5)",
+    inputBorder:     "rgba(40, 200, 100, 1)",
+    border:          "rgba(40, 200, 100, 0.7)",
   
     // Estados
     disabled:        "rgba(255, 255, 255, 0.38)",

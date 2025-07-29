@@ -80,6 +80,12 @@ export const core = StyleSheet.create({
     elevation: 0,
   },
 
+  cardText: {
+    fontSize: theme.font.size.md,
+    fontFamily: theme.font.family.bold,
+    color: theme.colors.onSurface,
+  },
+
   // Button base
   button: {
     paddingVertical: 12,
@@ -143,7 +149,7 @@ export const core = StyleSheet.create({
   inputBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.surface,
+    backgroundColor: theme.colors.inputBackground,
     borderRadius: theme.borderRadius.md,
     borderWidth: 1,
     borderColor: theme.colors.border,
@@ -190,7 +196,7 @@ export const core = StyleSheet.create({
     top: 0,
     bottom: 0,
     left: 0,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: theme.colors.surfaceVariant,
     paddingTop: 60, // For status bar
     zIndex: 2,
     elevation: 8,
