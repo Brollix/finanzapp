@@ -12,10 +12,18 @@ __pycache__/
 *.pyo
 *.pyd
 
-# Virtual environment
+# Virtual environments
 .venv
 venv/
 env/
+
+# Logs
+*.log
+
+# Test & docs
+/tests/
+examples/
+README.md
 
 # IDE files
 .idea/

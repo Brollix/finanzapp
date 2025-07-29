@@ -1,4 +1,82 @@
-# Frontend
+# -------------------------------
+# 📦 Finanzapp .gitignore
+# Monorepo: Node/Expo + Python + Docker
+# -------------------------------
+
+###############################
+# 1. Node / React-Native / Expo
+###############################
+**/node_modules/
+**/.expo/
+**/web-build/
+**/dist/
+**/build/
+
+# Env & config
+**/.env
+**/.env.*
+
+# Logs & reports
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+**/coverage/
+
+# iOS / Android artifacts (RN eject)
+ios/
+android/
+*.keystore
+
+################
+# 2. Python
+################
+# Virtual environments
+**/venv/
+**/env/
+**/.venv/
+
+# Byte-compiled / cache
+**/__pycache__/
+**/*.py[cod]
+
+# Packaging
+**/build/
+**/dist/
+**/*.egg-info/
+
+################
+# 3. Model files
+backend/models/*
+!backend/models/.gitkeep
+################
+**/*.gguf
+**/*.pt
+**/*.ckpt
+**/*.bin
+
+################
+# 4. Docker & misc
+################
+**/*.log
+# override files that shouldn’t be tracked
+Dockerfile.local
+docker-compose.override.yml
+
+################
+# 5. IDE / Editor
+################
+.vscode/
+.idea/
+*.swp
+*~
+
+################
+# 6. OS-specific
+################
+.DS_Store
+Thumbs.db
+Icon?
+
 frontend/node_modules/
 frontend/.expo/
 frontend/.env.local

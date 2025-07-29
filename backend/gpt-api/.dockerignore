@@ -1,0 +1,35 @@
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile
+.dockerignore
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+venv/
+.venv
+env/
+
+# Large model files
+*.gguf
+*.pt
+*.ckpt
+*.bin
+
+# Logs
+*.log
+
+# Test & docs
+/tests/
+README.md
+stress_test*
+*.png
+
+# IDE
+.vscode/
+.idea/
