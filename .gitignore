@@ -48,6 +48,7 @@ android/
 # 3. Model files
 backend/models/*
 !backend/models/.gitkeep
+!backend/models/README.md
 ################
 **/*.gguf
 **/*.pt
