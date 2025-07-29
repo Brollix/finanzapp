@@ -32,14 +32,14 @@ backend/
    • GPT API → `http://localhost:8080/parse`
 
 
-3. Descarga el modelo una sola vez siguiendo las instrucciones en `models/README.md`.
+3. Descarga el modelo una sola vez siguiendo las instrucciones en [models/README.md](models/README.md).
 
 ## 📄 Documentación por servicio
 
 | Servicio | README local |
 | -------- | ------------- |
-| OCR API  | `ocr-api/README.md` |
-| GPT API  | `gpt-api/README.md` |
+| OCR API  | [ocr-api/README.md](ocr-api/README.md) |
+| GPT API  | [gpt-api/README.md](gpt-api/README.md) |
 
 ## 🧹 Buenas prácticas
 
