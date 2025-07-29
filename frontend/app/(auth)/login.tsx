@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useRouter } from 'expo-router';
 import {
   View,
   Text,
@@ -6,17 +7,19 @@ import {
   Platform,
   TouchableOpacity,
 } from 'react-native';
-import { styles } from '@/styles/index.styles';
-import { theme } from '@/styles/theme';
-import { useAuth } from '@/features/auth/context/AuthContext';
-import { Input } from '@/components/ui/Input';
-import { Button } from '@/components/ui/Button';
+import { styles } from '../../src/styles/index.styles';
+import { theme } from '../../src/styles/theme';
+import { useAuth } from '../../src/features/auth/context/AuthContext';
+import { Input } from '../../src/components/ui/Input';
+import { Button } from '../../src/components/ui/Button';
 
 function LoginForm() {
   const { signIn } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const router = useRouter();
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -27,6 +30,7 @@ function LoginForm() {
     setLoading(true);
     try {
       await signIn({ email, password });
+      router.replace('/');
     } catch (error: any) {
       console.error('Error al iniciar sesión:', error);
       alert(error.message || 'Error al iniciar sesión. Verifica tus credenciales.');

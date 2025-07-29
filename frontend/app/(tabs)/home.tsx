@@ -2,13 +2,13 @@ import { useEffect, useState } from 'react';
 import { View, Text, Pressable, Modal, SafeAreaView, Alert, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Menu } from '@/components/Menu';
-import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
+import Menu from '../../src/components/Menu';
+import { Button } from '../../src/components/ui/Button';
+import { Card } from '../../src/components/ui/Card';
 
-import { styles } from '@/styles/index.styles';
-import { theme } from '@/styles/theme';
-import { useOcr } from '../../context/OcrContext';
+import { styles } from '../../src/styles/index.styles';
+import { theme } from '../../src/styles/theme';
+import { useOcr } from '../../src/context/OcrContext';
 
 export default function HomeScreen() {
   const router = useRouter();

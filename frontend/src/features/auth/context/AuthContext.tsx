@@ -5,16 +5,38 @@ import { supabase } from '../../../lib/supabase';
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(true);
+    // Función para obtener la sesión inicial y establecer el estado de carga.
+    const fetchSession = async () => {
+      try {
+        // Intenta obtener la sesión actual de Supabase.
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          const currentUser = session.user;
+          setUser(currentUser ? { id: currentUser.id, email: currentUser.email || '' } : null);
+        } else {
+          setUser(null);
+        }
+      } catch (error) {
+        console.error('Error al obtener la sesión:', error);
+        setUser(null);
+      } finally {
+        // Es crucial establecer loading en false aquí, para que la app
+        // sepa que la comprobación inicial ha terminado.
+        setLoading(false);
+      }
+    };
+
+    fetchSession();
+
+    // Este listener se encarga de los cambios de autenticación DESPUÉS de la carga inicial.
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       const currentUser = session?.user;
       setUser(currentUser ? { id: currentUser.id, email: currentUser.email || '' } : null);
-      setLoading(false);
     });
 
     return () => {

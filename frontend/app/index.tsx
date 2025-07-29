@@ -1,35 +1,32 @@
-import { useEffect } from "react";
-import { supabase } from "@/lib/supabase";
-import { useRouter } from "expo-router";
-import { View, ActivityIndicator } from "react-native";
-import { theme } from "@/styles/theme";
+import { useRouter } from 'expo-router';
+import { useEffect } from 'react';
+import { useAuth } from '../src/features/auth/context/AuthContext';
+import { ActivityIndicator, View } from 'react-native';
+import { theme } from '../src/styles/theme';
 
 export default function Index() {
-	const router = useRouter();
+  const { user, loading } = useAuth();
+  const router = useRouter();
 
-	useEffect(() => {
-		const checkSession = async () => {
-			const {
-				data: { session },
-			} = await supabase.auth.getSession();
-			if (session?.user) router.replace("/(tabs)/home");
-			else router.replace("src/(auth)/login");
-		};
-		checkSession();
-	}, []);
+  useEffect(() => {
+    // No hacer nada mientras se carga el estado de autenticación.
+    if (loading) {
+      return;
+    }
 
-	return (
-		<View
-			style={{
-				flex: 1,
-				justifyContent: "center",
-				alignItems: "center",
-				backgroundColor: theme.colors.background,
-			}}
-		>
-			
+    // Una vez que la carga ha terminado, redirigir al usuario.
+    if (user) {
+      router.replace('/(tabs)/home');
+    } else {
+      router.replace('/(auth)/login');
+    }
+  }, [user, loading]);
 
-			<ActivityIndicator size="large" color={theme.colors.primary} />
-		</View>
-	);
+  // Muestra un indicador de carga mientras se determina la ruta.
+  // Esto es lo que el usuario ve brevemente antes de ser redirigido.
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.background }}>
+      <ActivityIndicator size="large" color={theme.colors.primary} />
+    </View>
+  );
 }

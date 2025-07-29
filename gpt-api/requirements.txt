@@ -1,9 +1,10 @@
-# System-level dependencies: NVIDIA CUDA Toolkit is required for GPU acceleration.
-
+fastapi
+uvicorn[standard]
+pillow
+numpy
+python-multipart
 requests
 llama-cpp-python
-uvicorn
 matplotlib
 sse-starlette
 starlette-context
-# Para Windows y CPU, estos son suficientes. Para GPU en Windows/Linux, instalar CUDA Toolkit y drivers NVIDIA.

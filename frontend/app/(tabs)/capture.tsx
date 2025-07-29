@@ -6,10 +6,10 @@ import type { CameraCapturedPicture } from "expo-camera";
 import * as ImageManipulator from 'expo-image-manipulator';
 import { Ionicons } from '@expo/vector-icons';
 
-import { Button } from "@/components/ui/Button";
-import { styles } from "@/styles/index.styles";
-import { useOcr } from "../../context/OcrContext";
-import { theme } from "@/styles/theme";
+import { Button } from "../../src/components/ui/Button";
+import { styles } from "../../src/styles/index.styles";
+import { useOcr } from "../../src/context/OcrContext";
+import { theme } from "../../src/styles/theme";
 
 export default function Capture() {
 	const cameraRef = useRef<CameraView>(null);

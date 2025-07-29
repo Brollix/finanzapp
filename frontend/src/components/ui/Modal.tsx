@@ -22,6 +22,21 @@ interface ModalProps {
   disableBackdropPress?: boolean;
 }
 
+const styles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  content: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: 12,
+    padding: 20,
+    maxWidth: '90%',
+  },
+});
+
 export const Modal: React.FC<ModalProps> = ({
   visible,
   onClose,

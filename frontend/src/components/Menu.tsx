@@ -8,9 +8,9 @@ import {
   Pressable,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { theme } from '@/styles/theme';
+import { theme } from '../styles/theme';
 import { useAuth } from '../features/auth/context/AuthContext';
-import { styles } from '@/styles/index.styles';
+import { styles } from '../styles/index.styles';
 
 export interface MenuItem {
   label: string;
@@ -19,14 +19,14 @@ export interface MenuItem {
   isDestructive?: boolean;
 }
 
-interface MenuProps {
+export interface MenuProps {
   isVisible: boolean;
   onClose: () => void;
 }
 
 const { width } = Dimensions.get('window');
 
-export function Menu({ isVisible, onClose }: MenuProps) {
+export default function Menu({ isVisible, onClose }: MenuProps) {
   const { signOut } = useAuth();
   const slideAnim = useRef(new Animated.Value(-width)).current;
 

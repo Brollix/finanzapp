@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "../../src/lib/supabase";
 import { View, Text, ActivityIndicator, Alert } from "react-native";
-import { useAuth } from "@/features/auth/context/AuthContext";
-import { styles } from "@/styles/index.styles";
-import { theme } from "@/styles/theme";
-import { Input } from "@/components/ui/Input";
-import { Button } from "@/components/ui/Button";
+import { useAuth } from "../../src/features/auth/context/AuthContext";
+import { styles } from "../../src/styles/index.styles";
+import { theme } from "../../src/styles/theme";
+import { Input } from "../../src/components/ui/Input";
+import { Button } from "../../src/components/ui/Button";
 
 export default function Account() {
   const { user, signOut } = useAuth();
