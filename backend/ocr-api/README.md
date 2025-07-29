@@ -6,10 +6,10 @@ Convierte imágenes de tickets en texto mediante **PaddleOCR** y expone un endpo
 
 ## ⚙️ Tecnologías
 
-| Componente | Stack |
-| ---------- | ----- |
-| Framework  | FastAPI |
-| OCR Engine | PaddleOCR |
+| Componente | Stack       |
+| ---------- | ----------- |
+| Framework  | FastAPI     |
+| OCR Engine | PaddleOCR   |
 | Idioma     | Python 3.10 |
 
 ---
@@ -20,6 +20,7 @@ Convierte imágenes de tickets en texto mediante **PaddleOCR** y expone un endpo
 # Desde backend/
 docker compose up --build ocr-api
 ```
+
 Endpoint disponible en `http://localhost:8000/ocr`.
 
 ---
@@ -36,8 +37,8 @@ uvicorn app.main:app --reload  # http://0.0.0.0:8000
 
 ## 📑 Endpoint principal
 
-| Método | Ruta  | Descripción                 |
-| ------ | ----- | --------------------------- |
+| Método | Ruta   | Descripción                    |
+| ------ | ------ | ------------------------------ |
 | POST   | `/ocr` | Recibe imagen y devuelve texto |
 
 ---

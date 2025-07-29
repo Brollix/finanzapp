@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { useAuth } from '../src/features/auth/context/AuthContext';
 import { ActivityIndicator, View } from 'react-native';
 import { theme } from '../src/styles/theme';
+import { core } from '../src/styles/core.styles';
 
 export default function Index() {
   const { user, loading } = useAuth();
@@ -16,16 +17,16 @@ export default function Index() {
 
     // Una vez que la carga ha terminado, redirigir al usuario.
     if (user) {
-      router.replace('/(tabs)/home');
+      router.replace('/home');
     } else {
-      router.replace('/(auth)/login');
+      router.replace('/login');
     }
   }, [user, loading]);
 
   // Muestra un indicador de carga mientras se determina la ruta.
   // Esto es lo que el usuario ve brevemente antes de ser redirigido.
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.background }}>
+    <View style={[core.flex1, core.center, { backgroundColor: theme.colors.background }]}>
       <ActivityIndicator size="large" color={theme.colors.primary} />
     </View>
   );

@@ -33,13 +33,13 @@ def format_ticket_with_local_gpt(ocr_text):
     For example, the text "5.850,00" must be converted to the number 5850.00 in the JSON.
 
     The JSON object should have the following structure:
-    - \"supermarket\": The name of the supermarket (string). This is usually the first line of the text.
+    - \"supermarket\": The name of the supermarket (string).
     - \"datetime\": The date and time of the purchase (string). Look for a line containing a date (e.g., DD/MM/YYYY) and a time (e.g., HH:MM:SS). Ignore other dates, such as "INICIO ACTIVIDAD".
-    - \"total\": The final total amount of the ticket (float).
+    - \"total\": The final total amount of the ticket (float). Use argentinian currency format.
     - \"items\": A list of all purchased items. Each item in the list should be a JSON object with:
         - \"description\": The full name or description of the product (string).
         - \"quantity\": The quantity of the item (float).
-        - \"price\": The total price for that item line (float).
+        - \"price\": The total price for that item line (float). Use argentinian currency format.
 
     Here is the OCR text:
     ---
@@ -51,7 +51,7 @@ def format_ticket_with_local_gpt(ocr_text):
 
     payload = {
         "prompt": prompt,
-        "temperature": 0.2,
+        "temperature": 0.1,
         "max_tokens": 1500
     }
 

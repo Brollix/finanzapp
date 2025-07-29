@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { theme } from '../styles/theme';
+import { useRouter } from 'expo-router';
 import { useAuth } from '../features/auth/context/AuthContext';
 import { styles } from '../styles/index.styles';
 
@@ -27,6 +28,7 @@ export interface MenuProps {
 const { width } = Dimensions.get('window');
 
 export default function Menu({ isVisible, onClose }: MenuProps) {
+  const router = useRouter();
   const { signOut } = useAuth();
   const slideAnim = useRef(new Animated.Value(-width)).current;
 
@@ -34,6 +36,7 @@ export default function Menu({ isVisible, onClose }: MenuProps) {
     try {
       onClose(); // Close menu visually first
       await signOut();
+      router.replace('/login');
     } catch (error) {
       console.error('Error signing out:', error);
     }

@@ -1,0 +1,19 @@
+{
+    "id": "cmpl-b1831277-18b6-4108-b7be-2b4d29210e9c",
+    "object": "text_completion",
+    "created": 1751743516,
+    "model": "./nous-hermes-2-mistral-7b-dpo.Q4_K_M.gguf",
+    "choices": [
+        {
+            "text": "\n    Answer:\n    {\n        \"supermarket\": \"C.A.B.A DOM.LEGAL SUIPACHA\",\n        \"datetime\": \"16/09/2025 21:36:57\",\n        \"total\": 43913.59,\n        \"items\": [\n            {\n                \"description\": \"Papas Clasicas Tradicional MC CAIN 700g\",\n                \"quantity\": 1,\n                \"price\": 5850.0\n            }\n        ]\n    }",
+            "index": 0,
+            "logprobs": null,
+            "finish_reason": "stop"
+        }
+    ],
+    "usage": {
+        "prompt_tokens": 1299,
+        "completion_tokens": 532,
+        "total_tokens": 1831
+    }
+}

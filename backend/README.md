@@ -23,21 +23,22 @@ backend/
 1. Instala **Docker Desktop** (incluye Docker Compose).
 2. Copia tu modelo `.gguf` a `backend/models/` (solo la primera vez).
 3. Ejecuta:
+
    ```bash
    cd backend
    docker compose up --build -d  # monta ./models como volumen
    ```
+
    Eso levantará:
    • OCR API → `http://localhost:8000/ocr`  
    • GPT API → `http://localhost:8080/parse`
 
-
-3. Descarga el modelo una sola vez siguiendo las instrucciones en [models/README.md](models/README.md).
+4. Descarga el modelo una sola vez siguiendo las instrucciones en [models/README.md](models/README.md).
 
 ## 📄 Documentación por servicio
 
-| Servicio | README local |
-| -------- | ------------- |
+| Servicio | README local                           |
+| -------- | -------------------------------------- |
 | OCR API  | [ocr-api/README.md](ocr-api/README.md) |
 | GPT API  | [gpt-api/README.md](gpt-api/README.md) |
 

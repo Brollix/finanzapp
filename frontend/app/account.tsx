@@ -1,13 +1,15 @@
 import { useState, useEffect } from "react";
-import { supabase } from "../../src/lib/supabase";
+import { supabase } from "../src/lib/supabase";
 import { View, Text, ActivityIndicator, Alert } from "react-native";
-import { useAuth } from "../../src/features/auth/context/AuthContext";
-import { styles } from "../../src/styles/index.styles";
-import { theme } from "../../src/styles/theme";
-import { Input } from "../../src/components/ui/Input";
-import { Button } from "../../src/components/ui/Button";
+import { useAuth } from "../src/features/auth/context/AuthContext";
+import { core } from "../src/styles/core.styles";
+import { useRouter } from "expo-router";
+import { theme } from "../src/styles/theme";
+import { Input } from "../src/components/ui/Input";
+import { Button } from "../src/components/ui/Button";
 
 export default function Account() {
+  const router = useRouter();
   const { user, signOut } = useAuth();
   const [loading, setLoading] = useState(true);
   const [username, setUsername] = useState("");
@@ -73,31 +75,45 @@ export default function Account() {
     }
   }
 
-  if (loading) {
-    return <ActivityIndicator style={{ flex: 1 }} />;
+    if (loading) {
+    return (
+      <View style={[core.flex1, core.center]}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+      </View>
+    );
   }
 
+    const screenStyles = {
+    container: {
+      ...core.safeArea,
+      padding: theme.spacing.md,
+    },
+    verticallySpaced: {
+      marginTop: theme.spacing.md,
+    },
+  };
+
   return (
-    <View style={styles.accountContainer}>
+    <View style={screenStyles.container}>
       <Input
         label="Email"
         value={user?.email || ""}
         disabled
-        style={styles.verticallySpaced}
+        style={screenStyles.verticallySpaced}
       />
       <Input
         label="Username"
         value={username}
         onChangeText={setUsername}
         placeholder="Tu nombre de usuario"
-        style={styles.verticallySpaced}
+        style={screenStyles.verticallySpaced}
       />
       <Input
         label="Sitio Web"
         value={website}
         onChangeText={setWebsite}
         placeholder="https://tu-sitio.com"
-        style={styles.verticallySpaced}
+        style={screenStyles.verticallySpaced}
       />
 
       <Button
@@ -105,16 +121,23 @@ export default function Account() {
         onPress={updateProfile}
         disabled={loading}
         fullWidth
-        style={styles.verticallySpaced}
+        style={screenStyles.verticallySpaced}
       />
 
       <Button
         title="Cerrar sesión"
-        onPress={() => signOut()}
+        onPress={async () => {
+          try {
+            await signOut();
+            router.replace('/login');
+          } catch (error: any) {
+            Alert.alert('Error', 'No se pudo cerrar sesión: ' + error.message);
+          }
+        }}
         disabled={loading}
         fullWidth
         variant="danger"
-        style={styles.verticallySpaced}
+        style={screenStyles.verticallySpaced}
       />
     </View>
   );

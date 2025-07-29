@@ -7,11 +7,11 @@ utilizando un modelo de lenguaje local (LLM) ejecutado con `llama.cpp`.
 
 ## ⚙️ Tecnologías
 
-| Componente | Stack |
-| ---------- | ----- |
-| Framework  | FastAPI |
+| Componente | Stack              |
+| ---------- | ------------------ |
+| Framework  | FastAPI            |
 | Motor LLM  | llama.cpp (`gguf`) |
-| Idioma     | Python 3.10 |
+| Idioma     | Python 3.10        |
 
 ---
 
@@ -21,6 +21,7 @@ utilizando un modelo de lenguaje local (LLM) ejecutado con `llama.cpp`.
 # Desde backend/
 docker compose up --build gpt-api
 ```
+
 El contenedor se expondrá en `http://localhost:8080/parse`.
 
 Requiere que el modelo `.gguf` esté en `backend/models/` (ver README del backend).
@@ -39,9 +40,9 @@ python main.py  # corre en http://0.0.0.0:8080
 
 ## 📑 Endpoints principales
 
-| Método | Ruta      | Descripción                  |
-| ------ | --------- | ---------------------------- |
-| POST   | `/parse`  | Recibe texto y devuelve JSON |
+| Método | Ruta     | Descripción                  |
+| ------ | -------- | ---------------------------- |
+| POST   | `/parse` | Recibe texto y devuelve JSON |
 
 ---
 

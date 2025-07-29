@@ -1,34 +1,15 @@
-import { useFonts } from 'expo-font';
-import { SplashScreen, Stack } from 'expo-router';
-import { useEffect } from 'react';
-import { Providers } from '../src/providers';
+import { Stack } from 'expo-router';
 
-SplashScreen.preventAutoHideAsync();
+// Root navigator: simple Stack with no header (screens may override)
+import { AuthProvider } from '../src/features/auth/context/AuthContext';
+import { OcrProvider } from '../src/context/OcrContext';
 
 export default function RootLayout() {
-  const [fontsLoaded, fontError] = useFonts({
-    'SpaceGrotesk-Regular': require('../src/assets/fonts/SpaceGrotesk-Regular.ttf'),
-    'SpaceGrotesk-Bold': require('../src/assets/fonts/SpaceGrotesk-Bold.ttf'),
-  });
-
-  useEffect(() => {
-    if (fontsLoaded || fontError) {
-      SplashScreen.hideAsync();
-    }
-  }, [fontsLoaded, fontError]);
-
-  if (!fontsLoaded && !fontError) {
-    return null;
-  }
-
   return (
-    <Providers>
-      <Stack>
-        {/* La pantalla de índice (nuestro guardián) no necesita cabecera */}
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="(auth)/login" options={{ presentation: 'modal', headerShown: false }} />
-      </Stack>
-    </Providers>
+    <AuthProvider>
+      <OcrProvider>
+      <Stack screenOptions={{ headerShown: false }} />
+          </OcrProvider>
+    </AuthProvider>
   );
 }
