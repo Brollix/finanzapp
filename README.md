@@ -6,11 +6,13 @@
 ---
 
 # Descripción
+
 Finanzapp es una aplicación de micro-finanzas personales. Fotografía tus tickets, obtén los datos clave con OCR + LLM y lleva tu control de gastos desde el móvil.
 
 ---
 
 # Arquitectura
+
 - **Frontend**: Expo / React Native + Supabase Auth.
 - **OCR API**: FastAPI + PaddleOCR (Docker).
 - **GPT API**: FastAPI + LLM local (Docker, modelo `.gguf`).
@@ -25,18 +27,32 @@ monorepo/
 
 ---
 
-# Quick Start
-1. Clona el repositorio.
-2. Ejecuta `docker compose up` dentro de **`backend/ocr-api`** y **`backend/gpt-api`**.
-3. Corre `npm start` en **`frontend`** para lanzar Expo.
-4. Completa las variables de entorno indicadas en cada directorio.
+# 🚀 Quick Start
 
-¡Eso es todo! 📲  
-Abre la app con Expo Go o un emulador y prueba a escanear tu primer ticket.
+1. Clona el repo y entra al directorio:
+   ```bash
+   git clone https://github.com/Brollix/finanzapp.git
+   cd finanzapp
+   ```
+2. Descarga el modelo `.gguf` siguiendo [`backend/models/README.md`](backend/models/README.md).
+3. Levanta los micro-servicios (OCR + GPT) con Docker Compose:
+   ```bash
+   cd backend
+   docker compose up --build -d  # monta ./models como volumen
+   cd ..
+   ```
+4. Lanza la app móvil:
+   ```bash
+   cd frontend
+   npm install
+   npx expo start -c
+   ```
+5. Escanea el QR con **Expo Go** o usa un emulador. ¡Listo! 📲
 
 ---
 
 # Contribuir
+
 1. Crea un fork y una rama feature.
 2. Haz tus commits con mensajes descriptivos.
 3. Envía un Pull Request.
@@ -44,4 +60,5 @@ Abre la app con Expo Go o un emulador y prueba a escanear tu primer ticket.
 ---
 
 # Licencia
+
 MIT © 2025 Agustín Brollo
