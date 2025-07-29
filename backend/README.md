@@ -31,13 +31,7 @@ backend/
    • OCR API → `http://localhost:8000/ocr`  
    • GPT API → `http://localhost:8080/parse`
 
-1. Requisitos: Docker Desktop + Docker Compose.
-2. Desde `backend/` ejecuta:
-   ```bash
-   docker compose up --build
-   ```
-   - OCR API en `http://localhost:8000/ocr`
-   - GPT API en `http://localhost:8080/parse`
+
 3. Descarga el modelo una sola vez siguiendo las instrucciones en `models/README.md`.
 
 ## 📄 Documentación por servicio
