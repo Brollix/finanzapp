@@ -6,8 +6,19 @@ import os
 # Cambia el nombre del modelo aquí para usar otro archivo GGUF
 # Ejemplo: "mistral-7b-instruct-v0.2.Q4_K_M.gguf" o "nous-hermes-2-mistral-7b-dpo.Q4_K_M.gguf"
 MODEL_NAME = os.environ.get("MODEL_NAME", "nous-hermes-2-mistral-7b-dpo.Q4_K_M.gguf")
-MODEL_PATH = "."  # Directorio donde está el modelo
-MODEL_FILE = os.path.join(MODEL_PATH, MODEL_NAME)
+
+# `MODEL_PATH` puede ser una ruta completa al archivo o solo un directorio.
+# Si se proporciona una ruta al archivo, se utiliza tal cual; de lo
+# contrario, se une con `MODEL_NAME`.
+env_model_path = os.environ.get("MODEL_PATH")
+
+if env_model_path:
+    if os.path.isdir(env_model_path):
+        MODEL_FILE = os.path.join(env_model_path, MODEL_NAME)
+    else:
+        MODEL_FILE = env_model_path
+else:
+    MODEL_FILE = os.path.join(".", MODEL_NAME)
 
 PORT = 4891
 
