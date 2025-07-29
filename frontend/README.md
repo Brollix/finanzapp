@@ -10,12 +10,12 @@ Aplicación móvil para gestionar finanzas personales. Usa **Expo + React Native
 
 ## ⚙️ Requisitos mínimos
 
-| Herramienta | Versión |
-| ----------- | ------- |
-| Node.js     | 18.x LTS |
-| npm         | v9 |
+| Herramienta | Versión                   |
+| ----------- | ------------------------- |
+| Node.js     | 18.x LTS                  |
+| npm         | v9                        |
 | Expo CLI    | 7.x (`npm i -g expo-cli`) |
-| Git         | 2.x |
+| Git         | 2.x                       |
 
 ---
 
@@ -63,8 +63,9 @@ src/
 ## 📄 Más información
 
 Para dudas de backend, endpoints y modelos IA revisa [`backend/README.md`](../backend/README.md).
->
-  <img src="src/assets/images/adaptive-icon.png" alt="Finanzapp logo" width="120" />
+
+>   <img src="src/assets/images/adaptive-icon.png" alt="Finanzapp logo" width="120" />
+
 </p>
  (Expo + React Native) para gestionar finanzas personales.
 
@@ -86,13 +87,13 @@ Este README está pensado para que cualquier desarrollador del equipo pueda clon
 
 ## 🖥️ Requisitos previos
 
-| Herramienta    | Versión recomendada        |
-| -------------- | -------------------------- |
+| Herramienta    | Versión recomendada       |
+| -------------- | ------------------------- |
 | Node.js        | 18.x LTS (⩾18.16)         |
-| npm            |  9.x                       |
-| Expo CLI       |  7.x (`npm i -g expo-cli`) |
-| Git            |  2.x                       |
-| Android Studio | ⩾2022.1.1                  |
+| npm            | 9.x                       |
+| Expo CLI       | 7.x (`npm i -g expo-cli`) |
+| Git            | 2.x                       |
+| Android Studio | ⩾2022.1.1                 |
 
 ---
 
@@ -188,11 +189,11 @@ src/
 
 ## 🛠 Scripts útiles
 
-| Comando             | Descripción           |
-| ------------------- | --------------------- |
-| `npm run lint`      | Ejecuta ESLint        |
-| `npm run format`    | Formatea con Prettier |
-| `npm run typecheck` | `tsc --noEmit`        |
+| Comando             | Descripción                                   |
+| ------------------- | --------------------------------------------- |
+| `npm run lint`      | Ejecuta ESLint                                |
+| `npm run format`    | Formatea con Prettier                         |
+| `npm run typecheck` | Busca errores de TypeScript antes de compilar |
 
 Agrega más scripts según lo necesites.
 
