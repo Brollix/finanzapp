@@ -2,9 +2,71 @@
   <img src="src/assets/images/adaptive-icon.png" alt="Finanzapp logo" width="120" />
 </p>
 
-# Finanzapp
+# Finanzapp – Frontend (Expo)
 
-Finanzapp es una aplicación móvil (Expo + React Native) para gestionar finanzas personales.
+Aplicación móvil para gestionar finanzas personales. Usa **Expo + React Native** y se conecta a los micro-servicios del backend via HTTP.
+
+---
+
+## ⚙️ Requisitos mínimos
+
+| Herramienta | Versión |
+| ----------- | ------- |
+| Node.js     | 18.x LTS |
+| npm         | v9 |
+| Expo CLI    | 7.x (`npm i -g expo-cli`) |
+| Git         | 2.x |
+
+---
+
+## 🚀 Quick Start (4 pasos)
+
+```bash
+# 1. Clona el proyecto y entra al frontend
+git clone https://github.com/Brollix/finanzapp.git
+cd finanzapp/frontend
+
+# 2. Instala dependencias
+npm install
+
+# 3. Configura variables de entorno
+cp .env      # y rellena claves Supabase
+
+# 4. Arranca en modo dev (bundler + cache clear)
+npx expo start -c
+```
+
+Abre la app con **Expo Go** o un emulador (`a` para Android, `i` para iOS).
+
+> Nota: asegúrate de que el backend esté arriba siguiendo [`backend/README.md`](../backend/README.md).
+
+---
+
+## 🌳 Estructura principal
+
+```
+app/                # Rutas (Expo Router)
+  _layout.tsx       # Root stack
+  index.tsx         # Redirección según auth
+  (auth)/           # Pantallas de autenticación
+  (tabs)/           # Navegación por pestañas
+
+src/
+  components/       # UI reutilizable
+  features/         # Dominios: auth, ocr, ...
+  lib/              # Helpers (supabase.ts, api.ts)
+  styles/           # Theming global
+```
+
+---
+
+## 📄 Más información
+
+Para dudas de backend, endpoints y modelos IA revisa [`backend/README.md`](../backend/README.md).
+>
+  <img src="src/assets/images/adaptive-icon.png" alt="Finanzapp logo" width="120" />
+</p>
+ (Expo + React Native) para gestionar finanzas personales.
 
 Este README está pensado para que cualquier desarrollador del equipo pueda clonar el proyecto y ejecutarlo en menos de 5 minutos.
 
@@ -26,10 +88,10 @@ Este README está pensado para que cualquier desarrollador del equipo pueda clon
 
 | Herramienta    | Versión recomendada        |
 | -------------- | -------------------------- |
-| Node.js        | 18 .x LTS (⩾18.16)         |
-| npm            | 9 .x                       |
-| Expo CLI       | 7 .x (`npm i -g expo-cli`) |
-| Git            | 2 .x                       |
+| Node.js        | 18.x LTS (⩾18.16)         |
+| npm            |  9.x                       |
+| Expo CLI       |  7.x (`npm i -g expo-cli`) |
+| Git            |  2.x                       |
 | Android Studio | ⩾2022.1.1                  |
 
 ---
@@ -102,16 +164,6 @@ expo export:web   # PWA
 - **Prettier** – formato automático al guardar.
 - **Expo Tools** – atajos para Expo.
 - **DotEnv** – resaltado de `.env`.
-
----
-
-## 🐞 Problemas comunes
-
-```bash
-npx expo start -c
-```
-
-Escanea el QR con la Expo Go (Android/iOS) o usa un simulador.
 
 ---
 
