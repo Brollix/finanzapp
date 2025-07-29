@@ -38,14 +38,14 @@ backend/
    ```
    - OCR API en `http://localhost:8000/ocr`
    - GPT API en `http://localhost:8080/parse`
-3. (Solo primera vez) coloca el modelo `.gguf` dentro de `backend/models/`.
+3. Descarga el modelo una sola vez siguiendo las instrucciones en `models/README.md`.
 
 ## 📄 Documentación por servicio
 
-| Servicio | Archivo de referencia |
-| -------- | -------------------- |
-| OCR API  | `docs/ocr-api.md` |
-| GPT API  | `docs/gpt-api.md` |
+| Servicio | README local |
+| -------- | ------------- |
+| OCR API  | `ocr-api/README.md` |
+| GPT API  | `gpt-api/README.md` |
 
 ## 🧹 Buenas prácticas
 

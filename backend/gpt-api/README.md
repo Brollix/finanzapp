@@ -45,4 +45,13 @@ python main.py  # corre en http://0.0.0.0:8080
 
 ---
 
+## 📊 Modelos comparados
+
+Para elegir el modelo se evaluaron varios pesos GGUF. Los resultados
+con métricas de velocidad y precisión se encuentran en
+`docs/modelos_comparados.md`. El modelo por defecto (`Nous-Hermes-2-Mistral-7B-DPO.Q4_K_M.gguf`)
+mostró la mejor relación calidad/recursos en nuestras pruebas.
+
+---
+
 > Última actualización: 2025-07-29
