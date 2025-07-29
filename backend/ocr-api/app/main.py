@@ -1,25 +1,12 @@
 from fastapi import FastAPI, File, UploadFile
-from fastapi.responses import Response, JSONResponse
+from fastapi.responses import JSONResponse
 from paddleocr import PaddleOCR
-from PIL import Image, ImageFont
+from PIL import Image
 import io
 import numpy as np
 
 app = FastAPI()
-ocr = PaddleOCR(use_angle_cls=False, lang='es') # Disable angle cls for speed
-
-def make_serializable(obj):
-    if isinstance(obj, np.ndarray):
-        return obj.tolist()
-    if isinstance(obj, np.generic):
-        return obj.item()
-    if isinstance(obj, (ImageFont.FreeTypeFont, ImageFont.ImageFont)):
-        return str(obj)
-    if isinstance(obj, dict):
-        return {k: make_serializable(v) for k, v in obj.items()}
-    if isinstance(obj, (list, tuple)):
-        return [make_serializable(x) for x in obj]
-    return obj
+ocr = PaddleOCR(use_angle_cls=False, lang='es')  # Disable angle cls for speed
 
 @app.post("/ocr")
 async def ocr_endpoint(
