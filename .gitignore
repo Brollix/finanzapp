@@ -8,9 +8,8 @@
 ###############################
 **/node_modules/
 **/.expo/
+# Web build artifacts
 **/web-build/
-**/dist/
-**/build/
 
 # Env & config
 **/.env
@@ -40,6 +39,7 @@ android/
 **/*.py[cod]
 
 # Packaging
+# Remove build artifacts regardless of language
 **/build/
 **/dist/
 **/*.egg-info/
@@ -83,21 +83,10 @@ frontend/.expo/
 frontend/.env.local
 frontend/.env.production
 
-# Python virtual environment
-gpt-api/venv/
-ocr-api/venv/
-
+# Python virtual environments
+backend/gpt-api/venv/
+backend/ocr-api/venv/
 
 # Python cache files
-**/__pycache__/
 *.pyc
 
-# Model files
-gpt-api/*.gguf
-
-# IDE configuration files
-.vscode/
-.idea/
-
-# OS-specific files
-.DS_Store
