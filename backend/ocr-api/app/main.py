@@ -5,6 +5,7 @@ from PIL import Image
 import io
 import numpy as np
 
+
 app = FastAPI()
 ocr = PaddleOCR(use_angle_cls=False, lang='es')  # Disable angle cls for speed
 

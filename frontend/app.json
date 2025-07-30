@@ -35,7 +35,7 @@
       "typedRoutes": true
     },
     "extra": {
-      "EXPO_PUBLIC_API_URL": "http://192.168.0.10:8000",
+      "EXPO_PUBLIC_API_URL": "http://192.168.0.152:8000",
       "SUPABASE_URL": "YOUR_SUPABASE_URL",
       "SUPABASE_ANON_KEY": "YOUR_SUPABASE_ANON_KEY"
     }

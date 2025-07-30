@@ -29,20 +29,30 @@ export default function TicketScreen() {
       <View style={{ paddingHorizontal: 16 }}>
         <Text style={core.h4}>{ticket.supermarket}</Text>
         <Text style={core.text}>{ticket.datetime}</Text>
+        {!!ticket.total && typeof ticket.total === 'number' ? (
         <Text style={[core.h4, { marginTop: theme.spacing.sm }]}>Total: ${ticket.total.toFixed(2)}</Text>
+      ) : ticket.total ? (
+        <Text style={[core.h4, { marginTop: theme.spacing.sm }]}>Total: ${ticket.total}</Text>
+      ) : null}
       </View>
 
-      <FlatList
-        data={ticket.items}
-        keyExtractor={(item: any, index: number) => index.toString()}
-        renderItem={({ item }: any) => (
-          <Card style={[core.card, { marginHorizontal: theme.spacing.md, marginTop: theme.spacing.sm }]}>
-            <Text style={core.cardText}>{item.description}</Text>
-            <Text style={core.cardText}>Qty: {item.quantity}</Text>
-            <Text style={core.cardText}>${item.price}</Text>
-          </Card>
-        )}
-      />
+      {ticket.items && ticket.items.length > 0 ? (
+        <FlatList
+          data={ticket.items}
+          keyExtractor={(item: any, index: number) => index.toString()}
+          renderItem={({ item }: any) => (
+            <Card style={[core.card, { marginHorizontal: theme.spacing.md, marginTop: theme.spacing.sm }]}>
+              <Text style={core.cardText}>{item.description}</Text>
+              <Text style={core.cardText}>Qty: {item.quantity}</Text>
+              <Text style={core.cardText}>${item.price}</Text>
+            </Card>
+          )}
+        />
+      ) : (
+        <Card style={[core.card, { margin: theme.spacing.md }]}>
+          <Text style={core.text}>{ticket.text?.substring(0, 400) || 'Sin items'}</Text>
+        </Card>
+      )}
     </SafeAreaView>
   );
 }

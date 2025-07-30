@@ -30,7 +30,8 @@ def format_ticket_with_local_gpt(ocr_text):
     **VERY IMPORTANT RULE FOR NUMBERS:**
     The source text uses the Argentinian number format. The period '.' is a thousands separator and the comma ',' is the decimal separator.
     To create a valid JSON number (float), you MUST first REMOVE all periods '.' from the number string, and then REPLACE the comma ',' with a period '.'.
-    For example, the text "5.850,00" must be converted to the number 5850.00 in the JSON.
+    For example, the text "5.850,00" must be converted to the number 5850.00 in the JSON. Always positive numbers except for discounts, may be negative.
+    Try to understand different formats, recognize what is a product, differentiate between price and quantity, recognize discounts.
 
     The JSON object should have the following structure:
     - \"supermarket\": The name of the supermarket (string).

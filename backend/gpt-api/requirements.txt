@@ -4,7 +4,8 @@ pillow
 numpy
 python-multipart
 requests
-llama-cpp-python
+llama-cpp-python==0.2.27
 matplotlib
 sse-starlette
+pydantic-settings
 starlette-context

@@ -1,16 +1,27 @@
 import { useEffect, useState } from 'react';
-import { View, Text, Pressable, Modal, SafeAreaView, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, Pressable, Modal, SafeAreaView, Alert, ActivityIndicator, FlatList } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import Menu from '../src/components/Menu';
 import { Button } from '../src/components/ui/Button';
 import { Card } from '../src/components/ui/Card';
+import { resolveBackendUrl } from '../src/utils/getBackendUrl';
 
 import { core } from '../src/styles/core.styles';
 import { theme } from '../src/styles/theme';
 import { useOcr } from '../src/context/OcrContext';
+
 // @ts-ignore
 import formatted from '../src/data/formatted_ticket.json';
+
+interface Ticket {
+  id: string;
+  supermarket: string;
+  datetime: string;
+  total: number | string;
+  items: { description: string; quantity: number; price: number }[];
+  text?: string; // raw text fallback
+}
 
 
 
@@ -24,7 +35,7 @@ const extractTicket = () => {
   }
 };
 
-const mock = extractTicket();
+const mock = extractTicket(); // sample placeholder if formatting service exists
 
 const screenStyles = {
   homeContainer: {
@@ -88,7 +99,32 @@ export default function HomeScreen() {
   const router = useRouter();
   const [menuVisible, setMenuVisible] = useState(false);
   const [fabModalVisible, setFabModalVisible] = useState(false);
+  const initialMock = mock ? [{ ...mock, id: 'mock' }] : [];
+  const [tickets, setTickets] = useState<Ticket[]>(initialMock);
   const { isLoading, ocrResult, ocrError, clearOcrState } = useOcr();
+  const [gptLoading, setGptLoading] = useState(false);
+
+  // Llama/gpt formatting now handled server-side via `/format` endpoint
+  const formatWithGpt = async (text: string) => {
+    try {
+      const base = resolveBackendUrl(process.env.EXPO_PUBLIC_GPT_URL, 8080);
+      const url = base.endsWith('/format') ? base : `${base}/format`;
+      
+      const resp = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+      });
+      const data = await resp.json();
+      if (data && !data.error) {
+        return data as any;
+      }
+      return null;
+    } catch (err) {
+      console.error('GPT fetch error', err);
+      return null;
+    }
+  };
 
   const handleAddManually = () => {
     setFabModalVisible(false);
@@ -100,23 +136,39 @@ export default function HomeScreen() {
     router.push('/capture');
   };
 
+  const confirmDelete = (id: string) => {
+    Alert.alert('Eliminar ticket', '¿Seguro que deseas eliminar este ticket?', [
+      { text: 'Cancelar', style: 'cancel' },
+      { text: 'Eliminar', style: 'destructive', onPress: () => setTickets(prev => prev.filter(t => t.id !== id)) },
+    ]);
+  };
+
   useEffect(() => {
-    if (ocrResult) {
-      const recognizedText = ocrResult.text || '';
-      Alert.alert(
-        'Éxito',
-        `Ticket procesado. Texto: ${recognizedText.substring(
-          0,
-          80
-        )}...`
-      );
-      clearOcrState();
-    }
-    if (ocrError) {
-      Alert.alert('Error', 'No se pudo procesar la foto. Inténtalo de nuevo.');
-      console.error('OCR Error:', ocrError);
-      clearOcrState();
-    }
+    const run = async () => {
+      if (ocrResult) {
+        const recognizedText = (ocrResult as any).text || '';
+        setGptLoading(true);
+        const formatted = await formatWithGpt(recognizedText);
+        const newTicket: Ticket = formatted
+          ? { ...formatted, id: Date.now().toString() }
+          : {
+              id: Date.now().toString(),
+              supermarket: 'Nuevo Ticket',
+              datetime: new Date().toLocaleString(),
+              total: 0,
+              items: [],
+              text: recognizedText,
+            };
+        setTickets(prev => [newTicket, ...prev]);
+        setGptLoading(false);
+        clearOcrState();
+      } else if (ocrError) {
+        Alert.alert('Error', 'No se pudo procesar la foto. Inténtalo de nuevo.');
+        clearOcrState();
+      }
+    };
+
+    run();
   }, [ocrResult, ocrError]);
 
   return (
@@ -134,14 +186,26 @@ export default function HomeScreen() {
 
         {/* Body Content */}
         <View style={screenStyles.homeCardContainer}>
-          {/* Ticket list */}
-          <Pressable onPress={() => router.push({ pathname: '/ticket', params: { data: JSON.stringify(mock) } })}>
-            <Card style={core.card}>
-              <Text style={core.text}>{mock?.supermarket}</Text>
-              <Text style={core.h4}>{mock?.datetime}</Text>
-              <Text style={core.h2}>${mock?.total?.toFixed(2)}</Text>
-            </Card>
-          </Pressable>
+          <FlatList
+            data={tickets}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <Pressable onPress={() => router.push({ pathname: '/ticket', params: { data: JSON.stringify(item) } })} onLongPress={() => confirmDelete(item.id)}>
+                <Card style={[core.card, { marginBottom: theme.spacing.md }]}>
+                  <Text style={core.text}>{item.supermarket}</Text>
+                  <Text style={core.h4}>{item.datetime}</Text>
+                  {typeof item.total === 'number' ? (
+                    <Text style={core.h2}>${item.total.toFixed(2)}</Text>
+                  ) : item.total ? (
+                    <Text style={core.h2}>${item.total}</Text>
+                  ) : (
+                    <Text style={core.text}>{item.text?.substring(0, 80)}...</Text>
+                  )}
+                </Card>
+              </Pressable>
+            )}
+          />
+          
         </View>
 
         {/* FAB */}
@@ -185,12 +249,12 @@ export default function HomeScreen() {
       {/* Loading Spinner Modal */}
       <Modal
         transparent
-        visible={isLoading}
+        visible={isLoading || gptLoading}
         animationType="fade"
       >
         <View style={screenStyles.loadingModalContainer}>
           <ActivityIndicator size="large" color={theme.colors.primary} />
-          <Text style={screenStyles.loadingModalText}>Procesando imagen...</Text>
+          <Text style={screenStyles.loadingModalText}>{gptLoading ? 'Formateando ticket...' : 'Procesando imagen...'}</Text>
         </View>
       </Modal>
     </SafeAreaView>

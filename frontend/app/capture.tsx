@@ -9,6 +9,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Button } from "../src/components/ui/Button";
 import { core } from "../src/styles/core.styles";
 import { useOcr } from "../src/context/OcrContext";
+import { resolveBackendUrl } from "../src/utils/getBackendUrl";
 import { theme } from "../src/styles/theme";
 
 const screenStyles = {
@@ -55,7 +56,8 @@ export default function Capture() {
 
                 formData.append('file', { uri: photo.uri, name: filename!, type } as any);
 
-				const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/ocr`, {
+				const baseUrl = resolveBackendUrl(process.env.EXPO_PUBLIC_API_URL, 8000);
+                const response = await fetch(`${baseUrl}/ocr`, {
 					method: "POST",
 					body: formData,
 				});

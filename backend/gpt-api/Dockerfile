@@ -26,4 +26,4 @@ EXPOSE 4891
 ENV MODEL_NAME="nous-hermes-2-mistral-7b-dpo.Q4_K_M.gguf"
 
 # Run the application (OpenAI-compatible server)
-CMD ["python", "api.py"]
+CMD ["uvicorn", "format_server:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
