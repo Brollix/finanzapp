@@ -1,26 +1,14 @@
 version: "3.9"
 
 services:
-  ocr-api:
+  aws-api:
     build:
-      context: ./ocr-api
-    container_name: finanzapp_ocr
+      context: ./aws-api
+    container_name: finanzapp_aws_api
     ports:
-      - "8000:8000"
-    restart: unless-stopped
-
-  gpt-api:
-    build:
-      context: ./gpt-api
-    container_name: finanzapp_gpt
-    # El puerto 8080 se define en main.py (FastAPI)
-    ports:
-      - "8080:8000"
-    # Monta la carpeta del modelo para no copiar 4 GB en la imagen
-    volumes:
-      - ./models:/models
-    environment:
-      - MODEL_PATH=/models/nous-hermes-2-mistral-7b-dpo.Q4_K_M.gguf
+      - "8080:8080"
+    env_file:
+      - ./aws-api/.env
     restart: unless-stopped
 
 networks:

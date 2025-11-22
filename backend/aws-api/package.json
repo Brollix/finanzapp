@@ -1,0 +1,32 @@
+{
+  "name": "finanzapp-aws-api",
+  "version": "1.0.0",
+  "description": "FinanzApp backend with AWS Textract, Bedrock, and Supabase",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": ["finanzapp", "aws", "textract", "bedrock", "supabase"],
+  "author": "Agustín Brollo",
+  "license": "MIT",
+  "dependencies": {
+    "@aws-sdk/client-textract": "^3.716.0",
+    "@aws-sdk/client-bedrock-runtime": "^3.716.0",
+    "@supabase/supabase-js": "^2.53.0",
+    "express": "^4.21.2",
+    "multer": "^1.4.5-lts.1",
+    "dotenv": "^16.4.7",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/multer": "^1.4.12",
+    "@types/cors": "^2.8.17",
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2",
+    "tsx": "^4.19.2"
+  }
+}

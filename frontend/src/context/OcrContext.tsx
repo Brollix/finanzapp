@@ -1,58 +1,72 @@
-import React, { createContext, useState, useContext, ReactNode } from 'react';
+import React, { createContext, useState, useContext, ReactNode } from "react";
+import { ReceiptData } from "../types/receipt.types";
 
-interface OcrResult {
-  text: string;
+export type OcrStatus = "idle" | "loading" | "success" | "error";
+
+interface OcrContextState {
+	status: OcrStatus;
+	receipt: ReceiptData | null;
+	error: Error | null;
 }
 
-interface OcrContextType {
-  isLoading: boolean;
-  ocrResult: OcrResult | null;
-  ocrError: Error | null;
-  startOcr: () => void;
-  setOcrSuccess: (result: OcrResult) => void;
-  setOcrError: (error: Error) => void;
-  clearOcrState: () => void;
+interface OcrContextType extends OcrContextState {
+	startOcr: () => void;
+	setOcrSuccess: (receipt: ReceiptData) => void;
+	setOcrError: (error: Error) => void;
+	resetOcr: () => void;
 }
 
 const OcrContext = createContext<OcrContextType | undefined>(undefined);
 
 export const OcrProvider = ({ children }: { children: ReactNode }) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [ocrResult, setOcrResult] = useState<OcrResult | null>(null);
-  const [ocrError, setOcrErrorState] = useState<Error | null>(null);
+	const [status, setStatus] = useState<OcrStatus>("idle");
+	const [receipt, setReceipt] = useState<ReceiptData | null>(null);
+	const [error, setError] = useState<Error | null>(null);
 
-  const startOcr = () => {
-    setIsLoading(true);
-    setOcrResult(null);
-    setOcrErrorState(null);
-  };
+	const startOcr = () => {
+		setStatus("loading");
+		setReceipt(null);
+		setError(null);
+	};
 
-  const setOcrSuccess = (result: OcrResult) => {
-    setIsLoading(false);
-    setOcrResult(result);
-  };
+	const setOcrSuccess = (data: ReceiptData) => {
+		setReceipt(data);
+		setStatus("success");
+		setError(null);
+	};
 
-  const setOcrError = (error: Error) => {
-    setIsLoading(false);
-    setOcrErrorState(error);
-  };
+	const setOcrError = (err: Error) => {
+		setError(err);
+		setStatus("error");
+	};
 
-  const clearOcrState = () => {
-    setOcrResult(null);
-    setOcrErrorState(null);
-  };
+	const resetOcr = () => {
+		setStatus("idle");
+		setReceipt(null);
+		setError(null);
+	};
 
-  return (
-    <OcrContext.Provider value={{ isLoading, ocrResult, ocrError, startOcr, setOcrSuccess, setOcrError, clearOcrState }}>
-      {children}
-    </OcrContext.Provider>
-  );
+	return (
+		<OcrContext.Provider
+			value={{
+				status,
+				receipt,
+				error,
+				startOcr,
+				setOcrSuccess,
+				setOcrError,
+				resetOcr,
+			}}
+		>
+			{children}
+		</OcrContext.Provider>
+	);
 };
 
 export const useOcr = () => {
-  const context = useContext(OcrContext);
-  if (context === undefined) {
-    throw new Error('useOcr must be used within an OcrProvider');
-  }
-  return context;
+	const context = useContext(OcrContext);
+	if (context === undefined) {
+		throw new Error("useOcr must be used within an OcrProvider");
+	}
+	return context;
 };

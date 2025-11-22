@@ -1,0 +1,28 @@
+{
+	"success": true,
+	"message": "Receipt processed successfully (test mode - not saved)",
+	"data": {
+		"supermarket": "PESCA E AVENTURA",
+		"datetime": "30/01/2025 15:53",
+		"total": 40,
+		"items": [
+			{
+				"product": "COPO TER CO CONTIGO STREET MUG 414ML PRETO",
+				"quantity": 1,
+				"price": 21
+			},
+			{
+				"product": "COPO TER CO CONTIGO STREETERVILLE 473ML SALT",
+				"quantity": 1,
+				"price": 19
+			}
+		]
+	},
+	"metadata": {
+		"textractTimeMs": 41225,
+		"bedrockTimeMs": 1788,
+		"totalTimeMs": 43013,
+		"ocrTextLength": 502,
+		"extractedText": "PESCA E AVENTURA\n41 RET RAR NA LOJA PESCA\nPEDIOO*PACOTE 4*\n30/01/2025 15:53 Pedido: 9194786-4\nCli: 2151710 - ESTELA VALDIVIEZO\nVen: 8 - PCA CAMILA F.\nDir: BI ENOS AIRES-AR\nCiud: i JENOS AIRES-ARGEN\nRUC/RG 18834715\n[ENTREGADO]\nCond di Pago: Contado Oper: 659 Caja: 329\nCodigo Cantid.\nP.Unitario\nValor Total\n28348\n1\n21.00*\n21.00\nCOPO TER CO CONTIGO STREET MUG 414ML PRETO\n33066 -0\n1\n19.00\n19.00\nCOPO TER CO CONTIGO STREETERVILLE 473ML SALT\nItens: 2\nTOTAL\nUS$\n40.00\nAGRADECEMOS A PREFERENCIA. VOLTE SEMPRE"
+	}
+}

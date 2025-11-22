@@ -1,58 +1,187 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { View, Text, SafeAreaView, FlatList, Pressable } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { Card } from '../src/components/ui/Card';
-import { core } from '../src/styles/core.styles';
-import { theme } from '../src/styles/theme';
+import React from "react";
+import {
+	View,
+	Text,
+	FlatList,
+	StyleSheet,
+	TouchableOpacity,
+} from "react-native";
+import { useLocalSearchParams } from "expo-router";
+import { useOcr } from "../src/context/OcrContext";
+import { core } from "../src/styles/core.styles";
+import { theme } from "../src/styles/theme";
+import { ReceiptItem, ReceiptData } from "../src/types/receipt.types";
+import { ProductDetailsModal } from "../src/components/ProductDetailsModal";
+
+const ReceiptItemRow = ({
+	item,
+	onPress,
+}: {
+	item: ReceiptItem;
+	onPress: (item: ReceiptItem) => void;
+}) => (
+	<TouchableOpacity onPress={() => onPress(item)}>
+		<View style={styles.itemRow}>
+			<View style={styles.itemInfo}>
+				<Text style={styles.product}>{item.product}</Text>
+				{item.brand && <Text style={styles.brand}>({item.brand})</Text>}
+			</View>
+			<View style={styles.itemMeta}>
+				<Text style={styles.quantity}>x{item.quantity}</Text>
+				<Text style={styles.price}>${item.price.toFixed(2)}</Text>
+			</View>
+		</View>
+	</TouchableOpacity>
+);
 
 export default function TicketScreen() {
-  const router = useRouter();
-  const { data } = useLocalSearchParams<{ data: string }>();
-  const ticket = data ? JSON.parse(data) : null;
+	const { data } = useLocalSearchParams();
+	const { receipt: contextReceipt, status, error } = useOcr();
+	const [selectedItem, setSelectedItem] = React.useState<ReceiptItem | null>(
+		null
+	);
+	const [modalVisible, setModalVisible] = React.useState(false);
 
-  if (!ticket) {
-    return (
-      <SafeAreaView style={core.safeArea}>
-        <Text style={core.text}>Sin datos de ticket.</Text>
-      </SafeAreaView>
-    );
-  }
+	const handleItemPress = (item: ReceiptItem) => {
+		setSelectedItem(item);
+		setModalVisible(true);
+	};
 
-  return (
-    <SafeAreaView style={core.safeArea}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', padding: 16 }}>
-        <Pressable onPress={() => router.back()} hitSlop={10}>
-          <Ionicons name="arrow-back" size={28} color={theme.colors.primary} />
-        </Pressable>
-        <Text style={[core.h4, { marginLeft: theme.spacing.sm }]}>Detalle Ticket</Text>
-      </View>
-      <View style={{ paddingHorizontal: 16 }}>
-        <Text style={core.h4}>{ticket.supermarket}</Text>
-        <Text style={core.text}>{ticket.datetime}</Text>
-        {!!ticket.total && typeof ticket.total === 'number' ? (
-        <Text style={[core.h4, { marginTop: theme.spacing.sm }]}>Total: ${ticket.total.toFixed(2)}</Text>
-      ) : ticket.total ? (
-        <Text style={[core.h4, { marginTop: theme.spacing.sm }]}>Total: ${ticket.total}</Text>
-      ) : null}
-      </View>
+	let receipt: ReceiptData | null = null;
 
-      {ticket.items && ticket.items.length > 0 ? (
-        <FlatList
-          data={ticket.items}
-          keyExtractor={(item: any, index: number) => index.toString()}
-          renderItem={({ item }: any) => (
-            <Card style={[core.card, { marginHorizontal: theme.spacing.md, marginTop: theme.spacing.sm }]}>
-              <Text style={core.cardText}>{item.description}</Text>
-              <Text style={core.cardText}>Qty: {item.quantity}</Text>
-              <Text style={core.cardText}>${item.price}</Text>
-            </Card>
-          )}
-        />
-      ) : (
-        <Card style={[core.card, { margin: theme.spacing.md }]}>
-          <Text style={core.text}>{ticket.text?.substring(0, 400) || 'Sin items'}</Text>
-        </Card>
-      )}
-    </SafeAreaView>
-  );
+	if (data) {
+		try {
+			receipt = JSON.parse(data as string);
+		} catch (e) {
+			console.error("Error parsing receipt data:", e);
+		}
+	} else {
+		receipt = contextReceipt;
+	}
+
+	if (!data && status === "loading") {
+		return <Text style={styles.loading}>Cargando...</Text>;
+	}
+	if (!data && status === "error" && error) {
+		return <Text style={styles.error}>Error: {error.message}</Text>;
+	}
+	if (!receipt) {
+		return <Text style={styles.empty}>No hay receipt cargado.</Text>;
+	}
+
+	return (
+		<View style={core.flex1}>
+			<View style={styles.header}>
+				<Text style={styles.supermarket}>{receipt.supermarket}</Text>
+				<Text style={styles.datetime}>{receipt.datetime}</Text>
+			</View>
+
+			<FlatList
+				data={receipt.items}
+				keyExtractor={(_, index) => index.toString()}
+				renderItem={({ item }) => (
+					<ReceiptItemRow item={item} onPress={handleItemPress} />
+				)}
+				contentContainerStyle={styles.list}
+			/>
+
+			<View style={styles.totalBar}>
+				<Text style={styles.totalLabel}>TOTAL</Text>
+				<Text style={styles.totalValue}>${receipt.total.toFixed(2)}</Text>
+			</View>
+
+			<ProductDetailsModal
+				visible={modalVisible}
+				onClose={() => setModalVisible(false)}
+				item={selectedItem}
+			/>
+		</View>
+	);
 }
+
+const styles = StyleSheet.create({
+	header: {
+		padding: theme.spacing.lg,
+		backgroundColor: theme.colors.primary,
+	},
+	supermarket: {
+		fontSize: theme.font.size.h1,
+		fontFamily: theme.font.family.bold,
+		color: theme.colors.onPrimary,
+	},
+	datetime: {
+		fontSize: theme.font.size.md,
+		color: theme.colors.onPrimary,
+	},
+	list: {
+		padding: theme.spacing.md,
+	},
+	itemRow: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		alignItems: "center",
+		marginBottom: theme.spacing.sm,
+		padding: theme.spacing.sm,
+		backgroundColor: theme.colors.surface,
+		borderRadius: 8,
+		elevation: 2,
+	},
+	itemInfo: {
+		flexDirection: "column",
+	},
+	product: {
+		fontSize: theme.font.size.md,
+		fontFamily: theme.font.family.bold,
+		color: theme.colors.text,
+	},
+	brand: {
+		fontSize: theme.font.size.sm,
+		color: theme.colors.secondary,
+	},
+	itemMeta: {
+		flexDirection: "row",
+		alignItems: "center",
+	},
+	quantity: {
+		fontSize: theme.font.size.md,
+		marginRight: theme.spacing.sm,
+		color: theme.colors.text,
+	},
+	price: {
+		fontSize: theme.font.size.md,
+		fontFamily: theme.font.family.bold,
+		color: theme.colors.text,
+	},
+	totalBar: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		padding: theme.spacing.lg,
+		backgroundColor: theme.colors.primary,
+	},
+	totalLabel: {
+		fontSize: theme.font.size.h2,
+		fontFamily: theme.font.family.bold,
+		color: theme.colors.onPrimary,
+	},
+	totalValue: {
+		fontSize: theme.font.size.h2,
+		fontFamily: theme.font.family.bold,
+		color: theme.colors.onPrimary,
+	},
+	loading: {
+		fontSize: theme.font.size.md,
+		textAlign: "center",
+		marginTop: theme.spacing.lg,
+	},
+	error: {
+		fontSize: theme.font.size.md,
+		color: theme.colors.error,
+		textAlign: "center",
+		marginTop: theme.spacing.lg,
+	},
+	empty: {
+		fontSize: theme.font.size.md,
+		textAlign: "center",
+		marginTop: theme.spacing.lg,
+	},
+});
