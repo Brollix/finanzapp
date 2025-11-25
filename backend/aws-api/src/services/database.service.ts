@@ -1,5 +1,43 @@
-import { ReceiptData, Receipt } from "../types/receipt.types.js";
+import { ReceiptData, Receipt, ReceiptItem } from "../types/receipt.types.js";
 import { supabase } from "../config/supabase.js";
+
+async function getOrCreateProduct(item: ReceiptItem): Promise<string> {
+	let query = supabase.from("products").select("id").eq("name", item.product);
+
+	if (item.brand) {
+		query = query.eq("brand", item.brand);
+	} else {
+		query = query.is("brand", null);
+	}
+
+	const { data: existing } = await query.single();
+
+	if (existing) {
+		return existing.id;
+	}
+
+	const { data: newProduct, error } = await supabase
+		.from("products")
+		.insert({
+			name: item.product,
+			brand: item.brand || null,
+			is_weight: item.is_weight || false,
+		})
+		.select("id")
+		.single();
+
+	if (error) {
+		// Handle race condition where product was created between check and insert
+		if (error.code === "23505") {
+			// Unique violation
+			const { data: retry } = await query.single();
+			if (retry) return retry.id;
+		}
+		throw error;
+	}
+
+	return newProduct.id;
+}
 
 export async function saveReceipt(
 	userId: string,
@@ -7,6 +45,21 @@ export async function saveReceipt(
 	imageUrl?: string
 ): Promise<Receipt> {
 	try {
+		// 1. Process items to get/create products
+		const receiptItemsForDb = [];
+
+		for (const item of receiptData.items) {
+			const productId = await getOrCreateProduct(item);
+			item.product_id = productId; // Update the item with the ID
+
+			receiptItemsForDb.push({
+				product_id: productId,
+				quantity: item.quantity,
+				price: item.quantity ? item.price / item.quantity : 0, // Unit price
+				total: item.price,
+			});
+		}
+
 		const newReceipt = {
 			user_id: userId,
 			supermarket: receiptData.supermarket,
@@ -24,6 +77,23 @@ export async function saveReceipt(
 
 		if (error) {
 			throw error;
+		}
+
+		// 2. Save receipt items
+		if (data && data.id) {
+			const itemsWithReceiptId = receiptItemsForDb.map((item) => ({
+				...item,
+				receipt_id: data.id,
+			}));
+
+			const { error: itemsError } = await supabase
+				.from("receipt_items")
+				.insert(itemsWithReceiptId);
+
+			if (itemsError) {
+				console.error("Error saving receipt items:", itemsError);
+				// We log but don't fail the whole request as the receipt is saved
+			}
 		}
 
 		return data as Receipt;

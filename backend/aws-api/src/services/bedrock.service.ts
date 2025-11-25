@@ -18,11 +18,20 @@ To create a valid JSON number (float), you MUST first REMOVE all periods '.' fro
 For example, the text "5.850,00" must be converted to the number 5850.00 in the JSON. Always positive numbers except for discounts, may be negative.
 
 **IMPORTANT RULES FOR STORE/PRODUCT/BRAND:**
-- "supermarket": Extract ONLY the commercial name of the store (e.g., "Carrefour", "Disco", "Jumbo", "Día"). Ignore CUIT, address, legal info, or codes.
-- For each item, separate the product from the brand:
-  - "product": The generic product name (e.g., "Papas fritas", "Hamburguesas", "Pan", "Jugo"). KEEP IT SHORT AND CONCISE.
-  - "brand": The brand name if clearly present (e.g., "McCain", "Paty", "Bimbo", "Tang"). If no clear brand, omit this field.
-  - "is_weight": Set to true ONLY if the item is clearly sold by weight (e.g., you see "kg", "x kg", "peso", or the quantity implies a weight like 0.750 for 750g).
+1. **Supermarket Name:** Extract ONLY the commercial name (e.g., "Carrefour", "Disco", "Jumbo", "Día", "Coto", "Vea"). Ignore CUIT, address, legal info.
+2. **Item Extraction & Grouping:**
+   - **Group Identical Items:** If the same product (same name and brand) appears multiple times, GROUP them into a single item entry by summing their quantities and prices.
+   - **Product Name:** The generic name (e.g., "Papas Fritas", "Leche", "Galletitas"). MUST NOT include the brand. Use Title Case.
+   - **Brand Name:** Extract the brand. It is often at the start or end of the line.
+     - *Common Brands:* McCain, Paty, Bimbo, Tang, Coca Cola, La Serenisima, Arcor, Lucchetti, Matarazzo, Knorr, Hellmanns, Natura, Cocinero, Villavicencio, Villa del Sur, Brahma, Quilmes, Colgate, Dove, Plusbelle, Ala, Skip, Ayudin, Magistral.
+     - If the brand is NOT clearly visible, leave it as null.
+   - **Is Weight:** Set to true ONLY if the item is clearly sold by weight (e.g., "kg", "x kg", "peso", or quantity like 0.750).
+
+**EXAMPLES:**
+- Text: "MCCAIN PAPAS FRITAS 2.5KG" -> product: "Papas Fritas", brand: "McCain", is_weight: true
+- Text: "JABON LIQ ARIEL" -> product: "Jabon Liquido", brand: "Ariel"
+- Text: "TOMATE PERITA KG" -> product: "Tomate Perita", brand: null, is_weight: true
+- Text: "GALLETITAS OREO" + "GALLETITAS OREO" -> Group into one item with summed quantity and price.
 
 The JSON object should have the following structure:
 - "supermarket": The commercial name of the store ONLY (string).
@@ -31,7 +40,7 @@ The JSON object should have the following structure:
 - "items": A list of all purchased items. Each item in the list should be a JSON object with:
     - "product": The generic product name without brand (string).
     - "brand": The brand name if clearly present (string, optional).
-    - "quantity": The quantity of the item (float). If sold by weight, this is the weight in kg (e.g. 1.5 for 1.5kg).
+    - "quantity": The quantity of the item (float). If sold by weight, this is the weight in kg.
     - "price": The total price for that item line (float).
     - "is_weight": Boolean, true if sold by weight (optional).
 

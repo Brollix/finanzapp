@@ -1,4 +1,10 @@
-import { View, TouchableOpacity, Alert, ActivityIndicator } from "react-native";
+import {
+	View,
+	TouchableOpacity,
+	Alert,
+	ActivityIndicator,
+	StyleSheet,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { CameraView } from "expo-camera";
 import { useRef, useState } from "react";
@@ -11,26 +17,6 @@ import { core } from "../src/styles/core.styles";
 import { theme } from "../src/styles/theme";
 import { receiptApi } from "../src/services/receiptApi";
 import { authService } from "../src/features/auth/services/authService";
-
-const screenStyles = {
-	camera: {
-		...core.flex1,
-	},
-	captureOverlay: {
-		position: "absolute" as "absolute",
-		bottom: 0,
-		left: 0,
-		right: 0,
-		padding: theme.spacing.lg,
-		backgroundColor: "rgba(0,0,0,0.4)",
-		flexDirection: "row" as "row",
-		justifyContent: "space-around" as "space-around",
-		alignItems: "center" as "center",
-	},
-	flashButton: {
-		padding: theme.spacing.sm,
-	},
-};
 
 export default function Capture() {
 	const cameraRef = useRef<CameraView>(null);
@@ -81,26 +67,18 @@ export default function Capture() {
 		<View style={core.flex1}>
 			<CameraView
 				ref={cameraRef}
-				style={screenStyles.camera}
+				style={styles.camera}
 				facing="back"
 				enableTorch={isFlashOn}
 			/>
 			{loading && (
-				<View
-					style={{
-						...screenStyles.captureOverlay,
-						backgroundColor: "rgba(0,0,0,0.7)",
-						justifyContent: "center",
-						zIndex: 100,
-						height: "100%",
-					}}
-				>
+				<View style={styles.loadingOverlay}>
 					<ActivityIndicator size="large" color={theme.colors.primary} />
 				</View>
 			)}
-			<View style={screenStyles.captureOverlay}>
+			<View style={styles.captureOverlay}>
 				<TouchableOpacity
-					style={screenStyles.flashButton}
+					style={styles.flashButton}
 					onPress={() => setIsFlashOn(!isFlashOn)}
 					disabled={loading}
 				>
@@ -121,3 +99,33 @@ export default function Capture() {
 		</View>
 	);
 }
+
+const styles = StyleSheet.create({
+	camera: {
+		flex: 1,
+	},
+	captureOverlay: {
+		position: "absolute",
+		bottom: 0,
+		left: 0,
+		right: 0,
+		padding: theme.spacing.lg,
+		backgroundColor: theme.colors.backdrop,
+		flexDirection: "row",
+		justifyContent: "space-around",
+		alignItems: "center",
+	},
+	flashButton: {
+		padding: theme.spacing.sm,
+	},
+	loadingOverlay: {
+		position: "absolute",
+		top: 0,
+		left: 0,
+		right: 0,
+		bottom: 0,
+		backgroundColor: "rgba(0,0,0,0.7)",
+		justifyContent: "center",
+		alignItems: "center",
+	},
+});

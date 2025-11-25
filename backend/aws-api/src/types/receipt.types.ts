@@ -4,6 +4,7 @@ export interface ReceiptItem {
 	quantity: number;
 	price: number;
 	is_weight?: boolean; // True if item is sold by weight (kg, g)
+	product_id?: string; // ID from products table
 }
 
 export interface ReceiptData {
