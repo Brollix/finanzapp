@@ -107,6 +107,95 @@ export async function saveReceipt(
 	}
 }
 
+export async function updateReceipt(
+	receiptId: string,
+	userId: string,
+	receiptData: ReceiptData
+): Promise<Receipt> {
+	try {
+		// 1. Verify the receipt exists and belongs to the user
+		const existingReceipt = await getReceiptById(receiptId);
+		if (!existingReceipt) {
+			throw new Error("Receipt not found");
+		}
+		if (existingReceipt.user_id !== userId) {
+			throw new Error("Unauthorized: Receipt does not belong to user");
+		}
+
+		// 2. Process items to get/create products
+		const receiptItemsForDb = [];
+
+		for (const item of receiptData.items) {
+			const productId = await getOrCreateProduct(item);
+			item.product_id = productId; // Update the item with the ID
+
+			receiptItemsForDb.push({
+				product_id: productId,
+				quantity: item.quantity,
+				price: item.quantity ? item.price / item.quantity : 0, // Unit price
+				total: item.price,
+			});
+		}
+
+		// 3. Update the receipt
+		const updatedReceipt = {
+			supermarket: receiptData.supermarket,
+			datetime: receiptData.datetime,
+			total: receiptData.total,
+			items: receiptData.items,
+		};
+
+		const { data, error } = await supabase
+			.from("receipts")
+			.update(updatedReceipt)
+			.eq("id", receiptId)
+			.eq("user_id", userId) // Extra safety check
+			.select()
+			.single();
+
+		if (error) {
+			throw error;
+		}
+
+		// 4. Delete old receipt items
+		const { error: deleteError } = await supabase
+			.from("receipt_items")
+			.delete()
+			.eq("receipt_id", receiptId);
+
+		if (deleteError) {
+			console.error("Error deleting old receipt items:", deleteError);
+			// Continue anyway - we'll insert new items
+		}
+
+		// 5. Insert new receipt items
+		if (data && data.id) {
+			const itemsWithReceiptId = receiptItemsForDb.map((item) => ({
+				...item,
+				receipt_id: data.id,
+			}));
+
+			const { error: itemsError } = await supabase
+				.from("receipt_items")
+				.insert(itemsWithReceiptId);
+
+			if (itemsError) {
+				console.error("Error saving receipt items:", itemsError);
+				// We log but don't fail the whole request as the receipt is updated
+			}
+		}
+
+		return data as Receipt;
+	} catch (error) {
+		console.error("Database error:", error);
+		throw new Error(
+			`Failed to update receipt: ${
+				error instanceof Error ? error.message : "Unknown error"
+			}`
+		);
+	}
+}
+
 export async function getReceiptById(
 	receiptId: string
 ): Promise<Receipt | null> {

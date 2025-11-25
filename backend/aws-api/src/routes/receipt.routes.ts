@@ -6,6 +6,7 @@ import {
 	saveReceipt,
 	getReceiptById,
 	getReceiptsByUserId,
+	updateReceipt,
 } from "../services/database.service.js";
 
 const router = Router();
@@ -143,6 +144,102 @@ router.post("/manual", async (req: Request, res: Response): Promise<void> => {
 		console.error("Error creating manual receipt:", error);
 		res.status(500).json({
 			error: "Failed to create manual receipt",
+			message: error instanceof Error ? error.message : "Unknown error",
+		});
+	}
+});
+
+// PUT /api/receipt/:id - Update a receipt
+router.put("/:id", async (req: Request, res: Response): Promise<void> => {
+	try {
+		const { id } = req.params;
+		const { userId, receiptData } = req.body;
+
+		// Validate required fields
+		if (!userId) {
+			res.status(400).json({ error: "User ID is required" });
+			return;
+		}
+
+		if (!receiptData) {
+			res.status(400).json({ error: "Receipt data is required" });
+			return;
+		}
+
+		// Validate receipt data structure
+		if (
+			!receiptData.supermarket ||
+			!receiptData.datetime ||
+			!receiptData.items ||
+			!Array.isArray(receiptData.items)
+		) {
+			res.status(400).json({
+				error:
+					"Invalid receipt data. Required fields: supermarket, datetime, items (array)",
+			});
+			return;
+		}
+
+		// Validate items
+		if (receiptData.items.length === 0) {
+			res.status(400).json({ error: "Receipt must have at least one item" });
+			return;
+		}
+
+		for (const item of receiptData.items) {
+			if (
+				!item.product ||
+				typeof item.quantity !== "number" ||
+				typeof item.price !== "number"
+			) {
+				res.status(400).json({
+					error:
+						"Invalid item data. Each item must have: product (string), quantity (number), price (number)",
+				});
+				return;
+			}
+		}
+
+		// Calculate total if not provided
+		if (typeof receiptData.total !== "number") {
+			receiptData.total = receiptData.items.reduce(
+				(sum: number, item: any) => sum + item.price,
+				0
+			);
+		}
+
+		// Update in database
+		console.log("Updating receipt in database...");
+		const updatedReceipt = await updateReceipt(id, userId, receiptData);
+		console.log("Receipt updated successfully");
+
+		res.status(200).json({
+			success: true,
+			data: updatedReceipt,
+		});
+	} catch (error) {
+		console.error("Error updating receipt:", error);
+
+		// Handle specific errors
+		if (error instanceof Error) {
+			if (error.message.includes("not found")) {
+				res.status(404).json({
+					error: "Receipt not found",
+					message: error.message,
+				});
+				return;
+			}
+			if (error.message.includes("Unauthorized")) {
+				res.status(403).json({
+					error: "Forbidden",
+					message: error.message,
+				});
+				return;
+			}
+		}
+
+		res.status(500).json({
+			error: "Failed to update receipt",
 			message: error instanceof Error ? error.message : "Unknown error",
 		});
 	}

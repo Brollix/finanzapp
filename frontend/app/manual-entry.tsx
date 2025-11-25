@@ -178,6 +178,7 @@ export default function ManualEntryScreen() {
 	const [editingItem, setEditingItem] = useState<number | null>(null);
 	const [loading, setLoading] = useState(false);
 	const [showSuccessModal, setShowSuccessModal] = useState(false);
+	const [receiptId, setReceiptId] = useState<string | null>(null);
 
 	React.useEffect(() => {
 		loadSupermarkets();
@@ -185,6 +186,7 @@ export default function ManualEntryScreen() {
 		if (params.receipt) {
 			try {
 				const receipt = JSON.parse(params.receipt as string);
+				setReceiptId(receipt.id || null);
 				setSupermarket(receipt.supermarket);
 				setDatetime(receipt.datetime);
 				setItems(receipt.items || []);
@@ -320,7 +322,15 @@ export default function ManualEntryScreen() {
 				items,
 			};
 
-			await receiptApi.createManualReceipt(receiptData, user.id);
+			// Check if we're editing (receiptId exists) or creating new
+			if (receiptId) {
+				// Update existing receipt
+				await receiptApi.updateReceipt(receiptId, receiptData, user.id);
+			} else {
+				// Create new receipt
+				await receiptApi.createManualReceipt(receiptData, user.id);
+			}
+
 			setShowSuccessModal(true);
 		} catch (error) {
 			console.error("Error saving manual receipt:", error);
