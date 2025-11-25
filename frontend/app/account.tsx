@@ -118,10 +118,15 @@ export default function Account() {
 				title="Cerrar sesión"
 				onPress={async () => {
 					try {
+						setLoading(true);
 						await signOut();
-						router.replace("/login");
 					} catch (error: any) {
+						console.error("Error al cerrar sesión:", error);
 						Alert.alert("Error", "No se pudo cerrar sesión: " + error.message);
+					} finally {
+						setLoading(false);
+						// Navigate to login regardless of error to ensure user exits
+						router.replace("/login");
 					}
 				}}
 				disabled={loading}

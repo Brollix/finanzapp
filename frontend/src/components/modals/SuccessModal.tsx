@@ -68,7 +68,6 @@ const styles = StyleSheet.create({
 		width: "100%",
 		maxWidth: 400,
 		alignItems: "center",
-		borderWidth: 1,
 		backgroundColor: theme.colors.backgroundVariant,
 		padding: theme.spacing.xl,
 	},

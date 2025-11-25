@@ -71,6 +71,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 	}, []);
 
 	const signOut = useCallback(async () => {
+		// Clear user state first to ensure immediate logout
+		setUser(null);
 		await authService.signOut();
 	}, []);
 

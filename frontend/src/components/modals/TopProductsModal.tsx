@@ -93,7 +93,7 @@ export const TopProductsModal = ({
 const styles = StyleSheet.create({
 	modalOverlay: {
 		flex: 1,
-		backgroundColor: "rgba(0, 0, 0, 0.5)",
+		backgroundColor: theme.colors.backdrop,
 		justifyContent: "flex-end",
 	},
 	modalContent: {

@@ -36,23 +36,23 @@ export const ProductDetailsModal = ({
 			onRequestClose={onClose}
 		>
 			<TouchableWithoutFeedback onPress={onClose}>
-				<View style={styles.modalBackdrop}>
+				<View style={localStyles.backdrop}>
 					<TouchableWithoutFeedback>
 						<View
 							style={[
-								styles.modalContainer,
+								localStyles.modalContainer,
 								{ width: "100%", alignItems: "stretch" },
 							]}
 						>
 							<View style={localStyles.header}>
-								<Text style={styles.h4}>Detalle del Producto</Text>
+								<Text style={localStyles.title}>Detalle del Producto</Text>
 								<TouchableOpacity onPress={onClose}>
 									<Text style={localStyles.closeButton}>✕</Text>
 								</TouchableOpacity>
 							</View>
 
 							<View style={localStyles.productInfo}>
-								<Text style={styles.h3}>{item.product}</Text>
+								<Text style={localStyles.productName}>{item.product}</Text>
 								{item.brand && (
 									<Text style={localStyles.brandName}>{item.brand}</Text>
 								)}
@@ -91,11 +91,28 @@ export const ProductDetailsModal = ({
 };
 
 const localStyles = StyleSheet.create({
+	backdrop: {
+		flex: 1,
+		backgroundColor: theme.colors.backdrop,
+		justifyContent: "center",
+		alignItems: "center",
+	},
+	modalContainer: {
+		backgroundColor: theme.colors.backgroundVariant,
+		borderRadius: theme.borderRadius.xl,
+		padding: theme.spacing.xl,
+		margin: theme.spacing.lg,
+	},
 	header: {
 		flexDirection: "row",
 		justifyContent: "space-between",
 		alignItems: "center",
 		marginBottom: theme.spacing.lg,
+	},
+	title: {
+		fontSize: theme.font.size.h4,
+		fontFamily: theme.font.family.bold,
+		color: theme.colors.text,
 	},
 	closeButton: {
 		fontSize: theme.font.size.h4,
@@ -105,12 +122,18 @@ const localStyles = StyleSheet.create({
 	productInfo: {
 		marginBottom: theme.spacing.xl,
 	},
+	productName: {
+		fontSize: theme.font.size.h3,
+		fontFamily: theme.font.family.bold,
+		color: theme.colors.text,
+		marginBottom: theme.spacing.xs,
+	},
 	brandName: {
 		fontSize: theme.font.size.xl,
 		color: theme.colors.textTertiary,
 	},
 	detailsContainer: {
-		backgroundColor: theme.colors.backgroundVariant,
+		backgroundColor: theme.colors.background,
 		borderRadius: theme.borderRadius.lg,
 		padding: theme.spacing.md,
 	},
