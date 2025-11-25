@@ -83,10 +83,6 @@ frontend/.expo/
 frontend/.env.local
 frontend/.env.production
 
-# Python virtual environments
-backend/gpt-api/venv/
-backend/ocr-api/venv/
-
 # Python cache files
 *.pyc
 

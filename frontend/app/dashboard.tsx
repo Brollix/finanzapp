@@ -151,7 +151,7 @@ export default function HomeScreen() {
 					<Pressable onPress={() => setMenuVisible(true)}>
 						<Ionicons name="menu" style={styles.headerIcon} />
 					</Pressable>
-					<Text style={styles.homeTitle}>Todos los Tickets</Text>
+					<Text style={styles.homeTitle}>Tus Tickets</Text>
 					<View style={styles.headerPlaceholder} />
 				</View>
 

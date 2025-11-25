@@ -28,7 +28,7 @@
 				"EXPO_PUBLIC_API_URL": "http://18.222.119.175:8080"
 			},
 			"android": {
-				"buildType": "app-bundle"
+				"buildType": "apk"
 			}
 		}
 	},

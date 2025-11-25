@@ -1,4 +1,4 @@
-# FinanzApp 📱💰
+# FinanzApp
 
 App móvil para escanear y analizar tickets de compra usando IA.
 
@@ -33,7 +33,7 @@ finanzapp/
 ```bash
 cd frontend
 npm install
-npm start
+npx expostart
 ```
 
 ### Backend (Local)
