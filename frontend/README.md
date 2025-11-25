@@ -14,12 +14,19 @@ Aplicación móvil construida con **Expo** y **React Native**.
     Crea un archivo `.env.local` en la raíz de `frontend/` con las siguientes variables:
 
     ```ini
+    # Backend API URL (opcional - solo para producción)
+    # Para desarrollo local: dejar comentado (auto-detecta el backend en tu red)
+    # Para producción/EC2: descomentar y configurar con la IP pública de tu servidor
+    # EXPO_PUBLIC_BACKEND_URL=http://54.123.45.67:8080
+
     # URL de tu proyecto Supabase
     EXPO_PUBLIC_SUPABASE_URL=https://tu-proyecto.supabase.co
 
     # Key anónima (pública) de Supabase
     EXPO_PUBLIC_SUPABASE_ANON_KEY=tu-anon-key
     ```
+
+    **Nota:** Puedes copiar `.env.example` como punto de partida.
 
 3.  **Correr la app:**
     ```bash

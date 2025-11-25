@@ -1,0 +1,98 @@
+# Deploy Backend a EC2
+
+Guía para deployar el backend de FinanzApp en AWS EC2 usando Docker.
+
+## Información EC2
+
+- **Host**: `ec2-18-222-119-175.us-east-2.compute.amazonaws.com`
+- **IP**: `18.222.119.175`
+- **Puerto**: `8080`
+
+## Primera Vez (Setup)
+
+### 1. Conectar a EC2
+
+```bash
+ssh -i "finanzapp-backend.pem" ubuntu@ec2-18-222-119-175.us-east-2.compute.amazonaws.com
+```
+
+### 2. Clonar Repositorio
+
+```bash
+cd ~
+git clone https://github.com/TU_USUARIO/finanzapp.git
+cd finanzapp/backend/aws-api
+```
+
+### 3. Configurar `.env`
+
+```bash
+nano .env
+```
+
+Variables necesarias:
+
+```env
+AWS_REGION=us-east-2
+AWS_ACCESS_KEY_ID=tu_key
+AWS_SECRET_ACCESS_KEY=tu_secret
+PORT=8080
+NODE_ENV=production
+BEDROCK_MODEL_ID=anthropic.claude-3-haiku-20240307-v1:0
+SUPABASE_URL=tu_url
+SUPABASE_ANON_KEY=tu_key
+SUPABASE_SERVICE_ROLE_KEY=tu_key
+```
+
+### 4. Desplegar
+
+```bash
+chmod +x deploy.sh
+./deploy.sh
+```
+
+## Redesplegar (Actualizaciones)
+
+```bash
+ssh -i "finanzapp-backend.pem" ubuntu@ec2-18-222-119-175.us-east-2.compute.amazonaws.com
+cd ~/finanzapp
+git pull origin main
+cd backend/aws-api
+./deploy.sh
+```
+
+## Comandos Útiles
+
+```bash
+# Ver logs
+docker logs -f finanzapp-api
+
+# Reiniciar
+docker restart finanzapp-api
+
+# Estado
+docker ps
+
+# Health check
+curl http://localhost:8080/health
+```
+
+## Verificar Deployment
+
+```bash
+curl http://18.222.119.175:8080/health
+```
+
+Debe responder:
+
+```json
+{
+	"status": "healthy",
+	"timestamp": "...",
+	"service": "finanzapp-aws-api"
+}
+```
+
+## Security Group
+
+Asegúrate que el puerto 8080 esté abierto en AWS Console → EC2 → Security Groups.
