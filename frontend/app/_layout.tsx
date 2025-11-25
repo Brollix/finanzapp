@@ -1,35 +1,44 @@
-import { Stack } from 'expo-router';
-import { useFonts } from 'expo-font';
-import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
+import { Stack } from "expo-router";
+import { useFonts } from "expo-font";
+import * as SplashScreen from "expo-splash-screen";
+import { useEffect } from "react";
+import { useCameraPermissions } from "expo-camera";
 
 // Mantener el splash visible hasta que se carguen las fuentes
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
 // Root navigator: simple Stack with no header (screens may override)
-import { AuthProvider } from '../src/features/auth/context/AuthContext';
-import { OcrProvider } from '../src/context/OcrContext';
+import { AuthProvider } from "../src/features/auth/context/AuthContext";
+import { OcrProvider } from "../src/context/OcrContext";
 
 export default function RootLayout() {
-  const [fontsLoaded] = useFonts({
-    'SpaceGrotesk-Regular': require('../src/assets/fonts/SpaceGrotesk-Regular.ttf'),
-    'SpaceGrotesk-Bold': require('../src/assets/fonts/SpaceGrotesk-Bold.ttf'),
-  });
+	const [fontsLoaded] = useFonts({
+		"SpaceGrotesk-Regular": require("../src/assets/fonts/SpaceGrotesk-Regular.ttf"),
+		"SpaceGrotesk-Bold": require("../src/assets/fonts/SpaceGrotesk-Bold.ttf"),
+	});
 
-  useEffect(() => {
-    if (fontsLoaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [fontsLoaded]);
+	const [permission, requestPermission] = useCameraPermissions();
 
-  if (!fontsLoaded) {
-    return null; // Mantener pantalla de splash hasta cargar fuentes
-  }
-  return (
-    <AuthProvider>
-      <OcrProvider>
-      <Stack screenOptions={{ headerShown: false }} />
-          </OcrProvider>
-    </AuthProvider>
-  );
+	useEffect(() => {
+		if (permission && !permission.granted && permission.canAskAgain) {
+			requestPermission();
+		}
+	}, [permission]);
+
+	useEffect(() => {
+		if (fontsLoaded) {
+			SplashScreen.hideAsync();
+		}
+	}, [fontsLoaded]);
+
+	if (!fontsLoaded) {
+		return null; // Mantener pantalla de splash hasta cargar fuentes
+	}
+	return (
+		<AuthProvider>
+			<OcrProvider>
+				<Stack screenOptions={{ headerShown: false }} />
+			</OcrProvider>
+		</AuthProvider>
+	);
 }
