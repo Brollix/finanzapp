@@ -1,0 +1,66 @@
+name: Deploy Backend to AWS EC2
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "backend/aws-api/**"
+  workflow_dispatch: # Permite ejecutar manualmente desde GitHub
+
+jobs:
+  deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd ~/finanzapp
+            git pull origin master
+            cd backend/aws-api
+            docker build -t finanzapp-backend:latest .
+            docker stop finanzapp-api || true
+            docker rm finanzapp-api || true
+            docker run -d \
+              --name finanzapp-api \
+              --restart unless-stopped \
+              -p 8080:8080 \
+              --env-file .env \
+              finanzapp-backend:latest
+
+            # Verificar que el contenedor está corriendo
+            sleep 3
+            docker ps | grep finanzapp-api
+
+            # Mostrar logs
+            echo "=== Últimos logs ==="
+            docker logs --tail 20 finanzapp-api
+
+      - name: Verify deployment
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            # Health check
+            for i in {1..10}; do
+              if curl -s http://localhost:8080/health > /dev/null 2>&1; then
+                echo "✅ Servicio respondiendo correctamente"
+                exit 0
+              fi
+              echo "Intento $i/10..."
+              sleep 2
+            done
+            echo "❌ El servicio no responde"
+            docker logs --tail 30 finanzapp-api
+            exit 1
