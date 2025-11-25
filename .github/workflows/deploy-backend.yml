@@ -3,7 +3,7 @@ name: Deploy Backend to AWS EC2
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       - "backend/aws-api/**"
   workflow_dispatch: # Permite ejecutar manualmente desde GitHub
@@ -25,7 +25,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd ~/finanzapp
-            git pull origin master
+            git pull origin main
             cd backend/aws-api
             docker build -t finanzapp-backend:latest .
             docker stop finanzapp-api || true
