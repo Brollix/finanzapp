@@ -32,41 +32,114 @@ router.post(
 	"/process",
 	upload.single("image"),
 	async (req: Request, res: Response): Promise<void> => {
+		const startTime = Date.now();
+		console.log("\n🔄 ===== NEW RECEIPT PROCESSING REQUEST =====");
+
 		try {
+			// Validate image file
 			if (!req.file) {
-				res.status(400).json({ error: "No image file provided" });
+				console.log("❌ No image file provided");
+				res.status(400).json({
+					error: "No image file provided",
+					errorType: "validation_error",
+				});
 				return;
 			}
 
+			// Log image details
+			console.log("📷 Image received:");
+			console.log("  - Size:", (req.file.size / 1024).toFixed(2), "KB");
+			console.log("  - Mimetype:", req.file.mimetype);
+			console.log("  - Original name:", req.file.originalname);
+
+			// Validate user ID
 			const userId = req.body.userId || req.headers["x-user-id"];
 			if (!userId) {
-				res.status(400).json({ error: "User ID is required" });
+				console.log("❌ No user ID provided");
+				res.status(400).json({
+					error: "User ID is required",
+					errorType: "validation_error",
+				});
+				return;
+			}
+			console.log("👤 User ID:", userId);
+
+			// Step 1: Extract text with Textract
+			console.log("\n📝 Step 1: Extracting text with Textract...");
+			const textractStart = Date.now();
+			let ocrText: string;
+			try {
+				ocrText = await extractTextFromImage(req.file.buffer);
+				console.log("✅ Textract successful");
+				console.log("  - Time taken:", Date.now() - textractStart, "ms");
+				console.log("  - Text length:", ocrText.length, "characters");
+				console.log("  - Preview:", ocrText.substring(0, 100) + "...");
+			} catch (error) {
+				console.error("❌ Textract failed:", error);
+				res.status(500).json({
+					error: "Failed to extract text from image",
+					errorType: "textract_error",
+					message: error instanceof Error ? error.message : "Unknown error",
+				});
 				return;
 			}
 
-			// Step 1: Extract text with Textract
-			console.log("Extracting text from image...");
-			const ocrText = await extractTextFromImage(req.file.buffer);
-			console.log("Text extracted successfully");
-
 			// Step 2: Format with Bedrock
-			console.log("Formatting receipt with Bedrock...");
-			const receiptData = await formatReceiptWithBedrock(ocrText);
-			console.log("Receipt formatted successfully");
+			console.log("\n🤖 Step 2: Formatting receipt with Bedrock...");
+			const bedrockStart = Date.now();
+			let receiptData;
+			try {
+				receiptData = await formatReceiptWithBedrock(ocrText);
+				console.log("✅ Bedrock successful");
+				console.log("  - Time taken:", Date.now() - bedrockStart, "ms");
+				console.log("  - Supermarket:", receiptData.supermarket);
+				console.log("  - Items count:", receiptData.items?.length || 0);
+				console.log("  - Total:", receiptData.total);
+			} catch (error) {
+				console.error("❌ Bedrock failed:", error);
+				res.status(500).json({
+					error: "Failed to format receipt data",
+					errorType: "bedrock_error",
+					message: error instanceof Error ? error.message : "Unknown error",
+				});
+				return;
+			}
 
 			// Step 3: Save to Supabase
-			console.log("Saving receipt to database...");
-			const savedReceipt = await saveReceipt(userId as string, receiptData);
-			console.log("Receipt saved successfully");
+			console.log("\n💾 Step 3: Saving receipt to database...");
+			const dbStart = Date.now();
+			let savedReceipt;
+			try {
+				savedReceipt = await saveReceipt(userId as string, receiptData);
+				console.log("✅ Database save successful");
+				console.log("  - Time taken:", Date.now() - dbStart, "ms");
+				console.log("  - Receipt ID:", savedReceipt.id);
+			} catch (error) {
+				console.error("❌ Database save failed:", error);
+				res.status(500).json({
+					error: "Failed to save receipt to database",
+					errorType: "database_error",
+					message: error instanceof Error ? error.message : "Unknown error",
+				});
+				return;
+			}
+
+			const totalTime = Date.now() - startTime;
+			console.log("\n✅ ===== RECEIPT PROCESSING COMPLETED =====");
+			console.log("⏱️  Total time:", totalTime, "ms");
+			console.log("===========================================\n");
 
 			res.status(200).json({
 				success: true,
 				data: savedReceipt,
 			});
 		} catch (error) {
-			console.error("Error processing receipt:", error);
+			console.error("\n❌ ===== UNEXPECTED ERROR =====");
+			console.error("Error:", error);
+			console.error("================================\n");
 			res.status(500).json({
 				error: "Failed to process receipt",
+				errorType: "unknown_error",
 				message: error instanceof Error ? error.message : "Unknown error",
 			});
 		}

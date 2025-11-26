@@ -128,19 +128,71 @@ export default function Capture() {
 
 			// Process receipt with backend
 			try {
+				console.log("📸 Iniciando procesamiento del ticket...");
+				console.log("Usuario ID:", user.id);
+				console.log("Imagen URI:", capturedImage);
+
 				await receiptApi.processReceipt(capturedImage, user.id);
+
+				console.log("✅ Ticket procesado exitosamente");
 				// Success - navigate back
 				router.back();
 			} catch (error) {
-				console.error("Error al procesar el ticket:", error);
-				Alert.alert(
-					"Error",
-					"No se pudo procesar el ticket. Inténtalo de nuevo."
-				);
+				console.error("❌ Error al procesar el ticket:", error);
+
+				// Extract more detailed error information
+				let errorMessage = "No se pudo procesar el ticket. Inténtalo de nuevo.";
+				let errorDetails = "";
+
+				if (error instanceof Error) {
+					errorDetails = error.message;
+					console.error("Error message:", error.message);
+					console.error("Error stack:", error.stack);
+
+					// Parse backend error response if available
+					if (error.message.includes("Receipt API error")) {
+						// Extract status code and error text
+						const statusMatch = error.message.match(/error (\d+):/);
+						const status = statusMatch ? statusMatch[1] : "unknown";
+
+						if (status === "400") {
+							errorMessage =
+								"Error en la solicitud. Verifica que la imagen sea válida.";
+						} else if (status === "500") {
+							// Try to extract specific error type
+							if (error.message.includes("Textract")) {
+								errorMessage =
+									"Error al extraer texto de la imagen. Intenta con mejor iluminación.";
+							} else if (error.message.includes("Bedrock")) {
+								errorMessage =
+									"Error al procesar el ticket. Intenta nuevamente.";
+							} else if (error.message.includes("database")) {
+								errorMessage =
+									"Error al guardar el ticket. Verifica tu conexión.";
+							} else {
+								errorMessage = "Error en el servidor. Intenta nuevamente.";
+							}
+						} else if (
+							status === "unknown" ||
+							error.message.includes("fetch")
+						) {
+							errorMessage =
+								"No se pudo conectar al servidor. Verifica tu conexión a internet.";
+						}
+					}
+				}
+
+				console.error("📋 Detalles del error:", errorDetails);
+
+				Alert.alert("Error al procesar ticket", errorMessage, [{ text: "OK" }]);
 				setLoading(false);
 			}
 		} catch (error) {
-			console.error("Error general:", error);
+			console.error("❌ Error general:", error);
+			Alert.alert(
+				"Error",
+				"Ocurrió un error inesperado. Por favor, intenta nuevamente."
+			);
 			setLoading(false);
 		}
 	};

@@ -48,10 +48,10 @@ export const TopProductsModal = ({
 					size={20}
 					color={
 						index === 0
-							? "#FFD700" // Gold
+							? theme.colors.gold
 							: index === 1
-							? "#C0C0C0" // Silver
-							: "#CD7F32" // Bronze
+							? theme.colors.silver
+							: theme.colors.bronze
 					}
 				/>
 			)}
@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
 		height: "70%",
 		padding: theme.spacing.lg,
 		elevation: 5,
-		shadowColor: "#000",
+		shadowColor: theme.colors.shadow,
 		shadowOffset: { width: 0, height: 2 },
 		shadowOpacity: 0.25,
 		shadowRadius: 3.84,

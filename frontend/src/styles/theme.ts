@@ -14,8 +14,8 @@ export const theme = {
 
 		// Texto
 		text: "rgb(255, 255, 255)",
-    textSecondary: "rgba(255, 255, 255, 0.7)",
-    textTertiary: "rgba(255, 40, 255, 0.7)",
+		textSecondary: "rgba(255, 255, 255, 0.7)",
+		textTertiary: "rgba(255, 40, 255, 0.7)",
 		onPrimary: "rgb(0, 0, 0)",
 		onSecondary: "rgb(0, 0, 0)",
 		onBackground: "rgb(255, 255, 255)",
@@ -31,6 +31,14 @@ export const theme = {
 		// Estados
 		disabled: "rgba(255, 255, 255, 0.38)",
 		backdrop: "rgba(0, 0, 0, 0.5)",
+
+		// Medallas/Trofeos
+		gold: "#FFD700",
+		silver: "#C0C0C0",
+		bronze: "#CD7F32",
+
+		// Sombras
+		shadow: "#000",
 	},
 
 	font: {
