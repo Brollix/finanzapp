@@ -3,10 +3,8 @@ import {
 	View,
 	Text,
 	Pressable,
-	Modal,
 	SafeAreaView,
 	Alert,
-	ActivityIndicator,
 	FlatList,
 	RefreshControl,
 	StyleSheet,
@@ -14,8 +12,6 @@ import {
 import { useRouter, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import Menu from "../src/components/Menu";
-import { Button } from "../src/components/ui/Button";
-import { AnimatedCard } from "../src/components/ui/AnimatedCard";
 import { DeleteConfirmationModal } from "../src/components/modals/DeleteConfirmationModal";
 import { TicketActionModal } from "../src/components/modals/TicketActionModal";
 import { supabase } from "../src/lib/supabase";
@@ -26,6 +22,9 @@ import { theme } from "../src/styles/theme";
 
 import { receiptApi } from "../src/services/receiptApi";
 import { Receipt } from "../src/types/receipt.types";
+import { FabModal } from "../src/components/modals/FabModal";
+import { TicketListItem } from "../src/components/dashboard/TicketListItem";
+import { LoadingModal } from "../src/components/modals/LoadingModal";
 
 export default function HomeScreen() {
 	const router = useRouter();
@@ -164,20 +163,7 @@ export default function HomeScreen() {
 							<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
 						}
 						renderItem={({ item }) => (
-							<AnimatedCard
-								style={[core.card, { marginBottom: theme.spacing.md }]}
-								onPress={() =>
-									router.push({
-										pathname: "/ticket",
-										params: { data: JSON.stringify(item) },
-									})
-								}
-								onLongPress={() => handleLongPress(item.id)}
-							>
-								<Text style={core.text}>{item.supermarket}</Text>
-								<Text style={core.h4}>{item.datetime}</Text>
-								<Text style={core.h2}>${item.total.toFixed(2)}</Text>
-							</AnimatedCard>
+							<TicketListItem item={item} onLongPress={handleLongPress} />
 						)}
 					/>
 				</View>
@@ -191,45 +177,16 @@ export default function HomeScreen() {
 				</Pressable>
 
 				{/* FAB Modal */}
-				<Modal
-					transparent
+				<FabModal
 					visible={fabModalVisible}
-					animationType="fade"
-					onRequestClose={() => setFabModalVisible(false)}
-				>
-					<Pressable
-						style={core.modalBackdrop}
-						onPressOut={() => setFabModalVisible(false)}
-					>
-						<View style={core.modalContainer}>
-							<Text style={styles.fabModalTitle}>Agregar Registro</Text>
-							<Button
-								title="Escanear Ticket"
-								onPress={handleScanTicket}
-								fullWidth
-								style={styles.fabModalButton}
-								leftIcon={<Ionicons name="camera-outline" />}
-							/>
-							<Button
-								title="Agregar Manualmente"
-								onPress={handleAddManually}
-								fullWidth
-								variant="secondary"
-								style={styles.fabModalButton}
-								leftIcon={<Ionicons name="create-outline" />}
-							/>
-						</View>
-					</Pressable>
-				</Modal>
+					onClose={() => setFabModalVisible(false)}
+					onScan={handleScanTicket}
+					onManual={handleAddManually}
+				/>
 			</View>
 
 			{/* Loading Spinner Modal */}
-			<Modal transparent visible={loading} animationType="fade">
-				<View style={styles.loadingModalContainer}>
-					<ActivityIndicator size="large" color={theme.colors.primary} />
-					<Text style={styles.loadingModalText}>Cargando tickets...</Text>
-				</View>
-			</Modal>
+			<LoadingModal visible={loading} text="Cargando tickets..." />
 
 			{/* Delete Confirmation Modal */}
 			<DeleteConfirmationModal
@@ -283,28 +240,6 @@ const styles = StyleSheet.create({
 	},
 	homeCardContainer: {
 		flex: 1,
-	},
-	fabModalTitle: {
-		fontSize: theme.font.size.h3,
-		fontFamily: theme.font.family.bold,
-		color: theme.colors.text,
-		marginBottom: theme.spacing.lg,
-		textAlign: "center",
-	},
-	fabModalButton: {
-		marginTop: theme.spacing.sm,
-	},
-	loadingModalContainer: {
-		flex: 1,
-		justifyContent: "center",
-		alignItems: "center",
-		backgroundColor: theme.colors.backdrop,
-	},
-	loadingModalText: {
-		marginTop: theme.spacing.sm,
-		color: theme.colors.text,
-		fontFamily: theme.font.family.regular,
-		fontSize: theme.font.size.md,
 	},
 	fabCentered: {
 		position: "absolute",

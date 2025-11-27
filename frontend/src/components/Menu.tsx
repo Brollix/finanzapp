@@ -72,7 +72,7 @@ export default function Menu({ isVisible, onClose }: MenuProps) {
 			icon: "person",
 			onPress: () => {
 				onClose();
-				//router.push("/account");
+				router.push("/account");
 			},
 		},
 		{
