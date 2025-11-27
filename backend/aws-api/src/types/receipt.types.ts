@@ -5,6 +5,13 @@ export interface ReceiptItem {
 	price: number;
 	is_weight?: boolean; // True if item is sold by weight (kg, g)
 	product_id?: string; // ID from products table
+	discount?: number; // Discount amount for this item
+	promotion?: string; // Promotion description (e.g., "2x1", "50% 2da u.")
+}
+
+export interface Discount {
+	description: string;
+	amount: number;
 }
 
 export interface ReceiptData {
@@ -12,6 +19,8 @@ export interface ReceiptData {
 	datetime: string;
 	total: number;
 	items: ReceiptItem[];
+	discounts?: Discount[]; // List of all discounts found
+	total_saved?: number; // Total amount saved
 }
 
 export interface Receipt extends ReceiptData {

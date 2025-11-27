@@ -95,6 +95,15 @@ export async function saveReceipt(
 			});
 		}
 
+		// Calculate total saved from the discounts array
+		let totalSaved = 0;
+		if (receiptData.discounts && Array.isArray(receiptData.discounts)) {
+			totalSaved = receiptData.discounts.reduce(
+				(sum, d) => sum + (d.amount || 0),
+				0
+			);
+		}
+
 		const newReceipt = {
 			user_id: userId,
 			supermarket: receiptData.supermarket,
@@ -102,6 +111,8 @@ export async function saveReceipt(
 			total: receiptData.total,
 			items: receiptData.items,
 			image_url: imageUrl,
+			discounts: receiptData.discounts || [],
+			total_saved: totalSaved,
 		};
 
 		const { data, error } = await supabase
@@ -174,12 +185,23 @@ export async function updateReceipt(
 			});
 		}
 
+		// Calculate total saved from the discounts array
+		let totalSaved = 0;
+		if (receiptData.discounts && Array.isArray(receiptData.discounts)) {
+			totalSaved = receiptData.discounts.reduce(
+				(sum, d) => sum + (d.amount || 0),
+				0
+			);
+		}
+
 		// 3. Update the receipt
 		const updatedReceipt = {
 			supermarket: receiptData.supermarket,
 			datetime: receiptData.datetime,
 			total: receiptData.total,
 			items: receiptData.items,
+			discounts: receiptData.discounts || [],
+			total_saved: totalSaved,
 		};
 
 		const { data, error } = await supabase

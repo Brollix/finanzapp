@@ -57,6 +57,10 @@ The JSON object should have the following structure:
     - "is_weight": Boolean, true if sold by weight (optional).
     - "discount": The total discount amount for this item (float, optional, default 0).
     - "promotion": The promotion description (string, optional).
+- "discounts": A list of ALL discounts found in the receipt. Each object should have:
+    - "description": The text description of the discount (e.g., "2do al 50% Fideos", "Oferta").
+    - "amount": The absolute value of the discount amount (float).
+    - IMPORTANT: Just extract what is written. DO NOT calculate the total sum yourself.
 
 Here is the OCR text:
 ---
