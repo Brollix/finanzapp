@@ -26,18 +26,24 @@ For example, the text "5.850,00" must be converted to the number 5850.00 in the 
      - *Common Brands:* McCain, Paty, Bimbo, Tang, Coca Cola, La Serenisima, Arcor, Lucchetti, Matarazzo, Knorr, Hellmanns, Natura, Cocinero, Villavicencio, Villa del Sur, Brahma, Quilmes, Colgate, Dove, Plusbelle, Ala, Skip, Ayudin, Magistral.
      - If the brand is NOT clearly visible, leave it as null.
    - **Is Weight:** Set to true ONLY if the item is clearly sold by weight (e.g., "kg", "x kg", "peso", or quantity like 0.750).
-   - **Promotions & Discounts:**
-     - Look for discounts applied to specific items (e.g., "Oferta", "Desc.", "-$500").
-     - Look for quantity promotions like "2x1", "3x2", "50% 2da unidad", "70% 2da unidad".
-     - If a discount is found, calculate the TOTAL discount amount for that item line and put it in "discount".
-     - Put the description of the promotion in "promotion" (e.g., "2x1", "50% 2da u.").
+   - **Promotions & Discounts (CRITICAL):**
+     - **Look for separate discount lines:** Discounts often appear on the line BELOW the product. They may have negative prices (e.g., "-1.200,00") or text like "2do al 50%", "Desc.", "Oferta".
+     - **Link to Product:** You MUST associate these discount lines with the product immediately above them.
+     - **Calculation:**
+       - The "price" field of the item should be the GROSS price (before discount).
+       - The "discount" field should be the absolute value of the discount amount (e.g., if the line says "-1.200", discount is 1200).
+       - The "promotion" field should contain the description (e.g., "2do al 50%").
+     - **Example:**
+       - Line 1: "Fideos RINA ... 4.800,00"
+       - Line 2: "2do al 50% Fideos ... -1.200,00"
+       - Result: One item -> { product: "Fideos RINA", price: 4800, discount: 1200, promotion: "2do al 50%" }
 
 **EXAMPLES:**
 - Text: "MCCAIN PAPAS FRITAS 2.5KG" -> product: "Papas Fritas", brand: "McCain", is_weight: true
 - Text: "JABON LIQ ARIEL" -> product: "Jabon Liquido", brand: "Ariel"
 - Text: "TOMATE PERITA KG" -> product: "Tomate Perita", brand: null, is_weight: true
 - Text: "GALLETITAS OREO" + "GALLETITAS OREO" -> Group into one item with summed quantity and price.
-- Text: "SHAMPOO DOVE" + "50% 2DA UNIDAD" -> product: "Shampoo", brand: "Dove", promotion: "50% 2da u.", discount: 1500.00
+- Text: "SHAMPOO DOVE" + "50% 2DA UNIDAD (-1.500)" -> product: "Shampoo", brand: "Dove", promotion: "50% 2da u.", discount: 1500.00, price: 3000.00
 
 The JSON object should have the following structure:
 - "supermarket": The commercial name of the store ONLY (string).
