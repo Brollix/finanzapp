@@ -1,5 +1,5 @@
 ---
-description: Workflow para realizar un release: analizar cambios, versionar, taggear y pushear
+description: "Workflow para realizar un release: analizar cambios, versionar, taggear y pushear"
 ---
 
 1. Analizar los cambios pendientes (`git status`) y agruparlos en commits lógicos.
