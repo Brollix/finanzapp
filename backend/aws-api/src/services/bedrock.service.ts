@@ -26,12 +26,18 @@ For example, the text "5.850,00" must be converted to the number 5850.00 in the 
      - *Common Brands:* McCain, Paty, Bimbo, Tang, Coca Cola, La Serenisima, Arcor, Lucchetti, Matarazzo, Knorr, Hellmanns, Natura, Cocinero, Villavicencio, Villa del Sur, Brahma, Quilmes, Colgate, Dove, Plusbelle, Ala, Skip, Ayudin, Magistral.
      - If the brand is NOT clearly visible, leave it as null.
    - **Is Weight:** Set to true ONLY if the item is clearly sold by weight (e.g., "kg", "x kg", "peso", or quantity like 0.750).
+   - **Promotions & Discounts:**
+     - Look for discounts applied to specific items (e.g., "Oferta", "Desc.", "-$500").
+     - Look for quantity promotions like "2x1", "3x2", "50% 2da unidad", "70% 2da unidad".
+     - If a discount is found, calculate the TOTAL discount amount for that item line and put it in "discount".
+     - Put the description of the promotion in "promotion" (e.g., "2x1", "50% 2da u.").
 
 **EXAMPLES:**
 - Text: "MCCAIN PAPAS FRITAS 2.5KG" -> product: "Papas Fritas", brand: "McCain", is_weight: true
 - Text: "JABON LIQ ARIEL" -> product: "Jabon Liquido", brand: "Ariel"
 - Text: "TOMATE PERITA KG" -> product: "Tomate Perita", brand: null, is_weight: true
 - Text: "GALLETITAS OREO" + "GALLETITAS OREO" -> Group into one item with summed quantity and price.
+- Text: "SHAMPOO DOVE" + "50% 2DA UNIDAD" -> product: "Shampoo", brand: "Dove", promotion: "50% 2da u.", discount: 1500.00
 
 The JSON object should have the following structure:
 - "supermarket": The commercial name of the store ONLY (string).
@@ -43,6 +49,8 @@ The JSON object should have the following structure:
     - "quantity": The quantity of the item (float). If sold by weight, this is the weight in kg.
     - "price": The total price for that item line (float).
     - "is_weight": Boolean, true if sold by weight (optional).
+    - "discount": The total discount amount for this item (float, optional, default 0).
+    - "promotion": The promotion description (string, optional).
 
 Here is the OCR text:
 ---
@@ -117,5 +125,91 @@ Return ONLY the JSON object, without any additional text or explanations.`;
 				error instanceof Error ? error.message : "Unknown error"
 			}`
 		);
+	}
+}
+
+export async function generateEmbedding(text: string): Promise<number[]> {
+	try {
+		const payload = {
+			inputText: text,
+		};
+
+		const command = new InvokeModelCommand({
+			modelId: "amazon.titan-embed-text-v1",
+			contentType: "application/json",
+			accept: "application/json",
+			body: JSON.stringify(payload),
+		});
+
+		const response = await bedrockClient.send(command);
+
+		if (!response.body) {
+			throw new Error("No response body from Bedrock");
+		}
+
+		const responseBody = JSON.parse(new TextDecoder().decode(response.body));
+		return responseBody.embedding;
+	} catch (error) {
+		console.error("Bedrock embedding error:", error);
+		throw new Error(
+			`Failed to generate embedding: ${
+				error instanceof Error ? error.message : "Unknown error"
+			}`
+		);
+	}
+}
+
+export async function suggestCategory(productName: string): Promise<string> {
+	try {
+		const prompt = `You are a product categorization assistant for a finance app.
+Classify the following supermarket product into one of these categories:
+- Almacén (Pantry/Groceries)
+- Bebidas (Drinks)
+- Frescos (Fresh Food - Dairy, Meat, etc.)
+- Limpieza (Cleaning)
+- Perfumería (Personal Care)
+- Mascotas (Pets)
+- Otros (Others)
+
+Product: "${productName}"
+
+Return ONLY the category name, nothing else.`;
+
+		const payload = {
+			anthropic_version: "bedrock-2023-05-31",
+			max_tokens: 100,
+			temperature: 0,
+			messages: [
+				{
+					role: "user",
+					content: prompt,
+				},
+			],
+		};
+
+		const command = new InvokeModelCommand({
+			modelId: BEDROCK_MODEL_ID,
+			contentType: "application/json",
+			accept: "application/json",
+			body: JSON.stringify(payload),
+		});
+
+		const response = await bedrockClient.send(command);
+
+		if (!response.body) {
+			throw new Error("No response body from Bedrock");
+		}
+
+		const responseBody = JSON.parse(new TextDecoder().decode(response.body));
+		const category = responseBody.content?.[0]?.text?.trim();
+
+		if (!category) {
+			return "Otros";
+		}
+
+		return category;
+	} catch (error) {
+		console.error("Bedrock categorization error:", error);
+		return "Otros"; // Default fallback
 	}
 }

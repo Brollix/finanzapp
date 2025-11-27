@@ -1,5 +1,6 @@
 import { ReceiptData, Receipt, ReceiptItem } from "../types/receipt.types.js";
 import { supabase } from "../config/supabase.js";
+import { generateEmbedding, suggestCategory } from "./bedrock.service.js";
 
 async function getOrCreateProduct(item: ReceiptItem): Promise<string> {
 	let query = supabase.from("products").select("id").eq("name", item.product);
@@ -16,12 +17,44 @@ async function getOrCreateProduct(item: ReceiptItem): Promise<string> {
 		return existing.id;
 	}
 
+	// Product doesn't exist, let's categorize it
+	let category = "Otros";
+	let embedding: number[] | null = null;
+
+	try {
+		// 1. Generate embedding
+		embedding = await generateEmbedding(item.product);
+
+		// 2. Search for similar products to reuse category
+		const { data: similarProducts } = await supabase.rpc("match_products", {
+			query_embedding: embedding,
+			match_threshold: 0.85, // High similarity threshold
+			match_count: 1,
+		});
+
+		if (similarProducts && similarProducts.length > 0) {
+			category = similarProducts[0].category;
+			console.log(
+				`Matched product "${item.product}" with "${similarProducts[0].name}" (Category: ${category})`
+			);
+		} else {
+			// 3. If no match, ask Claude
+			category = await suggestCategory(item.product);
+			console.log(`Suggested category for "${item.product}": ${category}`);
+		}
+	} catch (error) {
+		console.error("Error in product categorization:", error);
+		// Fallback to default category if anything fails
+	}
+
 	const { data: newProduct, error } = await supabase
 		.from("products")
 		.insert({
 			name: item.product,
 			brand: item.brand || null,
 			is_weight: item.is_weight || false,
+			category: category,
+			embedding: embedding,
 		})
 		.select("id")
 		.single();
@@ -57,6 +90,8 @@ export async function saveReceipt(
 				quantity: item.quantity,
 				price: item.quantity ? item.price / item.quantity : 0, // Unit price
 				total: item.price,
+				discount: item.discount || 0,
+				promotion: item.promotion || null,
 			});
 		}
 
@@ -134,6 +169,8 @@ export async function updateReceipt(
 				quantity: item.quantity,
 				price: item.quantity ? item.price / item.quantity : 0, // Unit price
 				total: item.price,
+				discount: item.discount || 0,
+				promotion: item.promotion || null,
 			});
 		}
 
