@@ -33,8 +33,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 				} else {
 					setUser(null);
 				}
-			} catch (error) {
+			} catch (error: any) {
 				console.error("Error al obtener la sesión:", error);
+				// Si el refresh token es inválido, forzamos el cierre de sesión para limpiar el almacenamiento
+				if (
+					error?.message?.includes("Invalid Refresh Token") ||
+					error?.message?.includes("Refresh Token Not Found")
+				) {
+					console.warn(
+						"Refresh token inválido detectado. Cerrando sesión para limpiar estado."
+					);
+					await supabase.auth.signOut();
+				}
 				setUser(null);
 			} finally {
 				// Es crucial establecer loading en false aquí, para que la app

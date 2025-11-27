@@ -7,6 +7,7 @@ import {
 	Platform,
 	TouchableOpacity,
 	StyleSheet,
+	Alert,
 } from "react-native";
 import { core } from "../src/styles/core.styles";
 import { theme } from "../src/styles/theme";
@@ -33,9 +34,24 @@ function LoginForm() {
 			await signIn({ email, password });
 			router.replace("/");
 		} catch (error: any) {
-			console.error("Error al iniciar sesión:", error);
-			alert(
-				error.message || "Error al iniciar sesión. Verifica tus credenciales."
+			// Solo logueamos el error si NO es credenciales inválidas
+			if (!error.message?.includes("Invalid login credentials")) {
+				console.error("Error al iniciar sesión:", error);
+			}
+
+			Alert.alert(
+				"Error de inicio de sesión",
+				"No pudimos iniciar sesión. ¿Quieres crear una cuenta nueva?",
+				[
+					{
+						text: "Intentar de nuevo",
+						style: "cancel",
+					},
+					{
+						text: "Crear cuenta",
+						onPress: () => router.push("/register"),
+					},
+				]
 			);
 		} finally {
 			setLoading(false);

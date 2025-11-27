@@ -14,7 +14,7 @@ import { Input } from "../src/components/ui/Input";
 import { Button } from "../src/components/ui/Button";
 
 export default function ProfileSetupScreen() {
-	const { updateProfile } = useAuth();
+	const { updateProfile, user } = useAuth();
 	const [username, setUsername] = useState("");
 	const [loading, setLoading] = useState(false);
 	const router = useRouter();
@@ -27,7 +27,10 @@ export default function ProfileSetupScreen() {
 
 		setLoading(true);
 		try {
-			await updateProfile({ username: username.trim() });
+			await updateProfile({
+				username: username.trim(),
+				email: user?.email || "",
+			});
 			router.replace("/");
 		} catch (error: any) {
 			console.error("Error al guardar perfil:", error);
