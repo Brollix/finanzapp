@@ -1,0 +1,6 @@
+Always check if the changes justify a new version before committing and pushing.
+If a new version is needed:
+1. Update `version` in `package.json`.
+2. Create a commit "chore(release): bump version to X.Y.Z".
+3. Create a git tag "vX.Y.Z".
+4. Push commits and tags.
