@@ -4,8 +4,6 @@ description: Workflow para realizar un release: analizar cambios, versionar, tag
 
 # Workflow: Release
 
-**Description:** Workflow para realizar un release: analizar cambios, versionar, taggear y pushear
-
 1. Analizar los cambios pendientes (`git status`) y agruparlos en commits lógicos.
 2. Revisar la versión actual en `package.json`.
 3. Determinar si es necesario un cambio de versión (major, minor, o patch) basado en los cambios realizados.
