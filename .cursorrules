@@ -1,6 +1,25 @@
 Always check if the changes justify a new version before committing and pushing.
 If a new version is needed:
+
 1. Update `version` in `package.json`.
 2. Create a commit "chore(release): bump version to X.Y.Z".
 3. Create a git tag "vX.Y.Z".
 4. Push commits and tags.
+
+# Styling Rules
+
+- ALWAYS use the `theme` object from `src/styles/theme.ts` for colors, fonts, spacing, and border radius.
+- NEVER use hardcoded colors (hex, rgb, names) directly in components.
+- If a color is missing in the theme, add it to `src/styles/theme.ts` first.
+
+# Tech Stack & Architecture
+
+- **Frontend**: Expo (React Native), TypeScript.
+- **Backend**: AWS Lambda (Node.js) for OCR/AI processing.
+- **Database**: Supabase (PostgreSQL).
+  - **Extensions**: `pgvector` is ENABLED for vector similarity search.
+- **AI**: AWS Bedrock (Claude for OCR, Titan for Embeddings).
+
+# Database Rules
+
+- **Migrations**: ALWAYS use SQL migrations for schema changes. Never modify the database schema manually in the dashboard without creating a migration file.

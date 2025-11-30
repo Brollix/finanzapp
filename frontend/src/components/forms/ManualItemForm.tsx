@@ -24,6 +24,8 @@ export const ManualItemForm: React.FC<ManualItemFormProps> = ({
 	const [quantity, setQuantity] = useState(item?.quantity?.toString() || "");
 	const [price, setPrice] = useState(item?.price?.toString() || "");
 	const [isWeight, setIsWeight] = useState(item?.is_weight || false);
+	const [discount, setDiscount] = useState(item?.discount?.toString() || "");
+	const [promotion, setPromotion] = useState(item?.promotion || "");
 
 	// Update state when item changes
 	React.useEffect(() => {
@@ -33,12 +35,16 @@ export const ManualItemForm: React.FC<ManualItemFormProps> = ({
 			setQuantity(item.quantity.toString());
 			setPrice(item.price.toString());
 			setIsWeight(item.is_weight || false);
+			setDiscount(item.discount?.toString() || "");
+			setPromotion(item.promotion || "");
 		} else {
 			setProduct("");
 			setBrand("");
 			setQuantity("");
 			setPrice("");
 			setIsWeight(false);
+			setDiscount("");
+			setPromotion("");
 		}
 	}, [item, visible]);
 
@@ -62,6 +68,8 @@ export const ManualItemForm: React.FC<ManualItemFormProps> = ({
 			quantity: parseFloat(quantity),
 			price: parseFloat(price),
 			is_weight: isWeight,
+			discount: discount ? parseFloat(discount) : undefined,
+			promotion: promotion.trim() || undefined,
 		});
 
 		// Reset form
@@ -70,6 +78,8 @@ export const ManualItemForm: React.FC<ManualItemFormProps> = ({
 		setQuantity("");
 		setPrice("");
 		setIsWeight(false);
+		setDiscount("");
+		setPromotion("");
 	};
 
 	if (!visible) return null;
@@ -112,6 +122,23 @@ export const ManualItemForm: React.FC<ManualItemFormProps> = ({
 					onChangeText={setPrice}
 					placeholder="Ej: 150.50"
 					keyboardType="decimal-pad"
+					containerStyle={styles.inputContainer}
+				/>
+
+				<Input
+					label="Descuento (opcional)"
+					value={discount}
+					onChangeText={setDiscount}
+					placeholder="Ej: 500"
+					keyboardType="decimal-pad"
+					containerStyle={styles.inputContainer}
+				/>
+
+				<Input
+					label="Promoción (opcional)"
+					value={promotion}
+					onChangeText={setPromotion}
+					placeholder="Ej: 2x1"
 					containerStyle={styles.inputContainer}
 				/>
 

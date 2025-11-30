@@ -4,6 +4,8 @@ export interface ReceiptItem {
 	quantity: number;
 	price: number;
 	is_weight?: boolean;
+	discount?: number;
+	promotion?: string;
 }
 
 export interface ReceiptData {
@@ -11,6 +13,8 @@ export interface ReceiptData {
 	datetime: string;
 	total: number;
 	items: ReceiptItem[];
+	discounts?: { description: string; amount: number }[];
+	total_saved?: number;
 }
 
 export interface Receipt extends ReceiptData {

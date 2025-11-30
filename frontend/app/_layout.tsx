@@ -11,7 +11,12 @@ SplashScreen.preventAutoHideAsync().catch(() => {});
 import { AuthProvider } from "../src/features/auth/context/AuthContext";
 import { OcrProvider } from "../src/context/OcrContext";
 
+import * as Linking from "expo-linking";
+
 export default function RootLayout() {
+	const url = Linking.createURL("/auth/callback");
+	console.log("Deep Link URL:", url);
+
 	const [fontsLoaded] = useFonts({
 		"SpaceGrotesk-Regular": require("../src/assets/fonts/SpaceGrotesk-Regular.ttf"),
 		"SpaceGrotesk-Bold": require("../src/assets/fonts/SpaceGrotesk-Bold.ttf"),

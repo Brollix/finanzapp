@@ -40,12 +40,34 @@ const ReceiptItemRow = ({
 						{item.brand}
 					</Text>
 				)}
+				{item.promotion && (
+					<Text
+						style={{
+							color: theme.colors.success,
+							fontSize: theme.font.size.xs,
+							marginTop: 2,
+						}}
+						numberOfLines={1}
+					>
+						{item.promotion}
+					</Text>
+				)}
 			</View>
 			<View style={styles.itemMeta}>
 				<Text style={styles.quantity}>
 					{item.is_weight ? `${item.quantity} kg` : `x${item.quantity}`}
 				</Text>
 				<Text style={styles.price}>${item.price.toFixed(2)}</Text>
+				{item.discount && item.discount > 0 ? (
+					<Text
+						style={{
+							color: theme.colors.success,
+							fontSize: theme.font.size.xs,
+						}}
+					>
+						-${item.discount.toFixed(2)}
+					</Text>
+				) : null}
 			</View>
 		</View>
 	</TouchableOpacity>
@@ -124,12 +146,37 @@ export default function TicketScreen() {
 				showsVerticalScrollIndicator={false}
 			/>
 
-			<View style={styles.totalBar}>
-				<View>
-					<Text style={styles.totalLabel}>TOTAL</Text>
-					<Text style={styles.itemCount}>{receipt.items.length} items</Text>
+			{receipt.discounts && receipt.discounts.length > 0 && (
+				<View style={styles.discountsContainer}>
+					<Text style={styles.discountsHeader}>Descuentos Aplicados:</Text>
+					{receipt.discounts.map((discount, index) => (
+						<View key={index} style={styles.discountRow}>
+							<Text style={styles.discountDescription}>
+								{discount.description}
+							</Text>
+							<Text style={styles.discountAmount}>
+								-${discount.amount.toFixed(2)}
+							</Text>
+						</View>
+					))}
 				</View>
-				<Text style={styles.totalValue}>${receipt.total.toFixed(2)}</Text>
+			)}
+
+			<View style={styles.totalBar}>
+				<View style={styles.totalRow}>
+					<View>
+						<Text style={styles.totalLabel}>TOTAL</Text>
+						<Text style={styles.itemCount}>{receipt.items.length} items</Text>
+					</View>
+					<Text style={styles.totalValue}>${receipt.total.toFixed(2)}</Text>
+				</View>
+				{receipt.total_saved && receipt.total_saved > 0 && (
+					<View style={styles.savedContainer}>
+						<Text style={styles.savedText}>
+							(Ahorraste: ${receipt.total_saved.toFixed(2)})
+						</Text>
+					</View>
+				)}
 			</View>
 
 			<ProductDetailsModal
@@ -216,13 +263,15 @@ const styles = StyleSheet.create({
 		color: theme.colors.primary,
 	},
 	totalBar: {
-		flexDirection: "row",
-		justifyContent: "space-between",
-		alignItems: "center",
 		padding: theme.spacing.lg,
 		backgroundColor: theme.colors.backgroundVariant,
 		borderTopWidth: 1,
 		borderTopColor: theme.colors.surface,
+	},
+	totalRow: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		alignItems: "center",
 	},
 	totalLabel: {
 		fontSize: theme.font.size.sm,
@@ -238,5 +287,41 @@ const styles = StyleSheet.create({
 		fontSize: theme.font.size.h2,
 		fontFamily: theme.font.family.bold,
 		color: theme.colors.primary,
+	},
+	savedContainer: {
+		marginTop: theme.spacing.sm,
+		alignItems: "flex-end",
+	},
+	savedText: {
+		fontSize: theme.font.size.md,
+		color: theme.colors.success,
+		fontFamily: theme.font.family.bold,
+	},
+	discountsContainer: {
+		padding: theme.spacing.md,
+		backgroundColor: theme.colors.background,
+		borderTopWidth: 1,
+		borderTopColor: theme.colors.surface,
+	},
+	discountsHeader: {
+		fontSize: theme.font.size.sm,
+		color: theme.colors.textSecondary,
+		marginBottom: theme.spacing.sm,
+		fontFamily: theme.font.family.bold,
+	},
+	discountRow: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		marginBottom: 4,
+	},
+	discountDescription: {
+		fontSize: theme.font.size.sm,
+		color: theme.colors.text,
+		flex: 1,
+	},
+	discountAmount: {
+		fontSize: theme.font.size.sm,
+		color: theme.colors.success,
+		fontFamily: theme.font.family.bold,
 	},
 });

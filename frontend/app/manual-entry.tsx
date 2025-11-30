@@ -350,6 +350,28 @@ export default function ManualEntryScreen() {
 												: `x${item.quantity}`}{" "}
 											• ${item.price.toFixed(2)}
 										</Text>
+										{item.promotion && (
+											<Text
+												style={{
+													color: theme.colors.success,
+													fontSize: theme.font.size.sm,
+													marginTop: 2,
+												}}
+											>
+												{item.promotion}
+											</Text>
+										)}
+										{item.discount ? (
+											<Text
+												style={{
+													color: theme.colors.success,
+													fontSize: theme.font.size.sm,
+													marginTop: 2,
+												}}
+											>
+												Descuento: -${item.discount.toFixed(2)}
+											</Text>
+										) : null}
 									</View>
 									<View style={styles.itemActions}>
 										<TouchableOpacity

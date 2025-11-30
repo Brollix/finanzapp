@@ -27,6 +27,7 @@ import { HighlightCard } from "../src/components/dashboard/HighlightCard";
 import { SupermarketCard } from "../src/components/dashboard/SupermarketCard";
 import { DashboardActionCard } from "../src/components/dashboard/DashboardActionCard";
 import { FabModal } from "../src/components/modals/FabModal";
+import { SavingsSummaryCard } from "../src/components/dashboard/SavingsSummaryCard";
 
 export default function HomeScreen() {
 	const router = useRouter();
@@ -118,6 +119,41 @@ export default function HomeScreen() {
 						</View>
 					) : (
 						<>
+							{/* Savings Summary Card */}
+							{(() => {
+								const totalSaved = receipts.reduce(
+									(acc, r) => acc + (r.total_saved || 0),
+									0
+								);
+
+								// Calculate best store
+								const storeSavings: Record<string, number> = {};
+								receipts.forEach((r) => {
+									if (r.total_saved && r.total_saved > 0) {
+										const store = r.supermarket || "Desconocido";
+										storeSavings[store] =
+											(storeSavings[store] || 0) + r.total_saved;
+									}
+								});
+
+								let bestStore = "";
+								let maxSavings = 0;
+								Object.entries(storeSavings).forEach(([store, saved]) => {
+									if (saved > maxSavings) {
+										maxSavings = saved;
+										bestStore = store;
+									}
+								});
+
+								return (
+									<SavingsSummaryCard
+										totalSaved={totalSaved}
+										bestStore={bestStore}
+										onPress={() => router.push("/discounts")}
+									/>
+								);
+							})()}
+
 							{/* Statistics Cards */}
 							<StatsGrid statistics={statistics} />
 

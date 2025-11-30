@@ -33,7 +33,7 @@ finanzapp/
 ```bash
 cd frontend
 npm install
-npx expostart
+npx expo start
 ```
 
 ### Backend (Local)

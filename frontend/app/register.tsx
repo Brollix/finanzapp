@@ -7,7 +7,9 @@ import {
 	Platform,
 	TouchableOpacity,
 	StyleSheet,
+	Alert,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { core } from "../src/styles/core.styles";
 import { theme } from "../src/styles/theme";
 import { useAuth } from "../src/features/auth/context/AuthContext";
@@ -18,13 +20,35 @@ function RegisterForm() {
 	const { signUp } = useAuth();
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
+	const [confirmPassword, setConfirmPassword] = useState("");
 	const [loading, setLoading] = useState(false);
+	const [isPasswordFocused, setIsPasswordFocused] = useState(false);
+	const [isConfirmPasswordFocused, setIsConfirmPasswordFocused] =
+		useState(false);
 
 	const router = useRouter();
 
+	const shouldShowValidation =
+		password.length > 0 ||
+		confirmPassword.length > 0 ||
+		isPasswordFocused ||
+		isConfirmPasswordFocused;
+
+	const passwordsMatch = password === confirmPassword;
+
 	const handleRegister = async () => {
-		if (!email || !password) {
-			alert("Por favor ingresa tu correo y contraseña");
+		if (!email || !password || !confirmPassword) {
+			Alert.alert("Error", "Por favor completa todos los campos");
+			return;
+		}
+
+		if (password !== confirmPassword) {
+			Alert.alert("Error", "Las contraseñas no coinciden");
+			return;
+		}
+
+		if (password.length < 6) {
+			Alert.alert("Error", "La contraseña debe tener al menos 6 caracteres");
 			return;
 		}
 
@@ -56,7 +80,50 @@ function RegisterForm() {
 				placeholder="••••••••"
 				value={password}
 				onChangeText={setPassword}
+				onFocus={() => setIsPasswordFocused(true)}
+				onBlur={() => setIsPasswordFocused(false)}
 				secureTextEntry
+				borderColor={
+					shouldShowValidation
+						? passwordsMatch
+							? theme.colors.success
+							: theme.colors.error
+						: undefined
+				}
+				rightIcon={
+					shouldShowValidation ? (
+						<Ionicons
+							name={passwordsMatch ? "checkmark-circle" : "alert-circle"}
+							size={20}
+							color={passwordsMatch ? theme.colors.success : theme.colors.error}
+						/>
+					) : undefined
+				}
+			/>
+			<Input
+				label="Confirmar Contraseña"
+				placeholder="Repite la contraseña"
+				value={confirmPassword}
+				onChangeText={setConfirmPassword}
+				onFocus={() => setIsConfirmPasswordFocused(true)}
+				onBlur={() => setIsConfirmPasswordFocused(false)}
+				secureTextEntry
+				borderColor={
+					shouldShowValidation
+						? passwordsMatch
+							? theme.colors.success
+							: theme.colors.error
+						: undefined
+				}
+				rightIcon={
+					shouldShowValidation ? (
+						<Ionicons
+							name={passwordsMatch ? "checkmark-circle" : "alert-circle"}
+							size={20}
+							color={passwordsMatch ? theme.colors.success : theme.colors.error}
+						/>
+					) : undefined
+				}
 			/>
 			<Button
 				title={loading ? "Creando cuenta..." : "Registrarse"}
