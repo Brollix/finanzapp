@@ -11,6 +11,7 @@ import { styles } from "../../styles/index.styles";
 import { theme } from "../../styles/theme";
 
 import { ReceiptItem } from "../../types/receipt.types";
+import { formatCurrency } from "../../utils/formatCurrency";
 
 interface ProductDetailsModalProps {
 	visible: boolean;
@@ -53,7 +54,7 @@ export const ProductDetailsModal = ({
 
 							<View style={localStyles.productInfo}>
 								<Text style={localStyles.productName}>{item.product}</Text>
-								{item.brand && (
+								{!!item.brand && (
 									<Text style={localStyles.brandName}>{item.brand}</Text>
 								)}
 							</View>
@@ -69,7 +70,7 @@ export const ProductDetailsModal = ({
 								<View style={localStyles.detailRow}>
 									<Text style={localStyles.label}>Precio Total:</Text>
 									<Text style={localStyles.value}>
-										${item.price.toFixed(2)}
+										${formatCurrency(item.price)}
 									</Text>
 								</View>
 
@@ -78,7 +79,7 @@ export const ProductDetailsModal = ({
 										Precio por {isWeight ? "kilo" : "unidad"}:
 									</Text>
 									<Text style={localStyles.highlightValue}>
-										${unitPrice.toFixed(2)}
+										${formatCurrency(unitPrice)}
 									</Text>
 								</View>
 							</View>

@@ -96,24 +96,64 @@ export async function saveReceipt(
 			});
 		}
 
-		// Calculate total saved from the discounts array
-		let totalSaved = 0;
-		if (receiptData.discounts && Array.isArray(receiptData.discounts)) {
-			totalSaved = receiptData.discounts.reduce(
-				(sum, d) => sum + (d.amount || 0),
-				0
+		// 2. VALIDATE AND CORRECT TOTALS FROM ITEMS
+		// Calculate subtotal from items (sum of all item prices)
+		const calculatedSubtotal = receiptData.items.reduce(
+			(sum, item) => sum + (item.price || 0),
+			0
+		);
+
+		// Calculate total_saved from items (sum of all item discounts)
+		const calculatedTotalSaved = receiptData.items.reduce(
+			(sum, item) => sum + (item.discount || 0),
+			0
+		);
+
+		// Calculate correct total (subtotal - discounts)
+		const calculatedTotal = calculatedSubtotal - calculatedTotalSaved;
+
+		// Check if AI-provided total matches our calculation
+		const totalDifference = Math.abs(receiptData.total - calculatedTotal);
+		const TOLERANCE = 0.01; // Allow 1 cent difference due to rounding
+
+		if (totalDifference > TOLERANCE) {
+			logger.warn(
+				`Total mismatch! AI: ${receiptData.total}, Calculated: ${calculatedTotal}. Using calculated.`
 			);
 		}
+
+		// Use calculated values (they are always correct based on items)
+		const finalTotal = calculatedTotal;
+		const finalSubtotal = calculatedSubtotal;
+		const finalTotalSaved = calculatedTotalSaved;
+
+		// Build discounts array from items if not provided or empty
+		let finalDiscounts = receiptData.discounts || [];
+		if (finalDiscounts.length === 0 && calculatedTotalSaved > 0) {
+			finalDiscounts = receiptData.items
+				.filter((item) => (item.discount || 0) > 0)
+				.map((item) => ({
+					description: item.promotion || "Descuento",
+					amount: item.discount || 0,
+				}));
+		}
+
+		logger.info(
+			`Receipt totals - Subtotal: ${finalSubtotal.toFixed(
+				2
+			)}, Total: ${finalTotal.toFixed(2)}, Saved: ${finalTotalSaved.toFixed(2)}`
+		);
 
 		const newReceipt = {
 			user_id: userId,
 			supermarket: receiptData.supermarket,
 			datetime: receiptData.datetime,
-			total: receiptData.total,
+			total: finalTotal,
+			subtotal: finalSubtotal,
 			items: receiptData.items,
 			image_url: imageUrl,
-			discounts: receiptData.discounts || [],
-			total_saved: totalSaved,
+			discounts: finalDiscounts,
+			total_saved: finalTotalSaved,
 		};
 
 		const { data, error } = await supabase
@@ -186,23 +226,63 @@ export async function updateReceipt(
 			});
 		}
 
-		// Calculate total saved from the discounts array
-		let totalSaved = 0;
-		if (receiptData.discounts && Array.isArray(receiptData.discounts)) {
-			totalSaved = receiptData.discounts.reduce(
-				(sum, d) => sum + (d.amount || 0),
-				0
+		// 3. VALIDATE AND CORRECT TOTALS FROM ITEMS
+		// Calculate subtotal from items (sum of all item prices)
+		const calculatedSubtotal = receiptData.items.reduce(
+			(sum, item) => sum + (item.price || 0),
+			0
+		);
+
+		// Calculate total_saved from items (sum of all item discounts)
+		const calculatedTotalSaved = receiptData.items.reduce(
+			(sum, item) => sum + (item.discount || 0),
+			0
+		);
+
+		// Calculate correct total (subtotal - discounts)
+		const calculatedTotal = calculatedSubtotal - calculatedTotalSaved;
+
+		// Check if provided total matches our calculation
+		const totalDifference = Math.abs(receiptData.total - calculatedTotal);
+		const TOLERANCE = 0.01; // Allow 1 cent difference due to rounding
+
+		if (totalDifference > TOLERANCE) {
+			logger.warn(
+				`Total mismatch! Provided: ${receiptData.total}, Calculated: ${calculatedTotal}. Using calculated.`
 			);
 		}
 
-		// 3. Update the receipt
+		// Use calculated values (they are always correct based on items)
+		const finalTotal = calculatedTotal;
+		const finalSubtotal = calculatedSubtotal;
+		const finalTotalSaved = calculatedTotalSaved;
+
+		// Build discounts array from items if not provided or empty
+		let finalDiscounts = receiptData.discounts || [];
+		if (finalDiscounts.length === 0 && calculatedTotalSaved > 0) {
+			finalDiscounts = receiptData.items
+				.filter((item) => (item.discount || 0) > 0)
+				.map((item) => ({
+					description: item.promotion || "Descuento",
+					amount: item.discount || 0,
+				}));
+		}
+
+		logger.info(
+			`Receipt totals - Subtotal: ${finalSubtotal.toFixed(
+				2
+			)}, Total: ${finalTotal.toFixed(2)}, Saved: ${finalTotalSaved.toFixed(2)}`
+		);
+
+		// 4. Update the receipt
 		const updatedReceipt = {
 			supermarket: receiptData.supermarket,
 			datetime: receiptData.datetime,
-			total: receiptData.total,
+			total: finalTotal,
+			subtotal: finalSubtotal,
 			items: receiptData.items,
-			discounts: receiptData.discounts || [],
-			total_saved: totalSaved,
+			discounts: finalDiscounts,
+			total_saved: finalTotalSaved,
 		};
 
 		const { data, error } = await supabase

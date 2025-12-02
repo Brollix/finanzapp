@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { AnimatedCard } from "../ui/AnimatedCard";
 import { theme } from "../../styles/theme";
 import { Statistics } from "../../types/receipt.types";
+import { formatCurrency } from "../../utils/formatCurrency";
 
 interface StatsGridProps {
 	statistics: Statistics;
@@ -34,7 +35,7 @@ export const StatsGrid: React.FC<StatsGridProps> = ({ statistics }) => {
 						style={styles.statIcon}
 					/>
 					<Text style={styles.statValue}>
-						${statistics.totalSpent.toFixed(2)}
+						${formatCurrency(statistics.totalSpent)}
 					</Text>
 					<Text style={styles.statLabel}>Total Gastado</Text>
 				</AnimatedCard>
@@ -49,7 +50,7 @@ export const StatsGrid: React.FC<StatsGridProps> = ({ statistics }) => {
 						style={styles.statIcon}
 					/>
 					<Text style={styles.statValue}>
-						${statistics.averageTicket.toFixed(2)}
+						${formatCurrency(statistics.averageTicket)}
 					</Text>
 					<Text style={styles.statLabel}>Promedio</Text>
 				</AnimatedCard>

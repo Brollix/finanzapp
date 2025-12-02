@@ -5,12 +5,12 @@ import {
 	ScrollView,
 	TouchableOpacity,
 	Alert,
-	SafeAreaView,
 	StyleSheet,
 	KeyboardAvoidingView,
 	Platform,
 	FlatList,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -23,6 +23,7 @@ import { receiptApi } from "../src/services/receiptApi";
 import { authService } from "../src/features/auth/services/authService";
 import { SuccessModal } from "../src/components/modals";
 import { ManualItemForm } from "../src/components/forms/ManualItemForm";
+import { formatCurrency } from "../src/utils/formatCurrency";
 
 export default function ManualEntryScreen() {
 	const router = useRouter();
@@ -173,6 +174,10 @@ export default function ManualEntryScreen() {
 		return items.reduce((sum, item) => sum + item.price, 0);
 	};
 
+	const calculateSavings = () => {
+		return items.reduce((sum, item) => sum + (item.discount || 0), 0);
+	};
+
 	const handleSaveReceipt = async () => {
 		if (!supermarket.trim()) {
 			Alert.alert("Error", "El nombre del supermercado es requerido");
@@ -191,11 +196,23 @@ export default function ManualEntryScreen() {
 				return;
 			}
 
+			const totalSaved = calculateSavings();
+
+			// Generate discounts array from items with discounts
+			const itemDiscounts = items
+				.filter((item) => item.discount && item.discount > 0)
+				.map((item) => ({
+					description: `Descuento en ${item.product}`,
+					amount: item.discount || 0,
+				}));
+
 			const receiptData: ReceiptData = {
 				supermarket: supermarket.trim(),
 				datetime,
 				total: calculateTotal(),
 				items,
+				total_saved: totalSaved,
+				discounts: itemDiscounts,
 			};
 
 			// Check if we're editing (receiptId exists) or creating new
@@ -341,16 +358,16 @@ export default function ManualEntryScreen() {
 								<View key={index} style={styles.itemCard}>
 									<View style={styles.itemInfo}>
 										<Text style={styles.itemProduct}>{item.product}</Text>
-										{item.brand && (
+										{!!item.brand && (
 											<Text style={styles.itemBrand}>{item.brand}</Text>
 										)}
 										<Text style={styles.itemMeta}>
 											{item.is_weight
 												? `${item.quantity} kg`
 												: `x${item.quantity}`}{" "}
-											• ${item.price.toFixed(2)}
+											• ${formatCurrency(item.price)}
 										</Text>
-										{item.promotion && (
+										{!!item.promotion && (
 											<Text
 												style={{
 													color: theme.colors.success,
@@ -369,7 +386,7 @@ export default function ManualEntryScreen() {
 													marginTop: 2,
 												}}
 											>
-												Descuento: -${item.discount.toFixed(2)}
+												Descuento: -${formatCurrency(item.discount)}
 											</Text>
 										) : null}
 									</View>
@@ -403,7 +420,7 @@ export default function ManualEntryScreen() {
 					<View style={styles.totalSection}>
 						<Text style={styles.totalLabel}>TOTAL</Text>
 						<Text style={styles.totalValue}>
-							${calculateTotal().toFixed(2)}
+							${formatCurrency(calculateTotal())}
 						</Text>
 					</View>
 				</ScrollView>

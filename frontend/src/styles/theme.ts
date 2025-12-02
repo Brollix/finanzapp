@@ -10,7 +10,7 @@ export const theme = {
 		// Superficies
 		surface: "rgb(32, 172, 86)",
 		background: "rgb(19, 19, 19)",
-		backgroundVariant: "rgb(27, 27, 27)",
+		backgroundVariant: "rgba(39, 39, 39, 1)",
 
 		// Texto
 		text: "rgb(255, 255, 255)",

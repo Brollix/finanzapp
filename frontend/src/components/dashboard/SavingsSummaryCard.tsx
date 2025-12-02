@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { theme } from "../../styles/theme";
 import { core } from "../../styles/core.styles";
+import { formatCurrency } from "../../utils/formatCurrency";
 
 interface SavingsSummaryCardProps {
 	totalSaved: number;
@@ -31,7 +32,7 @@ export const SavingsSummaryCard: React.FC<SavingsSummaryCardProps> = ({
 				</View>
 				<View style={styles.infoContainer}>
 					<Text style={styles.label}>Total Ahorrado</Text>
-					<Text style={styles.amount}>${totalSaved.toFixed(2)}</Text>
+					<Text style={styles.amount}>${formatCurrency(totalSaved)}</Text>
 					{bestStore && (
 						<Text style={styles.bestStore}>
 							Mejor en: <Text style={styles.storeName}>{bestStore}</Text>
@@ -50,12 +51,12 @@ export const SavingsSummaryCard: React.FC<SavingsSummaryCardProps> = ({
 
 const styles = StyleSheet.create({
 	container: {
-		backgroundColor: theme.colors.background,
+		backgroundColor: theme.colors.backgroundVariant,
 		borderRadius: theme.borderRadius.lg,
 		padding: theme.spacing.md,
 		marginBottom: theme.spacing.md,
 		elevation: 2,
-		shadowColor: theme.colors.shadow,
+		shadowColor: theme.colors.background,
 		shadowOffset: { width: 0, height: 2 },
 		shadowOpacity: 0.1,
 		shadowRadius: 4,
@@ -70,7 +71,7 @@ const styles = StyleSheet.create({
 		width: 48,
 		height: 48,
 		borderRadius: 24,
-		backgroundColor: theme.colors.background, // success with opacity
+		backgroundColor: theme.colors.backgroundVariant, // success with opacity
 		justifyContent: "center",
 		alignItems: "center",
 		marginRight: theme.spacing.md,

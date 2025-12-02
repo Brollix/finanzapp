@@ -71,19 +71,19 @@ export const core = StyleSheet.create({
 
 	// Card
 	card: {
-		backgroundColor: theme.colors.surface,
+		backgroundColor: theme.colors.backgroundVariant,
 		borderRadius: theme.borderRadius.lg,
 		padding: theme.spacing.lg,
 		marginVertical: theme.spacing.sm,
 		elevation: 1,
-		shadowColor: "#000",
+		shadowColor: theme.colors.background,
 		shadowOffset: { width: 0, height: 1 },
 		shadowOpacity: 0.05,
 		shadowRadius: 2,
 	},
 	cardElevated: {
 		elevation: 3,
-		shadowColor: "#000",
+		shadowColor: theme.colors.background,
 		shadowOffset: { width: 0, height: 2 },
 		shadowOpacity: 0.1,
 		shadowRadius: 4,

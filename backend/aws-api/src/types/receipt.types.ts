@@ -17,7 +17,8 @@ export interface Discount {
 export interface ReceiptData {
 	supermarket: string;
 	datetime: string;
-	total: number;
+	total: number; // Final price paid (with discounts applied)
+	subtotal?: number; // Price before discounts
 	items: ReceiptItem[];
 	discounts?: Discount[]; // List of all discounts found
 	total_saved?: number; // Total amount saved

@@ -26,6 +26,7 @@ const ReceiptDataSchema = z.object({
 	supermarket: z.string(),
 	datetime: z.string(),
 	total: z.number().optional(), // Can be calculated
+	subtotal: z.number().optional(), // Price before discounts
 	items: z.array(ReceiptItemSchema).min(1),
 	discounts: z.array(z.any()).optional(),
 	total_saved: z.number().optional(),
@@ -174,10 +175,15 @@ export const createManualReceipt = async (
 
 		// Calculate total if not provided
 		if (validatedData.total === undefined) {
-			validatedData.total = validatedData.items.reduce(
+			const subtotal = validatedData.items.reduce(
 				(sum, item) => sum + item.price,
 				0
 			);
+			const savings = validatedData.items.reduce(
+				(sum, item) => sum + (item.discount || 0),
+				0
+			);
+			validatedData.total = subtotal - savings;
 		}
 
 		// Save to database
@@ -223,10 +229,15 @@ export const updateReceipt = async (
 
 		// Calculate total if not provided
 		if (validatedData.total === undefined) {
-			validatedData.total = validatedData.items.reduce(
+			const subtotal = validatedData.items.reduce(
 				(sum, item) => sum + item.price,
 				0
 			);
+			const savings = validatedData.items.reduce(
+				(sum, item) => sum + (item.discount || 0),
+				0
+			);
+			validatedData.total = subtotal - savings;
 		}
 
 		// Update in database

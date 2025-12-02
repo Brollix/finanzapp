@@ -3,11 +3,11 @@ import {
 	View,
 	Text,
 	StyleSheet,
-	SafeAreaView,
 	FlatList,
 	Pressable,
 	ActivityIndicator,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { theme } from "../src/styles/theme";
@@ -15,7 +15,11 @@ import { core } from "../src/styles/core.styles";
 import { useAuth } from "../src/features/auth/context/AuthContext";
 import { receiptApi } from "../src/services/receiptApi";
 import { Receipt } from "../src/types/receipt.types";
-import { parseReceiptDate } from "../src/utils/dateUtils";
+import {
+	parseReceiptDate,
+	formatReceiptDateTime,
+} from "../src/utils/dateUtils";
+import { formatCurrency } from "../src/utils/formatCurrency";
 
 interface MonthSavings {
 	month: string; // "YYYY-MM"
@@ -55,9 +59,19 @@ export default function DiscountsScreen() {
 		let total = 0;
 
 		receipts.forEach((r) => {
-			if (!r.total_saved || r.total_saved <= 0) return;
+			let effectiveSaved = r.total_saved || 0;
 
-			total += r.total_saved;
+			// If total_saved is missing or 0, try to calculate from items
+			if (effectiveSaved <= 0 && r.items) {
+				effectiveSaved = r.items.reduce(
+					(acc, item) => acc + (item.discount || 0),
+					0
+				);
+			}
+
+			if (effectiveSaved <= 0) return;
+
+			total += effectiveSaved;
 			const date = parseReceiptDate(r.datetime);
 
 			// Validate date
@@ -89,7 +103,7 @@ export default function DiscountsScreen() {
 				};
 			}
 
-			groups[monthKey].totalSaved += r.total_saved;
+			groups[monthKey].totalSaved += effectiveSaved;
 			groups[monthKey].receiptCount += 1;
 			groups[monthKey].receipts.push(r);
 		});
@@ -125,7 +139,9 @@ export default function DiscountsScreen() {
 
 			<View style={styles.summaryContainer}>
 				<Text style={styles.summaryLabel}>Total Ahorrado Histórico</Text>
-				<Text style={styles.summaryAmount}>${totalAllTime.toFixed(2)}</Text>
+				<Text style={styles.summaryAmount}>
+					${formatCurrency(totalAllTime)}
+				</Text>
 			</View>
 
 			{loading ? (
@@ -147,7 +163,7 @@ export default function DiscountsScreen() {
 									<Text style={styles.monthLabel}>{item.monthLabel}</Text>
 									<View style={styles.amountContainer}>
 										<Text style={styles.monthAmount}>
-											${item.totalSaved.toFixed(2)}
+											${formatCurrency(item.totalSaved)}
 										</Text>
 										<Ionicons
 											name={
@@ -168,25 +184,75 @@ export default function DiscountsScreen() {
 
 							{expandedMonth === item.month && (
 								<View style={styles.ticketsList}>
-									{item.receipts.map((receipt) => (
-										<Pressable
-											key={receipt.id}
-											style={styles.ticketItem}
-											onPress={() => handleTicketPress(receipt)}
-										>
-											<View style={styles.ticketInfo}>
-												<Text style={styles.ticketStore}>
-													{receipt.supermarket}
-												</Text>
-												<Text style={styles.ticketDate}>
-													{receipt.datetime}
-												</Text>
+									{item.receipts.map((receipt) => {
+										const rawDiscounts =
+											receipt.discounts && receipt.discounts.length > 0
+												? receipt.discounts
+												: (receipt.items || [])
+														.filter((item) => (item.discount || 0) > 0)
+														.map((item) => ({
+															description: item.promotion || "Descuento",
+															amount: item.discount || 0,
+														}));
+
+										// Group discounts by description
+										const discountsMap = new Map<string, number>();
+										rawDiscounts.forEach((d) => {
+											const current = discountsMap.get(d.description) || 0;
+											discountsMap.set(d.description, current + d.amount);
+										});
+
+										const discountsToDisplay = Array.from(
+											discountsMap.entries()
+										).map(([description, amount]) => ({ description, amount }));
+
+										return (
+											<View key={receipt.id} style={styles.ticketWrapper}>
+												<Pressable
+													style={styles.ticketItem}
+													onPress={() => handleTicketPress(receipt)}
+												>
+													<View style={styles.ticketInfo}>
+														<Text style={styles.ticketStore}>
+															{receipt.supermarket}
+														</Text>
+														<Text style={styles.ticketDate}>
+															{formatReceiptDateTime(receipt.datetime)}
+														</Text>
+													</View>
+													<Text style={styles.ticketSaved}>
+														$
+														{formatCurrency(
+															(receipt.total_saved || 0) > 0
+																? receipt.total_saved || 0
+																: receipt.items?.reduce(
+																		(acc, i) => acc + (i.discount || 0),
+																		0
+																  ) || 0
+														)}
+													</Text>
+												</Pressable>
+
+												{discountsToDisplay.length > 0 && (
+													<View style={styles.discountsList}>
+														{discountsToDisplay.map((d, i) => (
+															<View key={i} style={styles.discountRow}>
+																<Text
+																	style={styles.discountName}
+																	numberOfLines={1}
+																>
+																	{d.description}
+																</Text>
+																<Text style={styles.discountValue}>
+																	-${formatCurrency(d.amount)}
+																</Text>
+															</View>
+														))}
+													</View>
+												)}
 											</View>
-											<Text style={styles.ticketSaved}>
-												+${(receipt.total_saved || 0).toFixed(2)}
-											</Text>
-										</Pressable>
-									))}
+										);
+									})}
 								</View>
 							)}
 						</View>
@@ -241,7 +307,7 @@ const styles = StyleSheet.create({
 	},
 	monthCardContainer: {
 		marginBottom: theme.spacing.md,
-		backgroundColor: theme.colors.surface,
+		backgroundColor: theme.colors.backgroundVariant,
 		borderRadius: theme.borderRadius.md,
 		overflow: "hidden",
 	},
@@ -279,13 +345,15 @@ const styles = StyleSheet.create({
 		borderTopColor: theme.colors.backgroundVariant,
 		backgroundColor: theme.colors.background,
 	},
+	ticketWrapper: {
+		borderBottomWidth: 1,
+		borderBottomColor: theme.colors.backgroundVariant,
+	},
 	ticketItem: {
 		flexDirection: "row",
 		justifyContent: "space-between",
 		alignItems: "center",
 		padding: theme.spacing.md,
-		borderBottomWidth: 1,
-		borderBottomColor: theme.colors.backgroundVariant,
 	},
 	ticketInfo: {
 		flex: 1,
@@ -305,6 +373,26 @@ const styles = StyleSheet.create({
 		color: theme.colors.success,
 		fontFamily: theme.font.family.bold,
 		marginLeft: theme.spacing.md,
+	},
+	discountsList: {
+		paddingHorizontal: theme.spacing.md,
+		paddingBottom: theme.spacing.md,
+	},
+	discountRow: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		marginBottom: 4,
+	},
+	discountName: {
+		fontSize: theme.font.size.sm,
+		color: theme.colors.textSecondary,
+		flex: 1,
+		marginRight: theme.spacing.md,
+	},
+	discountValue: {
+		fontSize: theme.font.size.sm,
+		color: theme.colors.success,
+		fontFamily: theme.font.family.bold,
 	},
 	emptyText: {
 		color: theme.colors.textSecondary,

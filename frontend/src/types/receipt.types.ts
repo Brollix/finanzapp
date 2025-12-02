@@ -11,7 +11,8 @@ export interface ReceiptItem {
 export interface ReceiptData {
 	supermarket: string; // nombre comercial limpio
 	datetime: string;
-	total: number;
+	total: number; // precio final pagado (con descuentos aplicados)
+	subtotal?: number; // precio antes de descuentos
 	items: ReceiptItem[];
 	discounts?: { description: string; amount: number }[];
 	total_saved?: number;

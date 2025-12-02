@@ -3,12 +3,12 @@ import {
 	View,
 	Text,
 	Pressable,
-	SafeAreaView,
 	Alert,
 	FlatList,
 	RefreshControl,
 	StyleSheet,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import Menu from "../src/components/Menu";
@@ -45,7 +45,7 @@ export default function HomeScreen() {
 
 		try {
 			setLoading(true);
-			const data = await receiptApi.getUserReceipts(user.id);
+			const data = await receiptApi.getUserReceipts();
 
 			setReceipts(data || []);
 		} catch (error) {

@@ -121,18 +121,25 @@ export default function HomeScreen() {
 						<>
 							{/* Savings Summary Card */}
 							{(() => {
-								const totalSaved = receipts.reduce(
-									(acc, r) => acc + (r.total_saved || 0),
-									0
-								);
-
-								// Calculate best store
+								let totalSaved = 0;
 								const storeSavings: Record<string, number> = {};
+
 								receipts.forEach((r) => {
-									if (r.total_saved && r.total_saved > 0) {
+									let effectiveSaved = r.total_saved || 0;
+
+									// If total_saved is missing or 0, try to calculate from items
+									if (effectiveSaved <= 0 && r.items) {
+										effectiveSaved = r.items.reduce(
+											(acc, item) => acc + (item.discount || 0),
+											0
+										);
+									}
+
+									if (effectiveSaved > 0) {
+										totalSaved += effectiveSaved;
 										const store = r.supermarket || "Desconocido";
 										storeSavings[store] =
-											(storeSavings[store] || 0) + r.total_saved;
+											(storeSavings[store] || 0) + effectiveSaved;
 									}
 								});
 

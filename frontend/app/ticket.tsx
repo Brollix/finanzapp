@@ -5,8 +5,8 @@ import {
 	FlatList,
 	StyleSheet,
 	TouchableOpacity,
-	SafeAreaView,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useOcr } from "../src/context/OcrContext";
@@ -14,6 +14,8 @@ import { core } from "../src/styles/core.styles";
 import { theme } from "../src/styles/theme";
 import { ReceiptItem, ReceiptData } from "../src/types/receipt.types";
 import { ProductDetailsModal } from "../src/components/modals/ProductDetailsModal";
+import { formatCurrency } from "../src/utils/formatCurrency";
+import { formatReceiptDateTime } from "../src/utils/dateUtils";
 
 const ReceiptItemRow = ({
 	item,
@@ -35,12 +37,12 @@ const ReceiptItemRow = ({
 				<Text style={styles.product} numberOfLines={1}>
 					{item.product}
 				</Text>
-				{item.brand && (
+				{!!item.brand && (
 					<Text style={styles.brand} numberOfLines={1}>
 						{item.brand}
 					</Text>
 				)}
-				{item.promotion && (
+				{!!item.promotion && (
 					<Text
 						style={{
 							color: theme.colors.success,
@@ -57,7 +59,7 @@ const ReceiptItemRow = ({
 				<Text style={styles.quantity}>
 					{item.is_weight ? `${item.quantity} kg` : `x${item.quantity}`}
 				</Text>
-				<Text style={styles.price}>${item.price.toFixed(2)}</Text>
+				<Text style={styles.price}>${formatCurrency(item.price)}</Text>
 				{item.discount && item.discount > 0 ? (
 					<Text
 						style={{
@@ -65,7 +67,7 @@ const ReceiptItemRow = ({
 							fontSize: theme.font.size.xs,
 						}}
 					>
-						-${item.discount.toFixed(2)}
+						-${formatCurrency(item.discount)}
 					</Text>
 				) : null}
 			</View>
@@ -98,6 +100,13 @@ export default function TicketScreen() {
 	} else {
 		receipt = contextReceipt;
 	}
+
+	// Calculate total saved from items if not present in receipt
+	const calculatedTotalSaved = receipt
+		? (receipt.total_saved || 0) > 0
+			? receipt.total_saved
+			: receipt.items.reduce((acc, item) => acc + (item.discount || 0), 0)
+		: 0;
 
 	if (!data && status === "loading") {
 		return (
@@ -132,7 +141,9 @@ export default function TicketScreen() {
 				</TouchableOpacity>
 				<View>
 					<Text style={styles.supermarket}>{receipt.supermarket}</Text>
-					<Text style={styles.datetime}>{receipt.datetime}</Text>
+					<Text style={styles.datetime}>
+						{formatReceiptDateTime(receipt.datetime)}
+					</Text>
 				</View>
 			</View>
 
@@ -146,21 +157,46 @@ export default function TicketScreen() {
 				showsVerticalScrollIndicator={false}
 			/>
 
-			{receipt.discounts && receipt.discounts.length > 0 && (
-				<View style={styles.discountsContainer}>
-					<Text style={styles.discountsHeader}>Descuentos Aplicados:</Text>
-					{receipt.discounts.map((discount, index) => (
-						<View key={index} style={styles.discountRow}>
-							<Text style={styles.discountDescription}>
-								{discount.description}
-							</Text>
-							<Text style={styles.discountAmount}>
-								-${discount.amount.toFixed(2)}
-							</Text>
-						</View>
-					))}
-				</View>
-			)}
+			{(() => {
+				const rawDiscounts =
+					receipt.discounts && receipt.discounts.length > 0
+						? receipt.discounts
+						: (receipt.items || [])
+								.filter((item) => (item.discount || 0) > 0)
+								.map((item) => ({
+									description: item.promotion || "Descuento",
+									amount: item.discount || 0,
+								}));
+
+				// Group discounts by description
+				const discountsMap = new Map<string, number>();
+				rawDiscounts.forEach((d) => {
+					const current = discountsMap.get(d.description) || 0;
+					discountsMap.set(d.description, current + d.amount);
+				});
+
+				const discountsToDisplay = Array.from(discountsMap.entries()).map(
+					([description, amount]) => ({ description, amount })
+				);
+
+				if (discountsToDisplay.length === 0) return null;
+
+				return (
+					<View style={styles.discountsContainer}>
+						<Text style={styles.discountsHeader}>Descuentos Aplicados:</Text>
+						{discountsToDisplay.map((discount, index) => (
+							<View key={index} style={styles.discountRow}>
+								<Text style={styles.discountDescription}>
+									{discount.description}
+								</Text>
+								<Text style={styles.discountAmount}>
+									-${formatCurrency(discount.amount)}
+								</Text>
+							</View>
+						))}
+					</View>
+				);
+			})()}
 
 			<View style={styles.totalBar}>
 				<View style={styles.totalRow}>
@@ -168,12 +204,14 @@ export default function TicketScreen() {
 						<Text style={styles.totalLabel}>TOTAL</Text>
 						<Text style={styles.itemCount}>{receipt.items.length} items</Text>
 					</View>
-					<Text style={styles.totalValue}>${receipt.total.toFixed(2)}</Text>
+					<Text style={styles.totalValue}>
+						${formatCurrency(receipt.total)}
+					</Text>
 				</View>
-				{receipt.total_saved && receipt.total_saved > 0 && (
+				{(calculatedTotalSaved || 0) > 0 && (
 					<View style={styles.savedContainer}>
 						<Text style={styles.savedText}>
-							(Ahorraste: ${receipt.total_saved.toFixed(2)})
+							(Ahorraste: ${formatCurrency(calculatedTotalSaved || 0)})
 						</Text>
 					</View>
 				)}
