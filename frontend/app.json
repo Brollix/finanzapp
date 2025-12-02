@@ -2,7 +2,7 @@
   "expo": {
     "name": "Finanzapp",
     "slug": "finanzapp",
-    "version": "0.1.4",
+    "version": "1.0.0",
     "orientation": "portrait",
     "scheme": "finanzapp",
     "userInterfaceStyle": "dark",
@@ -17,7 +17,7 @@
     "newArchEnabled": true,
     "ios": {
       "bundleIdentifier": "com.brollix.finanzapp",
-      "buildNumber": "1",
+      "buildNumber": "3",
       "supportsTablet": true,
       "infoPlist": {
         "NSCameraUsageDescription": "Finanzapp necesita acceso a la cámara para escanear tickets y capturar los datos de tus gastos.",
@@ -28,7 +28,7 @@
     },
     "android": {
       "package": "com.brollix.finanzapp",
-      "versionCode": 1,
+      "versionCode": 3,
       "edgeToEdgeEnabled": true,
       "adaptiveIcon": {
         "foregroundImage": "./src/assets/images/adaptive-icon.png",
