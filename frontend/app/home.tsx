@@ -67,16 +67,6 @@ export default function HomeScreen() {
 	useFocusEffect(
 		useCallback(() => {
 			fetchReceipts();
-			// DEBUG: Print token for Postman testing
-			import("../src/lib/supabase").then(({ supabase }) => {
-				supabase.auth.getSession().then(({ data }) => {
-					if (data.session) {
-						console.log("\n🔑 --- ACCESS TOKEN FOR POSTMAN ---");
-						console.log(data.session.access_token);
-						console.log("----------------------------------\n");
-					}
-				});
-			});
 		}, [fetchReceipts])
 	);
 
