@@ -1,6 +1,6 @@
 {
   "name": "finanzapp-aws-api",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "FinanzApp backend with AWS Textract, Bedrock, and Supabase",
   "main": "dist/index.js",
   "scripts": {
@@ -22,17 +22,23 @@
     "@aws-sdk/client-bedrock-runtime": "^3.716.0",
     "@aws-sdk/client-textract": "^3.716.0",
     "@supabase/supabase-js": "^2.53.0",
+    "compression": "^1.8.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "express-rate-limit": "^7.1.5",
+    "helmet": "^8.1.0",
+    "morgan": "^1.10.1",
     "multer": "^1.4.5-lts.1",
     "uuid": "^9.0.1",
+    "winston": "^3.18.3",
     "zod": "^4.1.13"
   },
   "devDependencies": {
+    "@types/compression": "^1.8.1",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
+    "@types/morgan": "^1.9.10",
     "@types/multer": "^1.4.12",
     "@types/node": "^22.10.2",
     "@types/uuid": "^9.0.7",

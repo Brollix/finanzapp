@@ -1,34 +1,42 @@
-import { DetectDocumentTextCommand } from '@aws-sdk/client-textract';
-import { textractClient } from '../config/aws.js';
+import { DetectDocumentTextCommand } from "@aws-sdk/client-textract";
+import { textractClient } from "../config/aws.js";
+import logger from "../utils/logger.js";
 
-export async function extractTextFromImage(imageBuffer: Buffer): Promise<string> {
-  try {
-    const command = new DetectDocumentTextCommand({
-      Document: {
-        Bytes: imageBuffer,
-      },
-    });
+export async function extractTextFromImage(
+	imageBuffer: Buffer
+): Promise<string> {
+	try {
+		const command = new DetectDocumentTextCommand({
+			Document: {
+				Bytes: imageBuffer,
+			},
+		});
 
-    const response = await textractClient.send(command);
+		const response = await textractClient.send(command);
 
-    if (!response.Blocks) {
-      throw new Error('No text detected in image');
-    }
+		if (!response.Blocks) {
+			throw new Error("No text detected in image");
+		}
 
-    // Extract only LINE blocks to get the text content
-    const textLines = response.Blocks
-      .filter((block) => block.BlockType === 'LINE')
-      .map((block) => block.Text || '')
-      .filter((text) => text.trim().length > 0);
+		// Extract only LINE blocks to get the text content
+		const textLines = response.Blocks.filter(
+			(block) => block.BlockType === "LINE"
+		)
+			.map((block) => block.Text || "")
+			.filter((text) => text.trim().length > 0);
 
-    if (textLines.length === 0) {
-      throw new Error('No text lines found in image');
-    }
+		if (textLines.length === 0) {
+			throw new Error("No text lines found in image");
+		}
 
-    // Join lines with newlines to preserve structure
-    return textLines.join('\n');
-  } catch (error) {
-    console.error('Textract error:', error);
-    throw new Error(`Failed to extract text from image: ${error instanceof Error ? error.message : 'Unknown error'}`);
-  }
+		// Join lines with newlines to preserve structure
+		return textLines.join("\n");
+	} catch (error) {
+		logger.error(`Textract error: ${error}`);
+		throw new Error(
+			`Failed to extract text from image: ${
+				error instanceof Error ? error.message : "Unknown error"
+			}`
+		);
+	}
 }

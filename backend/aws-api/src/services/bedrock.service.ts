@@ -1,6 +1,7 @@
 import { InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
 import { bedrockClient } from "../config/aws.js";
 import { ReceiptData } from "../types/receipt.types.js";
+import logger from "../utils/logger.js";
 
 const BEDROCK_MODEL_ID =
 	process.env.BEDROCK_MODEL_ID || "anthropic.claude-3-haiku-20240307-v1:0";
@@ -129,7 +130,7 @@ Return ONLY the JSON object, without any additional text or explanations.`;
 
 		return receiptData;
 	} catch (error) {
-		console.error("Bedrock error:", error);
+		logger.error(`Bedrock error: ${error}`);
 		throw new Error(
 			`Failed to format receipt with Bedrock: ${
 				error instanceof Error ? error.message : "Unknown error"
@@ -160,7 +161,7 @@ export async function generateEmbedding(text: string): Promise<number[]> {
 		const responseBody = JSON.parse(new TextDecoder().decode(response.body));
 		return responseBody.embedding;
 	} catch (error) {
-		console.error("Bedrock embedding error:", error);
+		logger.error(`Bedrock embedding error: ${error}`);
 		throw new Error(
 			`Failed to generate embedding: ${
 				error instanceof Error ? error.message : "Unknown error"
@@ -219,7 +220,7 @@ Return ONLY the category name, nothing else.`;
 
 		return category;
 	} catch (error) {
-		console.error("Bedrock categorization error:", error);
+		logger.error(`Bedrock categorization error: ${error}`);
 		return "Otros"; // Default fallback
 	}
 }

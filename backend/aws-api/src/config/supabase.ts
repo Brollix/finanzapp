@@ -12,8 +12,10 @@ if (!supabaseUrl || !supabaseKey) {
 	);
 }
 
+import logger from "../utils/logger.js";
+
 const isServiceRole = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
-console.log(
+logger.info(
 	`Supabase Client Initialized. Using Service Role Key: ${isServiceRole}`
 );
 

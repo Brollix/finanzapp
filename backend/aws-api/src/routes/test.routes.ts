@@ -3,6 +3,7 @@ import multer from "multer";
 import { extractTextFromImage } from "../services/textract.service.js";
 import { formatReceiptWithBedrock } from "../services/bedrock.service.js";
 import { scanLimiter } from "../middleware/rateLimit.js";
+import logger from "../utils/logger.js";
 
 const router = Router();
 
@@ -33,23 +34,23 @@ router.post(
 				return;
 			}
 
-			console.log("Step 1: Extracting text with Textract...");
+			logger.info("Step 1: Extracting text with Textract...");
 			const startTextract = Date.now();
 			const ocrText = await extractTextFromImage(req.file.buffer);
 			const textractTime = Date.now() - startTextract;
-			console.log(`Textract completed in ${textractTime}ms`);
-			console.log(
+			logger.info(`Textract completed in ${textractTime}ms`);
+			logger.debug(
 				`Extracted text (${ocrText.length} chars):\n${ocrText.substring(
 					0,
 					200
 				)}...`
 			);
 
-			console.log("\nStep 2: Formatting with Bedrock...");
+			logger.info("\nStep 2: Formatting with Bedrock...");
 			const startBedrock = Date.now();
 			const receiptData = await formatReceiptWithBedrock(ocrText);
 			const bedrockTime = Date.now() - startBedrock;
-			console.log(`Bedrock completed in ${bedrockTime}ms`);
+			logger.info(`Bedrock completed in ${bedrockTime}ms`);
 
 			const totalTime = Date.now() - startTextract;
 
@@ -66,7 +67,7 @@ router.post(
 				},
 			});
 		} catch (error) {
-			console.error("Error processing receipt:", error);
+			logger.error(`Error processing receipt: ${error}`);
 			res.status(500).json({
 				error: "Failed to process receipt",
 				message: error instanceof Error ? error.message : "Unknown error",
@@ -88,8 +89,8 @@ router.post(
 				return;
 			}
 
-			console.log("Testing Bedrock with provided text...");
-			console.log(
+			logger.info("Testing Bedrock with provided text...");
+			logger.debug(
 				`Input text (${text.length} chars):\n${text.substring(0, 200)}...`
 			);
 
@@ -97,7 +98,7 @@ router.post(
 			const receiptData = await formatReceiptWithBedrock(text);
 			const bedrockTime = Date.now() - startBedrock;
 
-			console.log(`Bedrock completed in ${bedrockTime}ms`);
+			logger.info(`Bedrock completed in ${bedrockTime}ms`);
 
 			res.status(200).json({
 				success: true,
@@ -109,7 +110,7 @@ router.post(
 				},
 			});
 		} catch (error) {
-			console.error("Error formatting with Bedrock:", error);
+			logger.error(`Error formatting with Bedrock: ${error}`);
 			res.status(500).json({
 				error: "Failed to format text with Bedrock",
 				message: error instanceof Error ? error.message : "Unknown error",

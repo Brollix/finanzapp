@@ -1,6 +1,7 @@
 import { ReceiptData, Receipt, ReceiptItem } from "../types/receipt.types.js";
 import { supabase } from "../config/supabase.js";
 import { generateEmbedding, suggestCategory } from "./bedrock.service.js";
+import logger from "../utils/logger.js";
 
 async function getOrCreateProduct(item: ReceiptItem): Promise<string> {
 	let query = supabase.from("products").select("id").eq("name", item.product);
@@ -34,16 +35,16 @@ async function getOrCreateProduct(item: ReceiptItem): Promise<string> {
 
 		if (similarProducts && similarProducts.length > 0) {
 			category = similarProducts[0].category;
-			console.log(
+			logger.debug(
 				`Matched product "${item.product}" with "${similarProducts[0].name}" (Category: ${category})`
 			);
 		} else {
 			// 3. If no match, ask Claude
 			category = await suggestCategory(item.product);
-			console.log(`Suggested category for "${item.product}": ${category}`);
+			logger.debug(`Suggested category for "${item.product}": ${category}`);
 		}
 	} catch (error) {
-		console.error("Error in product categorization:", error);
+		logger.error(`Error in product categorization: ${error}`);
 		// Fallback to default category if anything fails
 	}
 
@@ -137,14 +138,14 @@ export async function saveReceipt(
 				.insert(itemsWithReceiptId);
 
 			if (itemsError) {
-				console.error("Error saving receipt items:", itemsError);
+				logger.error(`Error saving receipt items: ${itemsError}`);
 				// We log but don't fail the whole request as the receipt is saved
 			}
 		}
 
 		return data as Receipt;
 	} catch (error) {
-		console.error("Database error:", error);
+		logger.error(`Database error: ${error}`);
 		throw new Error(
 			`Failed to save receipt: ${
 				error instanceof Error ? error.message : "Unknown error"
@@ -239,14 +240,14 @@ export async function updateReceipt(
 				.insert(itemsWithReceiptId);
 
 			if (itemsError) {
-				console.error("Error saving receipt items:", itemsError);
+				logger.error(`Error saving receipt items: ${itemsError}`);
 				// We log but don't fail the whole request as the receipt is updated
 			}
 		}
 
 		return data as Receipt;
 	} catch (error) {
-		console.error("Database error:", error);
+		logger.error(`Database error: ${error}`);
 		throw new Error(
 			`Failed to update receipt: ${
 				error instanceof Error ? error.message : "Unknown error"
@@ -275,7 +276,7 @@ export async function getReceiptById(
 
 		return data as Receipt;
 	} catch (error) {
-		console.error("Database error:", error);
+		logger.error(`Database error: ${error}`);
 		throw new Error(
 			`Failed to get receipt: ${
 				error instanceof Error ? error.message : "Unknown error"
@@ -302,7 +303,7 @@ export async function getReceiptsByUserId(
 
 		return (data as Receipt[]) || [];
 	} catch (error) {
-		console.error("Database error:", error);
+		logger.error(`Database error: ${error}`);
 		throw new Error(
 			`Failed to get receipts: ${
 				error instanceof Error ? error.message : "Unknown error"

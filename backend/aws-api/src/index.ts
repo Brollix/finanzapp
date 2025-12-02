@@ -5,15 +5,45 @@ dotenv.config();
 
 import express, { Application, Request, Response, NextFunction } from "express";
 import cors from "cors";
+import helmet from "helmet";
+import compression from "compression";
+import morgan from "morgan";
 import receiptRoutes from "./routes/receipt.routes.js";
 import testRoutes from "./routes/test.routes.js";
 import { apiLimiter } from "./middleware/rateLimit.js";
+import logger from "./utils/logger.js";
+import { validateEnv } from "./utils/validateEnv.js";
+
+// Validate environment variables
+validateEnv();
 
 const app: Application = express();
 const PORT = process.env.PORT || 8080;
 
 // Trust proxy for AWS/Load Balancer
 app.set("trust proxy", 1);
+
+// Security & Performance Middleware
+app.use(helmet());
+app.use(compression());
+
+// Logging Middleware
+const morganFormat = ":method :url :status :response-time ms";
+app.use(
+	morgan(morganFormat, {
+		stream: {
+			write: (message) => {
+				const logObject = {
+					method: message.split(" ")[0],
+					url: message.split(" ")[1],
+					status: message.split(" ")[2],
+					responseTime: message.split(" ")[3],
+				};
+				logger.http(JSON.stringify(logObject));
+			},
+		},
+	})
+);
 
 // Middleware
 app.use(
@@ -51,7 +81,7 @@ app.use((req: Request, res: Response) => {
 
 // Global error handler
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-	console.error("Unhandled error:", err);
+	logger.error(`Unhandled error: ${err.message}`);
 	res.status(500).json({
 		error: "Internal Server Error",
 		message: err.message || "An unexpected error occurred",
@@ -59,10 +89,30 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 });
 
 // Start server
-app.listen(PORT, () => {
-	console.log(`FinanzApp AWS API running on port ${PORT}`);
-	console.log(`Health check: http://localhost:${PORT}/health`);
-	console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
+const server = app.listen(PORT, () => {
+	logger.info(`FinanzApp AWS API running on port ${PORT}`);
+	logger.info(`Health check: http://localhost:${PORT}/health`);
+	logger.info(`Environment: ${process.env.NODE_ENV || "development"}`);
 });
+
+// Graceful Shutdown
+const gracefulShutdown = () => {
+	logger.info("Received kill signal, shutting down gracefully");
+	server.close(() => {
+		logger.info("Closed out remaining connections");
+		process.exit(0);
+	});
+
+	// Force close after 10s
+	setTimeout(() => {
+		logger.error(
+			"Could not close connections in time, forcefully shutting down"
+		);
+		process.exit(1);
+	}, 10000);
+};
+
+process.on("SIGTERM", gracefulShutdown);
+process.on("SIGINT", gracefulShutdown);
 
 export default app;

@@ -7,16 +7,23 @@ dotenv.config();
 
 const AWS_REGION = process.env.AWS_REGION || "us-east-1";
 
+import logger from "../utils/logger.js";
+
 // Log para debug
-console.log("AWS Configuration:");
-console.log("Region:", AWS_REGION);
-console.log(
-	"Access Key ID:",
-	process.env.AWS_ACCESS_KEY_ID
-		? `${process.env.AWS_ACCESS_KEY_ID.substring(0, 10)}...`
-		: "NOT SET"
+logger.debug("AWS Configuration:");
+logger.debug(`Region: ${AWS_REGION}`);
+logger.debug(
+	`Access Key ID: ${
+		process.env.AWS_ACCESS_KEY_ID
+			? `${process.env.AWS_ACCESS_KEY_ID.substring(0, 10)}...`
+			: "NOT SET"
+	}`
 );
-console.log("Secret Key:", process.env.AWS_SECRET_ACCESS_KEY ? "SET (hidden)" : "NOT SET");
+logger.debug(
+	`Secret Key: ${
+		process.env.AWS_SECRET_ACCESS_KEY ? "SET (hidden)" : "NOT SET"
+	}`
+);
 
 export const textractClient = new TextractClient({
 	region: AWS_REGION,
