@@ -24,12 +24,24 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            # Limpiar espacio en disco antes de empezar
+            docker system prune -a -f --volumes
+
             cd ~/finanzapp
+            # Intentar limpiar git si quedó corrupto por falta de espacio
+            git gc --prune=now || true
+
             git pull origin main
             cd backend/aws-api
+
+            # Construir nueva imagen
             docker build -t finanzapp-backend:latest .
+
+            # Detener y eliminar contenedor viejo
             docker stop finanzapp-api || true
             docker rm finanzapp-api || true
+
+            # Correr nuevo contenedor
             docker run -d \
               --name finanzapp-api \
               --restart unless-stopped \
