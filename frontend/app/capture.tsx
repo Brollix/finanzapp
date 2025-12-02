@@ -6,10 +6,12 @@ import {
 	StyleSheet,
 	Text,
 	Image,
+	Animated,
+	Easing,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { CameraView, useCameraPermissions } from "expo-camera";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import type { CameraCapturedPicture } from "expo-camera";
 
 import { Ionicons } from "@expo/vector-icons";
@@ -20,6 +22,13 @@ import { theme } from "../src/styles/theme";
 import { receiptApi } from "../src/services/receiptApi";
 import { authService } from "../src/features/auth/services/authService";
 
+const LOADING_MESSAGES = [
+	"Analizando tu ticket con Inteligencia Artificial...",
+	"FinanzApp está procesando tu gasto con AWS Bedrock...",
+	"Extrayendo fecha, total y comercios...",
+	"Esto puede tardar unos segundos. ¡Ya casi está!",
+];
+
 export default function Capture() {
 	const cameraRef = useRef<CameraView>(null);
 	const router = useRouter();
@@ -27,6 +36,33 @@ export default function Capture() {
 	const [permission, requestPermission] = useCameraPermissions();
 	const [isFlashOn, setIsFlashOn] = useState(false);
 	const [loading, setLoading] = useState(false);
+	const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
+	const fadeAnim = useRef(new Animated.Value(0)).current;
+
+	useEffect(() => {
+		let interval: NodeJS.Timeout;
+		if (loading) {
+			// Start message rotation
+			interval = setInterval(() => {
+				setLoadingMessageIndex((prev) => (prev + 1) % LOADING_MESSAGES.length);
+			}, 2500);
+
+			// Fade in animation
+			Animated.timing(fadeAnim, {
+				toValue: 1,
+				duration: 500,
+				useNativeDriver: true,
+				easing: Easing.out(Easing.ease),
+			}).start();
+		} else {
+			setLoadingMessageIndex(0);
+			fadeAnim.setValue(0);
+		}
+
+		return () => {
+			if (interval) clearInterval(interval);
+		};
+	}, [loading]);
 
 	if (!permission) {
 		// Camera permissions are still loading
@@ -97,7 +133,9 @@ export default function Capture() {
 			try {
 				const photo: CameraCapturedPicture =
 					await cameraRef.current.takePictureAsync({
-						quality: 0.6,
+						quality: 0.5, // Reduced quality for faster upload/processing
+						base64: false,
+						exif: false,
 					});
 
 				setCapturedImage(photo.uri);
@@ -132,11 +170,18 @@ export default function Capture() {
 				console.log("Usuario ID:", user.id);
 				console.log("Imagen URI:", capturedImage);
 
-				await receiptApi.processReceipt(capturedImage, user.id);
+				const receiptData = await receiptApi.processReceipt(
+					capturedImage,
+					user.id
+				);
 
 				console.log("✅ Ticket procesado exitosamente");
-				// Success - navigate back
-				router.back();
+
+				// Success - navigate to confirmation screen
+				router.push({
+					pathname: "/receipt-confirmation",
+					params: { receipt: JSON.stringify(receiptData) },
+				});
 			} catch (error) {
 				console.error("❌ Error al procesar el ticket:", error);
 
@@ -147,7 +192,6 @@ export default function Capture() {
 				if (error instanceof Error) {
 					errorDetails = error.message;
 					console.error("Error message:", error.message);
-					console.error("Error stack:", error.stack);
 
 					// Parse backend error response if available
 					if (error.message.includes("Receipt API error")) {
@@ -157,24 +201,26 @@ export default function Capture() {
 
 						if (status === "400") {
 							errorMessage =
-								"Error en la solicitud. Verifica que la imagen sea válida.";
+								"La imagen no es clara o el formato no es válido. Por favor, intenta tomar una foto mejor iluminada.";
+						} else if (status === "429") {
+							errorMessage =
+								"Has alcanzado el límite de escaneos por ahora. Por favor, intenta más tarde.";
 						} else if (status === "500") {
 							// Try to extract specific error type
 							if (error.message.includes("Textract")) {
 								errorMessage =
-									"Error al extraer texto de la imagen. Intenta con mejor iluminación.";
+									"No pudimos leer el texto del ticket. Asegúrate de que esté bien iluminado y enfocado.";
 							} else if (error.message.includes("Bedrock")) {
 								errorMessage =
-									"Error al procesar el ticket. Intenta nuevamente.";
-							} else if (error.message.includes("database")) {
-								errorMessage =
-									"Error al guardar el ticket. Verifica tu conexión.";
+									"La IA tuvo problemas para entender el ticket. Intenta tomar la foto desde otro ángulo.";
 							} else {
-								errorMessage = "Error en el servidor. Intenta nuevamente.";
+								errorMessage =
+									"Ocurrió un problema en nuestros servidores. Estamos trabajando en ello.";
 							}
 						} else if (
 							status === "unknown" ||
-							error.message.includes("fetch")
+							error.message.includes("fetch") ||
+							error.message.includes("Network request failed")
 						) {
 							errorMessage =
 								"No se pudo conectar al servidor. Verifica tu conexión a internet.";
@@ -182,15 +228,16 @@ export default function Capture() {
 					}
 				}
 
-				console.error("📋 Detalles del error:", errorDetails);
-
-				Alert.alert("Error al procesar ticket", errorMessage, [{ text: "OK" }]);
+				Alert.alert("Ups, algo salió mal", errorMessage, [
+					{ text: "Entendido" },
+				]);
+			} finally {
 				setLoading(false);
 			}
 		} catch (error) {
 			console.error("❌ Error general:", error);
 			Alert.alert(
-				"Error",
+				"Error Inesperado",
 				"Ocurrió un error inesperado. Por favor, intenta nuevamente."
 			);
 			setLoading(false);
@@ -209,9 +256,33 @@ export default function Capture() {
 						}
 					/>
 					{loading ? (
-						<View style={styles.loadingOverlay}>
-							<ActivityIndicator size="large" color={theme.colors.primary} />
-						</View>
+						<Animated.View
+							style={[styles.loadingOverlay, { opacity: fadeAnim }]}
+						>
+							<View style={styles.loadingContent}>
+								<ActivityIndicator size="large" color={theme.colors.primary} />
+								<Text style={styles.loadingTitle}>Procesando Ticket</Text>
+								<Text style={styles.loadingMessage}>
+									{LOADING_MESSAGES[loadingMessageIndex]}
+								</Text>
+								<View style={styles.loadingDots}>
+									<Ionicons
+										name="cloud-upload-outline"
+										size={24}
+										color={theme.colors.textSecondary}
+									/>
+									<Text style={{ color: theme.colors.textSecondary }}>
+										{" "}
+										• • •{" "}
+									</Text>
+									<Ionicons
+										name="receipt-outline"
+										size={24}
+										color={theme.colors.textSecondary}
+									/>
+								</View>
+							</View>
+						</Animated.View>
 					) : (
 						<View style={styles.captureOverlay}>
 							<Button
@@ -286,9 +357,34 @@ const styles = StyleSheet.create({
 		left: 0,
 		right: 0,
 		bottom: 0,
-		backgroundColor: "rgba(0,0,0,0.7)",
+		backgroundColor: "rgba(0,0,0,0.85)",
 		justifyContent: "center",
 		alignItems: "center",
+		zIndex: 10,
+	},
+	loadingContent: {
+		alignItems: "center",
+		padding: theme.spacing.xl,
+		width: "80%",
+	},
+	loadingTitle: {
+		color: theme.colors.primary,
+		fontSize: theme.font.size.h3,
+		fontFamily: theme.font.family.bold,
+		marginTop: theme.spacing.lg,
+		marginBottom: theme.spacing.sm,
+	},
+	loadingMessage: {
+		color: theme.colors.text,
+		fontSize: theme.font.size.md,
+		textAlign: "center",
+		marginBottom: theme.spacing.xl,
+		lineHeight: 24,
+	},
+	loadingDots: {
+		flexDirection: "row",
+		alignItems: "center",
+		opacity: 0.7,
 	},
 	permissionContainer: {
 		justifyContent: "center",

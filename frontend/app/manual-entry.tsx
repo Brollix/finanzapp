@@ -56,6 +56,21 @@ export default function ManualEntryScreen() {
 	const [showSuccessModal, setShowSuccessModal] = useState(false);
 	const [receiptId, setReceiptId] = useState<string | null>(null);
 
+	const loadSupermarkets = React.useCallback(async () => {
+		try {
+			const user = await authService.getCurrentUser();
+			if (user) {
+				const receipts = await receiptApi.getUserReceipts(user.id);
+				const supers = Array.from(
+					new Set(receipts.map((r) => r.supermarket).filter(Boolean))
+				);
+				setAllSupermarkets(supers);
+			}
+		} catch (error) {
+			console.error("Error loading supermarkets:", error);
+		}
+	}, []);
+
 	React.useEffect(() => {
 		loadSupermarkets();
 
@@ -73,22 +88,7 @@ export default function ManualEntryScreen() {
 				console.error("Error parsing receipt param:", e);
 			}
 		}
-	}, [params.receipt]);
-
-	const loadSupermarkets = async () => {
-		try {
-			const user = await authService.getCurrentUser();
-			if (user) {
-				const receipts = await receiptApi.getUserReceipts(user.id);
-				const supers = Array.from(
-					new Set(receipts.map((r) => r.supermarket).filter(Boolean))
-				);
-				setAllSupermarkets(supers);
-			}
-		} catch (error) {
-			console.error("Error loading supermarkets:", error);
-		}
-	};
+	}, [params.receipt, loadSupermarkets]);
 
 	const onDateChange = (event: any, selectedDate?: Date) => {
 		const currentDate = selectedDate || date;

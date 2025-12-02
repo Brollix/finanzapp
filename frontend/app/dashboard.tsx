@@ -40,7 +40,7 @@ export default function HomeScreen() {
 	const [loading, setLoading] = useState(false);
 	const [refreshing, setRefreshing] = useState(false);
 
-	const fetchReceipts = async () => {
+	const fetchReceipts = useCallback(async () => {
 		if (!user) return;
 
 		try {
@@ -54,7 +54,7 @@ export default function HomeScreen() {
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, [user]);
 
 	const onRefresh = async () => {
 		setRefreshing(true);
@@ -66,7 +66,7 @@ export default function HomeScreen() {
 	useFocusEffect(
 		useCallback(() => {
 			fetchReceipts();
-		}, [user])
+		}, [fetchReceipts])
 	);
 
 	const handleAddManually = () => {

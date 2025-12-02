@@ -7,9 +7,13 @@ import express, { Application, Request, Response, NextFunction } from "express";
 import cors from "cors";
 import receiptRoutes from "./routes/receipt.routes.js";
 import testRoutes from "./routes/test.routes.js";
+import { apiLimiter } from "./middleware/rateLimit.js";
 
 const app: Application = express();
 const PORT = process.env.PORT || 8080;
+
+// Trust proxy for AWS/Load Balancer
+app.set("trust proxy", 1);
 
 // Middleware
 app.use(
@@ -20,6 +24,9 @@ app.use(
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Global rate limiter
+app.use(apiLimiter);
 
 // Health check endpoint
 app.get("/health", (req: Request, res: Response) => {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../src/lib/supabase";
 import {
 	View,
@@ -27,13 +27,7 @@ export default function Account() {
 	// Password Change State
 	const [showPasswordChange, setShowPasswordChange] = useState(false);
 
-	useEffect(() => {
-		if (user) {
-			getProfile();
-		}
-	}, [user]);
-
-	async function getProfile() {
+	const getProfile = useCallback(async () => {
 		if (!user) return;
 
 		try {
@@ -54,7 +48,13 @@ export default function Account() {
 		} catch (error: any) {
 			console.error("Error loading profile:", error.message);
 		}
-	}
+	}, [user]);
+
+	useEffect(() => {
+		if (user) {
+			getProfile();
+		}
+	}, [user, getProfile]);
 
 	const handleSignOut = async () => {
 		try {

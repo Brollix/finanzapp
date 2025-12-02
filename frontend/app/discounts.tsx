@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
 	View,
 	Text,
@@ -33,11 +33,7 @@ export default function DiscountsScreen() {
 	const [totalAllTime, setTotalAllTime] = useState(0);
 	const [expandedMonth, setExpandedMonth] = useState<string | null>(null);
 
-	useEffect(() => {
-		fetchData();
-	}, [user]);
-
-	const fetchData = async () => {
+	const fetchData = useCallback(async () => {
 		if (!user) return;
 		try {
 			setLoading(true);
@@ -48,7 +44,11 @@ export default function DiscountsScreen() {
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, [user]);
+
+	useEffect(() => {
+		fetchData();
+	}, [fetchData]);
 
 	const processReceipts = (receipts: Receipt[]) => {
 		const groups: Record<string, MonthSavings> = {};

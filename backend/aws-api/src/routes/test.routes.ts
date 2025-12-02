@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import multer from "multer";
 import { extractTextFromImage } from "../services/textract.service.js";
 import { formatReceiptWithBedrock } from "../services/bedrock.service.js";
+import { scanLimiter } from "../middleware/rateLimit.js";
 
 const router = Router();
 
@@ -23,6 +24,7 @@ const upload = multer({
 // POST /api/test/process - Test endpoint without Supabase
 router.post(
 	"/process",
+	scanLimiter,
 	upload.single("image"),
 	async (req: Request, res: Response): Promise<void> => {
 		try {
@@ -76,6 +78,7 @@ router.post(
 // POST /api/test/bedrock-only - Test Bedrock formatting with text input
 router.post(
 	"/bedrock-only",
+	scanLimiter,
 	async (req: Request, res: Response): Promise<void> => {
 		try {
 			const { text } = req.body;

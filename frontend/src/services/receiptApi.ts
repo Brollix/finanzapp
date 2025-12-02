@@ -48,8 +48,8 @@ export const receiptApi = {
 		// Append the image; the backend expects field name "image"
 		form.append("image", {
 			uri: imageUri,
-			name: "receipt.jpg",
-			type: "image/jpeg",
+			name: "ticket.jpg", // Force filename to ticket.jpg for AWS compatibility
+			type: "image/jpeg", // Force mime type to image/jpeg
 		} as any);
 		// Include userId in the form data
 		form.append("userId", userId);

@@ -86,3 +86,6 @@ frontend/.env.production
 # Python cache files
 *.pyc
 
+# Private Documentation
+API_ENDPOINTS.md
+

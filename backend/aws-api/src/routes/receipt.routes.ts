@@ -1,5 +1,7 @@
 import { Router, Request, Response } from "express";
 import multer from "multer";
+import fs from "fs/promises";
+import { upload } from "../middleware/upload.js";
 import { extractTextFromImage } from "../services/textract.service.js";
 import { formatReceiptWithBedrock } from "../services/bedrock.service.js";
 import {
@@ -8,28 +10,17 @@ import {
 	getReceiptsByUserId,
 	updateReceipt,
 } from "../services/database.service.js";
+import { scanLimiter } from "../middleware/rateLimit.js";
 
 const router = Router();
 
 // Configure multer for memory storage
-const upload = multer({
-	storage: multer.memoryStorage(),
-	limits: {
-		fileSize: 10 * 1024 * 1024, // 10MB limit
-	},
-	fileFilter: (req, file, cb) => {
-		// Accept images only
-		if (!file.mimetype.startsWith("image/")) {
-			cb(new Error("Only image files are allowed"));
-			return;
-		}
-		cb(null, true);
-	},
-});
+// Upload middleware is now imported from ../middleware/upload.js
 
 // POST /api/receipt/process - Process a receipt image
 router.post(
 	"/process",
+	scanLimiter,
 	upload.single("image"),
 	async (req: Request, res: Response): Promise<void> => {
 		const startTime = Date.now();
@@ -69,7 +60,9 @@ router.post(
 			const textractStart = Date.now();
 			let ocrText: string;
 			try {
-				ocrText = await extractTextFromImage(req.file.buffer);
+				// Read file from disk
+				const imageBuffer = await fs.readFile(req.file.path);
+				ocrText = await extractTextFromImage(imageBuffer);
 				console.log("✅ Textract successful");
 				console.log("  - Time taken:", Date.now() - textractStart, "ms");
 				console.log("  - Text length:", ocrText.length, "characters");
@@ -142,6 +135,16 @@ router.post(
 				errorType: "unknown_error",
 				message: error instanceof Error ? error.message : "Unknown error",
 			});
+		} finally {
+			// Cleanup uploaded file
+			if (req.file && req.file.path) {
+				try {
+					await fs.unlink(req.file.path);
+					console.log("🧹 Uploaded file cleaned up:", req.file.path);
+				} catch (cleanupError) {
+					console.error("❌ Failed to cleanup file:", cleanupError);
+				}
+			}
 		}
 	}
 );
