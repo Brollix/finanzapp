@@ -8,13 +8,13 @@
 			"developmentClient": true,
 			"distribution": "internal",
 			"env": {
-				"EXPO_PUBLIC_API_URL": "http://localhost:8080"
+				"EXPO_PUBLIC_BACKEND_URL": "http://localhost:8080"
 			}
 		},
 		"preview": {
 			"distribution": "internal",
 			"env": {
-				"EXPO_PUBLIC_API_URL": "http://18.222.119.175:8080"
+				"EXPO_PUBLIC_BACKEND_URL": "https://d245522eugz5ge.cloudfront.net"
 			},
 			"android": {
 				"buildType": "apk"
@@ -25,7 +25,7 @@
 		},
 		"production": {
 			"env": {
-				"EXPO_PUBLIC_API_URL": "http://18.222.119.175:8080"
+				"EXPO_PUBLIC_BACKEND_URL": "https://d245522eugz5ge.cloudfront.net"
 			},
 			"android": {
 				"buildType": "apk"
