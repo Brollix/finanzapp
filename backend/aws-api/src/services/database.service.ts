@@ -24,25 +24,23 @@ async function getOrCreateProduct(item: ReceiptItem): Promise<string> {
 
 	try {
 		// 1. Generate embedding
-		embedding = await generateEmbedding(item.product);
-
+		// embedding = await generateEmbedding(item.product);
 		// 2. Search for similar products to reuse category
-		const { data: similarProducts } = await supabase.rpc("match_products", {
-			query_embedding: embedding,
-			match_threshold: 0.85, // High similarity threshold
-			match_count: 1,
-		});
-
-		if (similarProducts && similarProducts.length > 0) {
-			category = similarProducts[0].category;
-			logger.debug(
-				`Matched product "${item.product}" with "${similarProducts[0].name}" (Category: ${category})`
-			);
-		} else {
-			// 3. If no match, ask Claude
-			category = await suggestCategory(item.product);
-			logger.debug(`Suggested category for "${item.product}": ${category}`);
-		}
+		// const { data: similarProducts } = await supabase.rpc("match_products", {
+		// 	query_embedding: embedding,
+		// 	match_threshold: 0.85, // High similarity threshold
+		// 	match_count: 1,
+		// });
+		// if (similarProducts && similarProducts.length > 0) {
+		// 	category = similarProducts[0].category;
+		// 	logger.debug(
+		// 		`Matched product "${item.product}" with "${similarProducts[0].name}" (Category: ${category})`
+		// 	);
+		// } else {
+		// 3. If no match, ask Claude
+		// category = await suggestCategory(item.product);
+		// logger.debug(`Suggested category for "${item.product}": ${category}`);
+		// }
 	} catch (error) {
 		logger.error(`Error in product categorization: ${error}`);
 		// Fallback to default category if anything fails
@@ -79,22 +77,22 @@ export async function saveReceipt(
 	imageUrl?: string
 ): Promise<Receipt> {
 	try {
-		// 1. Process items to get/create products
-		const receiptItemsForDb = [];
+		// 1. Process items to get/create products in PARALLEL
+		const receiptItemsForDb = await Promise.all(
+			receiptData.items.map(async (item) => {
+				const productId = await getOrCreateProduct(item);
+				item.product_id = productId; // Update the item with the ID
 
-		for (const item of receiptData.items) {
-			const productId = await getOrCreateProduct(item);
-			item.product_id = productId; // Update the item with the ID
-
-			receiptItemsForDb.push({
-				product_id: productId,
-				quantity: item.quantity,
-				price: item.quantity ? item.price / item.quantity : 0, // Unit price
-				total: item.price,
-				discount: item.discount || 0,
-				promotion: item.promotion || null,
-			});
-		}
+				return {
+					product_id: productId,
+					quantity: item.quantity,
+					price: item.quantity ? item.price / item.quantity : 0, // Unit price
+					total: item.price,
+					discount: item.discount || 0,
+					promotion: item.promotion || null,
+				};
+			})
+		);
 
 		// 2. VALIDATE AND CORRECT TOTALS FROM ITEMS
 		// Calculate subtotal from items (sum of all item prices)
@@ -209,22 +207,22 @@ export async function updateReceipt(
 			throw new Error("Unauthorized: Receipt does not belong to user");
 		}
 
-		// 2. Process items to get/create products
-		const receiptItemsForDb = [];
+		// 1. Process items to get/create products in PARALLEL
+		const receiptItemsForDb = await Promise.all(
+			receiptData.items.map(async (item) => {
+				const productId = await getOrCreateProduct(item);
+				item.product_id = productId; // Update the item with the ID
 
-		for (const item of receiptData.items) {
-			const productId = await getOrCreateProduct(item);
-			item.product_id = productId; // Update the item with the ID
-
-			receiptItemsForDb.push({
-				product_id: productId,
-				quantity: item.quantity,
-				price: item.quantity ? item.price / item.quantity : 0, // Unit price
-				total: item.price,
-				discount: item.discount || 0,
-				promotion: item.promotion || null,
-			});
-		}
+				return {
+					product_id: productId,
+					quantity: item.quantity,
+					price: item.quantity ? item.price / item.quantity : 0, // Unit price
+					total: item.price,
+					discount: item.discount || 0,
+					promotion: item.promotion || null,
+				};
+			})
+		);
 
 		// 3. VALIDATE AND CORRECT TOTALS FROM ITEMS
 		// Calculate subtotal from items (sum of all item prices)

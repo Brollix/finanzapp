@@ -10,6 +10,7 @@ export async function formatReceiptWithBedrock(
 	ocrText: string
 ): Promise<ReceiptData> {
 	try {
+		logger.info("Haiku: Extracting data from OCR...");
 		const prompt = `Please analyze the following text from an OCR scan of a supermarket receipt.
 Extract the key information and format it into a single JSON object.
 
@@ -73,8 +74,8 @@ Return ONLY the JSON object, without any additional text or explanations.`;
 		// Prepare the request payload for Claude
 		const payload = {
 			anthropic_version: "bedrock-2023-05-31",
-			max_tokens: 2000,
-			temperature: 0.1,
+			max_tokens: 4096,
+			temperature: 0.0,
 			messages: [
 				{
 					role: "user",
@@ -105,18 +106,51 @@ Return ONLY the JSON object, without any additional text or explanations.`;
 			throw new Error("No text content in Bedrock response");
 		}
 
-		// Parse the JSON from the response text
-		// Claude might wrap it in markdown code blocks, so we need to extract it
+		// Clean and parse JSON
 		let jsonText = contentText.trim();
 
-		// Remove markdown code blocks if present
-		if (jsonText.startsWith("```json")) {
-			jsonText = jsonText.replace(/^```json\s*/, "").replace(/\s*```$/, "");
-		} else if (jsonText.startsWith("```")) {
-			jsonText = jsonText.replace(/^```\s*/, "").replace(/\s*```$/, "");
+		// 1. Try to extract JSON block if wrapped in markdown or text
+		const jsonMatch = jsonText.match(/\{[\s\S]*\}/);
+		if (jsonMatch) {
+			jsonText = jsonMatch[0];
 		}
 
-		const receiptData: ReceiptData = JSON.parse(jsonText);
+		let rawData;
+		try {
+			rawData = JSON.parse(jsonText);
+		} catch (parseError) {
+			logger.error(
+				`Failed to parse Bedrock JSON response. Raw text length: ${jsonText.length}`
+			);
+			logger.error(`First 200 chars: ${jsonText.substring(0, 200)}`);
+			logger.error(
+				`Last 200 chars: ${jsonText.substring(jsonText.length - 200)}`
+			);
+			throw new Error(
+				`Invalid JSON from Bedrock: ${
+					parseError instanceof Error ? parseError.message : String(parseError)
+				}`
+			);
+		}
+
+		// Post-process numbers (Argentine format -> Float)
+		const receiptData: ReceiptData = {
+			supermarket: rawData.supermarket,
+			datetime: rawData.datetime,
+			total: parseArgentineNumber(rawData.total),
+			items: rawData.items.map((item: any) => ({
+				...item,
+				quantity: parseArgentineNumber(item.quantity),
+				price: parseArgentineNumber(item.price),
+				discount: item.discount
+					? Math.abs(parseArgentineNumber(item.discount))
+					: 0,
+			})),
+			discounts: rawData.discounts?.map((discount: any) => ({
+				...discount,
+				amount: Math.abs(parseArgentineNumber(discount.amount)),
+			})),
+		};
 
 		// Validate the structure
 		if (
@@ -128,8 +162,12 @@ Return ONLY the JSON object, without any additional text or explanations.`;
 			throw new Error("Invalid receipt data structure from Bedrock");
 		}
 
+		logger.info(
+			`🔄 [1/2] Haiku: Extracted ${receiptData.items.length} items. Skipping Sonnet refinement...`
+		);
 		// Chain to Sonnet for final refinement
-		return await refineProductNames(receiptData);
+		// return await refineProductNames(receiptData);
+		return receiptData;
 	} catch (error) {
 		logger.error(`Bedrock error: ${error}`);
 		throw new Error(
@@ -138,6 +176,23 @@ Return ONLY the JSON object, without any additional text or explanations.`;
 			}`
 		);
 	}
+}
+
+/**
+ * Helper to parse Argentine number format (1.234,56) to JS float (1234.56)
+ * If the input is already a number, it returns it as is.
+ */
+export function parseArgentineNumber(value: string | number): number {
+	if (typeof value === "number") {
+		return value;
+	}
+	if (!value) {
+		return 0;
+	}
+	// Remove thousands separator (.) and replace decimal separator (,) with (.)
+	const cleanValue = value.replace(/\./g, "").replace(",", ".");
+	const parsed = parseFloat(cleanValue);
+	return isNaN(parsed) ? 0 : parsed;
 }
 
 export async function generateEmbedding(text: string): Promise<number[]> {
@@ -230,6 +285,7 @@ export async function refineProductNames(
 	receiptData: ReceiptData
 ): Promise<ReceiptData> {
 	try {
+		logger.info("✨ [2/2] Sonnet: Refining product names...");
 		const itemsJson = JSON.stringify(receiptData.items);
 
 		const systemPrompt = `Eres un agente de estandarización de datos de supermercado experto y altamente preciso. Tu tarea es tomar una lista de ítems extraída (que contiene nombres descriptivos y marcas) y limpiar y estandarizar los campos 'product' y 'brand'. Tu objetivo es reducir la variabilidad y preparar los datos para la categorización y el catálogo de vectores de la aplicación FinanzApp. Debes devolver la salida estrictamente como un ARRAY de JSON, SIN preámbulos, explicaciones o texto adicional.`;
@@ -252,7 +308,7 @@ Devuelve ÚNICAMENTE el array JSON con los ítems corregidos, comenzando con '['
 			anthropic_version: "bedrock-2023-05-31",
 			max_tokens: 4096,
 			temperature: 0,
-			system: systemPrompt,
+			system: [{ text: systemPrompt }],
 			messages: [
 				{
 					role: "user",
@@ -290,6 +346,7 @@ Devuelve ÚNICAMENTE el array JSON con los ítems corregidos, comenzando con '['
 
 		const refinedItems = JSON.parse(jsonText);
 
+		logger.info("✅ [2/2] Sonnet: Refinement complete.");
 		// Return updated receipt data
 		return {
 			...receiptData,

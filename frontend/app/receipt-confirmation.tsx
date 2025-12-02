@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
 		padding: theme.spacing.lg,
 	},
 	card: {
-		backgroundColor: theme.colors.surface,
+		backgroundColor: theme.colors.backgroundVariant,
 		borderRadius: theme.borderRadius.lg,
 		padding: theme.spacing.lg,
 		shadowColor: "#000",

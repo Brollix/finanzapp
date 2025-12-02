@@ -67,7 +67,7 @@
 			"typedRoutes": true
 		},
 		"extra": {
-			"backendUrl": "http://18.222.119.175:8080",
+			"backendUrl": "https://d245522eugz5ge.cloudfront.net",
 			"router": {},
 			"eas": {
 				"projectId": "7db8111d-f386-402c-9403-4a076bd2981d"

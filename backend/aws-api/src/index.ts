@@ -89,7 +89,7 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 });
 
 // Start server
-const server = app.listen(PORT, () => {
+const server = app.listen(Number(PORT), "0.0.0.0", () => {
 	logger.info(`FinanzApp AWS API running on port ${PORT}`);
 	logger.info(`Health check: http://localhost:${PORT}/health`);
 	logger.info(`Environment: ${process.env.NODE_ENV || "development"}`);
