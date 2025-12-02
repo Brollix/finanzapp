@@ -2,7 +2,7 @@
 
 El backend principal se encuentra en la carpeta `aws-api`.
 
-## 📂 Estructura
+## Estructura
 
 - `aws-api/`: API principal (Node.js + Express + AWS + Supabase).
 

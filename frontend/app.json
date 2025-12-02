@@ -1,77 +1,77 @@
 {
-  "expo": {
-    "name": "Finanzapp",
-    "slug": "finanzapp",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "scheme": "finanzapp",
-    "userInterfaceStyle": "dark",
-    "icon": "./src/assets/images/icon.png",
-    "splash": {
-      "image": "./src/assets/images/icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#0A0A0A"
-    },
-    "primaryColor": "#8B5CF6",
-    "backgroundColor": "#0A0A0A",
-    "newArchEnabled": true,
-    "ios": {
-      "bundleIdentifier": "com.brollix.finanzapp",
-      "buildNumber": "3",
-      "supportsTablet": true,
-      "infoPlist": {
-        "NSCameraUsageDescription": "Finanzapp necesita acceso a la cámara para escanear tickets y capturar los datos de tus gastos.",
-        "NSPhotoLibraryUsageDescription": "Finanzapp necesita acceso a tu galería para seleccionar imágenes de tickets.",
-        "NSPhotoLibraryAddUsageDescription": "Finanzapp necesita permiso para guardar imágenes de tickets en tu galería.",
-        "ITSAppUsesNonExemptEncryption": false
-      }
-    },
-    "android": {
-      "package": "com.brollix.finanzapp",
-      "versionCode": 3,
-      "edgeToEdgeEnabled": true,
-      "adaptiveIcon": {
-        "foregroundImage": "./src/assets/images/adaptive-icon.png",
-        "backgroundColor": "#0A0A0A"
-      },
-      "permissions": [
-        "android.permission.CAMERA",
-        "android.permission.READ_EXTERNAL_STORAGE",
-        "android.permission.WRITE_EXTERNAL_STORAGE",
-        "android.permission.READ_MEDIA_IMAGES",
-        "android.permission.RECORD_AUDIO"
-      ]
-    },
-    "web": {
-      "bundler": "metro",
-      "output": "static",
-      "favicon": "./src/assets/images/icon.png"
-    },
-    "plugins": [
-      "expo-router",
-      [
-        "expo-camera",
-        {
-          "cameraPermission": "Finanzapp necesita acceso a la cámara para escanear tickets.",
-          "microphonePermission": false
-        }
-      ],
-      [
-        "expo-image-picker",
-        {
-          "photosPermission": "Finanzapp necesita acceso a tu galería para seleccionar imágenes de tickets."
-        }
-      ]
-    ],
-    "experiments": {
-      "typedRoutes": true
-    },
-    "extra": {
-      "backendUrl": "http://18.222.119.175:8080",
-      "router": {},
-      "eas": {
-        "projectId": "7db8111d-f386-402c-9403-4a076bd2981d"
-      }
-    }
-  }
+	"expo": {
+		"name": "Finanzapp",
+		"slug": "finanzapp",
+		"version": "1.0.1",
+		"orientation": "portrait",
+		"scheme": "finanzapp",
+		"userInterfaceStyle": "dark",
+		"icon": "./src/assets/images/icon.png",
+		"splash": {
+			"image": "./src/assets/images/icon.png",
+			"resizeMode": "contain",
+			"backgroundColor": "#0A0A0A"
+		},
+		"primaryColor": "#8B5CF6",
+		"backgroundColor": "#0A0A0A",
+		"newArchEnabled": true,
+		"ios": {
+			"bundleIdentifier": "com.brollix.finanzapp",
+			"buildNumber": "4",
+			"supportsTablet": true,
+			"infoPlist": {
+				"NSCameraUsageDescription": "Finanzapp necesita acceso a la cámara para escanear tickets y capturar los datos de tus gastos.",
+				"NSPhotoLibraryUsageDescription": "Finanzapp necesita acceso a tu galería para seleccionar imágenes de tickets.",
+				"NSPhotoLibraryAddUsageDescription": "Finanzapp necesita permiso para guardar imágenes de tickets en tu galería.",
+				"ITSAppUsesNonExemptEncryption": false
+			}
+		},
+		"android": {
+			"package": "com.brollix.finanzapp",
+			"versionCode": 4,
+			"edgeToEdgeEnabled": true,
+			"adaptiveIcon": {
+				"foregroundImage": "./src/assets/images/adaptive-icon.png",
+				"backgroundColor": "#0A0A0A"
+			},
+			"permissions": [
+				"android.permission.CAMERA",
+				"android.permission.READ_EXTERNAL_STORAGE",
+				"android.permission.WRITE_EXTERNAL_STORAGE",
+				"android.permission.READ_MEDIA_IMAGES",
+				"android.permission.RECORD_AUDIO"
+			]
+		},
+		"web": {
+			"bundler": "metro",
+			"output": "static",
+			"favicon": "./src/assets/images/icon.png"
+		},
+		"plugins": [
+			"expo-router",
+			[
+				"expo-camera",
+				{
+					"cameraPermission": "Finanzapp necesita acceso a la cámara para escanear tickets.",
+					"microphonePermission": false
+				}
+			],
+			[
+				"expo-image-picker",
+				{
+					"photosPermission": "Finanzapp necesita acceso a tu galería para seleccionar imágenes de tickets."
+				}
+			]
+		],
+		"experiments": {
+			"typedRoutes": true
+		},
+		"extra": {
+			"backendUrl": "http://18.222.119.175:8080",
+			"router": {},
+			"eas": {
+				"projectId": "7db8111d-f386-402c-9403-4a076bd2981d"
+			}
+		}
+	}
 }

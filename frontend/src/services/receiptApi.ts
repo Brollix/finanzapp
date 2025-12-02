@@ -1,6 +1,7 @@
 import { ReceiptData, Receipt } from "../types/receipt.types";
 import { resolveBackendUrl } from "../utils/getBackendUrl";
 import Constants from "expo-constants";
+import { supabase } from "../lib/supabase";
 
 /**
  * Service to upload a receipt image and obtain the formatted receipt data.
@@ -10,17 +11,23 @@ export const receiptApi = {
 	 * Get all receipts for a specific user.
 	 * @param userId Current authenticated user ID
 	 */
-	async getUserReceipts(userId: string): Promise<Receipt[]> {
+	async getUserReceipts(): Promise<Receipt[]> {
 		const backendUrl =
 			process.env.EXPO_PUBLIC_BACKEND_URL ||
 			Constants.expoConfig?.extra?.backendUrl ||
 			resolveBackendUrl(undefined, 8080);
-		const url = `${backendUrl}/api/receipt/user/${userId}`;
+		const url = `${backendUrl}/api/receipt/user/me`;
+
+		const {
+			data: { session },
+		} = await supabase.auth.getSession();
+		const token = session?.access_token;
 
 		const response = await fetch(url, {
 			method: "GET",
 			headers: {
 				"Content-Type": "application/json",
+				Authorization: `Bearer ${token}`,
 			},
 		});
 
@@ -37,13 +44,19 @@ export const receiptApi = {
 	 * @param imageUri Local URI of the captured photo (e.g., expo file URI)
 	 * @param userId Current authenticated user ID
 	 */
-	async processReceipt(imageUri: string, userId: string): Promise<ReceiptData> {
+	async processReceipt(imageUri: string): Promise<ReceiptData> {
 		// Use env variable if set, otherwise resolve dynamically
 		const backendUrl =
 			process.env.EXPO_PUBLIC_BACKEND_URL ||
 			Constants.expoConfig?.extra?.backendUrl ||
 			resolveBackendUrl(undefined, 8080);
 		const url = `${backendUrl}/api/receipt/process`;
+
+		const {
+			data: { session },
+		} = await supabase.auth.getSession();
+		const token = session?.access_token;
+
 		const form = new FormData();
 		// Append the image; the backend expects field name "image"
 		form.append("image", {
@@ -51,11 +64,12 @@ export const receiptApi = {
 			name: "ticket.jpg", // Force filename to ticket.jpg for AWS compatibility
 			type: "image/jpeg", // Force mime type to image/jpeg
 		} as any);
-		// Include userId in the form data
-		form.append("userId", userId);
 
 		const response = await fetch(url, {
 			method: "POST",
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
 			body: form,
 		});
 		if (!response.ok) {
@@ -72,23 +86,25 @@ export const receiptApi = {
 	 * @param receiptData The receipt data to save
 	 * @param userId Current authenticated user ID
 	 */
-	async createManualReceipt(
-		receiptData: ReceiptData,
-		userId: string
-	): Promise<ReceiptData> {
+	async createManualReceipt(receiptData: ReceiptData): Promise<ReceiptData> {
 		const backendUrl =
 			process.env.EXPO_PUBLIC_BACKEND_URL ||
 			Constants.expoConfig?.extra?.backendUrl ||
 			resolveBackendUrl(undefined, 8080);
 		const url = `${backendUrl}/api/receipt/manual`;
 
+		const {
+			data: { session },
+		} = await supabase.auth.getSession();
+		const token = session?.access_token;
+
 		const response = await fetch(url, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
+				Authorization: `Bearer ${token}`,
 			},
 			body: JSON.stringify({
-				userId,
 				receiptData,
 			}),
 		});
@@ -110,8 +126,7 @@ export const receiptApi = {
 	 */
 	async updateReceipt(
 		receiptId: string,
-		receiptData: ReceiptData,
-		userId: string
+		receiptData: ReceiptData
 	): Promise<ReceiptData> {
 		const backendUrl =
 			process.env.EXPO_PUBLIC_BACKEND_URL ||
@@ -119,13 +134,18 @@ export const receiptApi = {
 			resolveBackendUrl(undefined, 8080);
 		const url = `${backendUrl}/api/receipt/${receiptId}`;
 
+		const {
+			data: { session },
+		} = await supabase.auth.getSession();
+		const token = session?.access_token;
+
 		const response = await fetch(url, {
 			method: "PUT",
 			headers: {
 				"Content-Type": "application/json",
+				Authorization: `Bearer ${token}`,
 			},
 			body: JSON.stringify({
-				userId,
 				receiptData,
 			}),
 		});

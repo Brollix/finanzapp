@@ -1,6 +1,6 @@
-# 🔧 Guía Detallada: Configuración AWS + Supabase para FinanzApp
+# Guía Detallada: Configuración AWS + Supabase para FinanzApp
 
-## 📋 Requisitos
+## Requisitos
 
 - Cuenta AWS (gratis en [aws.amazon.com](https://aws.amazon.com))
 - Tarjeta de crédito/débito (para verificación AWS)
@@ -22,7 +22,7 @@
 1. Botón naranja **Create user**
 2. **User name**: `finanzapp-backend`
 3. **NO marques** "Provide user access to AWS Management Console"
-   - ⚠️ Solo necesitamos acceso programático, no consola
+   - Solo necesitamos acceso programático, no consola
 4. Click **Next**
 
 ### 1.3 Configurar Permisos
@@ -34,9 +34,9 @@
 3. En la nueva pestaña:
 4. Click **Create policy**
 5. **Cierra esta pestaña**, vuelve a la creación de usuario
-6. Click el botón **refresh** 🔄 (junto a "Create policy")
+6. Click el botón **refresh** (junto a "Create policy")
 7. En el buscador, escribe: `FinanzAppBackendPolicy`
-8. Marca la casilla ☑️ junto a **FinanzAppBackendPolicy**
+8. Marca la casilla junto a **FinanzAppBackendPolicy**
 9. Click **Next** → **Create user**
 
 ---
@@ -56,25 +56,25 @@
 
 Verás varias opciones con círculos (radio buttons):
 
-✅ **SELECCIONA ESTA:**
+**SELECCIONA ESTA:**
 
 ```
-⚪ Application running outside AWS
+( ) Application running outside AWS
    You want to use this access key to enable an application
    running outside of AWS to access your AWS account
 ```
 
-❌ **NO SELECCIONES:**
+**NO SELECCIONES:**
 
-- ❌ Command Line Interface (CLI) - Para AWS CLI
-- ❌ Local code - Para desarrollo local
-- ❌ Third-party service - Para servicios externos
-- ❌ Other - Otros casos
+- Command Line Interface (CLI) - Para AWS CLI
+- Local code - Para desarrollo local
+- Third-party service - Para servicios externos
+- Other - Otros casos
 
 **Pasos:**
 
-1. Click en el círculo ⚪ junto a **"Application running outside AWS"**
-2. Marca la casilla: ☑️ **"I understand the above recommendation..."**
+1. Click en el círculo junto a **"Application running outside AWS"**
+2. Marca la casilla: **"I understand the above recommendation..."**
 3. Click **Next**
 
 ### 2.3 Agregar Descripción
@@ -82,17 +82,17 @@ Verás varias opciones con círculos (radio buttons):
 1. **Description tag value**: `FinanzApp Backend API`
 2. Click **Create access key**
 
-### 2.4 ⚠️ COPIAR CREDENCIALES (CRÍTICO)
+### 2.4 COPIAR CREDENCIALES (CRÍTICO)
 
-**🚨 SOLO VERÁS EL SECRET KEY UNA VEZ**
+**SOLO VERÁS EL SECRET KEY UNA VEZ**
 
 Verás una pantalla así:
 
 ```
-✅ Access key created
+Access key created
 
 Access key ID
-AKIAIOSFODNN7EXAMPLE        [Copy] 📋
+AKIAIOSFODNN7EXAMPLE        [Copy]
 
 Secret access key
 [Show] ← CLICK AQUÍ PRIMERO
@@ -100,13 +100,13 @@ Secret access key
 
 **PASOS EXACTOS:**
 
-1. Click en **[Copy]** 📋 junto a **Access key ID**
+1. Click en **[Copy]** junto a **Access key ID**
 2. Abre `backend/aws-api/.env` en tu editor
 3. Pega en la línea: `AWS_ACCESS_KEY_ID=PEGA_AQUI`
 4. Vuelve a AWS Console
 5. Click en **[Show]** junto a **Secret access key**
 6. Ahora verás el secret completo
-7. Click en **[Copy]** 📋 junto al secret key
+7. Click en **[Copy]** junto al secret key
 8. Pega en: `AWS_SECRET_ACCESS_KEY=PEGA_AQUI`
 9. Click **Done**
 
@@ -125,7 +125,7 @@ Secret access key
 
 1. Barra de búsqueda superior (negra): **Bedrock**
 2. Click en **Amazon Bedrock**
-3. **⚠️ VERIFICAR REGIÓN:**
+3. **VERIFICAR REGIÓN:**
    - Esquina superior derecha, junto a tu nombre
    - Debe decir: **N. Virginia** o **us-east-1**
    - Si dice otra cosa (Ohio, Oregon, etc.):
@@ -144,29 +144,29 @@ Busca la sección **Anthropic** (tiene logo de Anthropic):
 
 **MODELO PRINCIPAL (OBLIGATORIO):**
 
-☑️ **Claude 3 Haiku**
+**Claude 3 Haiku**
 
 - Nombre exacto en la lista: `Claude 3 Haiku`
 - Model ID: `anthropic.claude-3-haiku-20240307-v1:0`
-- Velocidad: ⚡⚡⚡ Muy rápido (< 1 segundo)
-- Costo: 💰 Muy bajo ($0.00025 por request)
+- Velocidad: Muy rápido (< 1 segundo)
+- Costo: Muy bajo ($0.00025 por request)
 - **Este es el que usarás por defecto**
 
 **MODELO OPCIONAL (SI NECESITAS MÁS PRECISIÓN):**
 
-☑️ **Claude 3.5 Sonnet**
+**Claude 3.5 Sonnet**
 
 - Nombre exacto: `Claude 3.5 Sonnet`
 - Model ID: `anthropic.claude-3-5-sonnet-20240620-v1:0`
-- Velocidad: ⚡⚡ Rápido (1-2 segundos)
-- Costo: 💰💰💰 Alto ($0.003 por request - 12x más caro)
+- Velocidad: Rápido (1-2 segundos)
+- Costo: Alto ($0.003 por request - 12x más caro)
 - **Solo para casos que requieran máxima precisión**
 
 **NO NECESITAS:**
 
-- ❌ Claude 3 Opus (muy costoso)
-- ❌ Claude 2.x (versiones antiguas)
-- ❌ Claude Instant (deprecado)
+- Claude 3 Opus (muy costoso)
+- Claude 2.x (versiones antiguas)
+- Claude Instant (deprecado)
 
 ### 3.4 Confirmar
 
@@ -177,11 +177,11 @@ Busca la sección **Anthropic** (tiene logo de Anthropic):
 ### 3.5 Verificar Aprobación
 
 1. Espera **5-10 segundos**
-2. Click botón **Refresh** 🔄 (arriba a la derecha)
+2. Click botón **Refresh** (arriba a la derecha)
 3. Busca la columna **Access status**
 4. Deberías ver:
-   - ✅ **Access granted** (verde) - Claude 3 Haiku
-   - ✅ **Access granted** (verde) - Claude 3.5 Sonnet (si lo pediste)
+   - **Access granted** (verde) - Claude 3 Haiku
+   - **Access granted** (verde) - Claude 3.5 Sonnet (si lo pediste)
 
 **Si ves "Access requested" (amarillo):**
 
@@ -231,7 +231,7 @@ BEDROCK_MODEL_ID=anthropic.claude-3-haiku-20240307-v1:0
 
 1. Ve a [supabase.com](https://supabase.com)
 2. Selecciona tu proyecto
-3. Click ⚙️ **Project Settings** (abajo a la izquierda)
+3. Click **Project Settings** (abajo a la izquierda)
 4. Click **API** en el menú lateral
 
 ### 5.2 Copiar Valores
@@ -321,8 +321,8 @@ npm run dev
 Deberías ver:
 
 ```
-🚀 FinanzApp AWS API running on port 8080
-📍 Health check: http://localhost:8080/health
+FinanzApp AWS API running on port 8080
+Health check: http://localhost:8080/health
 ```
 
 **Test:**
@@ -343,7 +343,7 @@ Respuesta esperada:
 
 ---
 
-## ✅ Checklist Final
+## Checklist Final
 
 - [ ] Usuario IAM creado: `finanzapp-backend`
 - [ ] Política adjuntada: `FinanzAppBackendPolicy`
@@ -357,7 +357,7 @@ Respuesta esperada:
 
 ---
 
-## 🐛 Problemas Comunes
+## Problemas Comunes
 
 **Error: "The security token is invalid"**
 
@@ -377,7 +377,7 @@ Respuesta esperada:
 
 ---
 
-## 💰 Costos
+## Costos
 
 - **Textract**: $0.0015 por ticket
 - **Bedrock Haiku**: $0.0005 por ticket

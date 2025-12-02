@@ -55,7 +55,7 @@ export default function ReceiptConfirmationScreen() {
 				router.replace("/dashboard");
 			} else {
 				// Not saved yet (manual creation flow or if process didn't save)
-				await receiptApi.createManualReceipt(receiptData, user.id);
+				await receiptApi.createManualReceipt(receiptData);
 				router.dismissAll();
 				router.replace("/dashboard");
 			}

@@ -33,23 +33,23 @@ router.post(
 				return;
 			}
 
-			console.log("🔍 Step 1: Extracting text with Textract...");
+			console.log("Step 1: Extracting text with Textract...");
 			const startTextract = Date.now();
 			const ocrText = await extractTextFromImage(req.file.buffer);
 			const textractTime = Date.now() - startTextract;
-			console.log(`✅ Textract completed in ${textractTime}ms`);
+			console.log(`Textract completed in ${textractTime}ms`);
 			console.log(
-				`📄 Extracted text (${ocrText.length} chars):\n${ocrText.substring(
+				`Extracted text (${ocrText.length} chars):\n${ocrText.substring(
 					0,
 					200
 				)}...`
 			);
 
-			console.log("\n🤖 Step 2: Formatting with Bedrock...");
+			console.log("\nStep 2: Formatting with Bedrock...");
 			const startBedrock = Date.now();
 			const receiptData = await formatReceiptWithBedrock(ocrText);
 			const bedrockTime = Date.now() - startBedrock;
-			console.log(`✅ Bedrock completed in ${bedrockTime}ms`);
+			console.log(`Bedrock completed in ${bedrockTime}ms`);
 
 			const totalTime = Date.now() - startTextract;
 
@@ -66,7 +66,7 @@ router.post(
 				},
 			});
 		} catch (error) {
-			console.error("❌ Error processing receipt:", error);
+			console.error("Error processing receipt:", error);
 			res.status(500).json({
 				error: "Failed to process receipt",
 				message: error instanceof Error ? error.message : "Unknown error",
@@ -88,16 +88,16 @@ router.post(
 				return;
 			}
 
-			console.log("🤖 Testing Bedrock with provided text...");
+			console.log("Testing Bedrock with provided text...");
 			console.log(
-				`📄 Input text (${text.length} chars):\n${text.substring(0, 200)}...`
+				`Input text (${text.length} chars):\n${text.substring(0, 200)}...`
 			);
 
 			const startBedrock = Date.now();
 			const receiptData = await formatReceiptWithBedrock(text);
 			const bedrockTime = Date.now() - startBedrock;
 
-			console.log(`✅ Bedrock completed in ${bedrockTime}ms`);
+			console.log(`Bedrock completed in ${bedrockTime}ms`);
 
 			res.status(200).json({
 				success: true,
@@ -109,7 +109,7 @@ router.post(
 				},
 			});
 		} catch (error) {
-			console.error("❌ Error formatting with Bedrock:", error);
+			console.error("Error formatting with Bedrock:", error);
 			res.status(500).json({
 				error: "Failed to format text with Bedrock",
 				message: error instanceof Error ? error.message : "Unknown error",

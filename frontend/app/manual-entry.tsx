@@ -60,7 +60,7 @@ export default function ManualEntryScreen() {
 		try {
 			const user = await authService.getCurrentUser();
 			if (user) {
-				const receipts = await receiptApi.getUserReceipts(user.id);
+				const receipts = await receiptApi.getUserReceipts();
 				const supers = Array.from(
 					new Set(receipts.map((r) => r.supermarket).filter(Boolean))
 				);
@@ -201,10 +201,10 @@ export default function ManualEntryScreen() {
 			// Check if we're editing (receiptId exists) or creating new
 			if (receiptId) {
 				// Update existing receipt
-				await receiptApi.updateReceipt(receiptId, receiptData, user.id);
+				await receiptApi.updateReceipt(receiptId, receiptData);
 			} else {
 				// Create new receipt
-				await receiptApi.createManualReceipt(receiptData, user.id);
+				await receiptApi.createManualReceipt(receiptData);
 			}
 
 			setShowSuccessModal(true);

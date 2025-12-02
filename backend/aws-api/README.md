@@ -2,7 +2,7 @@
 
 Backend en Node.js/Express que integra **AWS Textract** (OCR), **AWS Bedrock** (LLM) y **Supabase**.
 
-## 🚀 Quick Start
+## Quick Start
 
 1.  **Instalar dependencias:**
 
@@ -37,13 +37,13 @@ Backend en Node.js/Express que integra **AWS Textract** (OCR), **AWS Bedrock** (
     npm run dev
     ```
 
-## 🛠️ Scripts
+## Scripts
 
 - `npm run dev`: Inicia servidor con hot-reload.
 - `npm run build`: Compila TypeScript.
 - `npm start`: Inicia versión compilada.
 
-## 📦 Arquitectura
+## Arquitectura
 
 - **Textract**: Extrae texto crudo de imágenes.
 - **Bedrock (Claude)**: Procesa el texto y lo estructura en JSON.

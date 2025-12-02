@@ -37,7 +37,7 @@ export default function DiscountsScreen() {
 		if (!user) return;
 		try {
 			setLoading(true);
-			const receipts = await receiptApi.getUserReceipts(user.id);
+			const receipts = await receiptApi.getUserReceipts();
 			processReceipts(receipts);
 		} catch (error) {
 			console.error("Error fetching receipts:", error);

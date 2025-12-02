@@ -60,9 +60,9 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 
 // Start server
 app.listen(PORT, () => {
-	console.log(`🚀 FinanzApp AWS API running on port ${PORT}`);
-	console.log(`📍 Health check: http://localhost:${PORT}/health`);
-	console.log(`📝 Environment: ${process.env.NODE_ENV || "development"}`);
+	console.log(`FinanzApp AWS API running on port ${PORT}`);
+	console.log(`Health check: http://localhost:${PORT}/health`);
+	console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
 });
 
 export default app;

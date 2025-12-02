@@ -1,7 +1,6 @@
 import {
 	View,
 	TouchableOpacity,
-	Alert,
 	ActivityIndicator,
 	StyleSheet,
 	Text,
@@ -9,18 +8,14 @@ import {
 	Animated,
 	Easing,
 } from "react-native";
-import { useRouter } from "expo-router";
-import { CameraView, useCameraPermissions } from "expo-camera";
-import { useRef, useState, useEffect } from "react";
-import type { CameraCapturedPicture } from "expo-camera";
-
+import { CameraView } from "expo-camera";
+import { useState, useEffect, useRef } from "react";
 import { Ionicons } from "@expo/vector-icons";
 
 import { Button } from "../src/components/ui/Button";
 import { core } from "../src/styles/core.styles";
 import { theme } from "../src/styles/theme";
-import { receiptApi } from "../src/services/receiptApi";
-import { authService } from "../src/features/auth/services/authService";
+import { useReceiptScanner } from "../src/hooks/useReceiptScanner";
 
 const LOADING_MESSAGES = [
 	"Analizando tu ticket con Inteligencia Artificial...",
@@ -30,17 +25,23 @@ const LOADING_MESSAGES = [
 ];
 
 export default function Capture() {
-	const cameraRef = useRef<CameraView>(null);
-	const router = useRouter();
-	const [capturedImage, setCapturedImage] = useState<string | null>(null);
-	const [permission, requestPermission] = useCameraPermissions();
+	const {
+		permission,
+		requestPermission,
+		loading,
+		capturedImage,
+		cameraRef,
+		takePicture,
+		retakePicture,
+		processReceipt,
+	} = useReceiptScanner();
+
 	const [isFlashOn, setIsFlashOn] = useState(false);
-	const [loading, setLoading] = useState(false);
 	const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
 	const fadeAnim = useRef(new Animated.Value(0)).current;
 
 	useEffect(() => {
-		let interval: NodeJS.Timeout;
+		let interval: any;
 		if (loading) {
 			// Start message rotation
 			interval = setInterval(() => {
@@ -128,122 +129,6 @@ export default function Capture() {
 		);
 	}
 
-	const handleCapture = async () => {
-		if (cameraRef.current && !loading) {
-			try {
-				const photo: CameraCapturedPicture =
-					await cameraRef.current.takePictureAsync({
-						quality: 0.5, // Reduced quality for faster upload/processing
-						base64: false,
-						exif: false,
-					});
-
-				setCapturedImage(photo.uri);
-				setIsFlashOn(false);
-			} catch (error) {
-				console.error("Error al capturar foto:", error);
-				Alert.alert("Error", "No se pudo capturar la foto");
-			}
-		}
-	};
-
-	const handleRetake = () => {
-		setCapturedImage(null);
-	};
-
-	const handleConfirm = async () => {
-		if (!capturedImage) return;
-
-		try {
-			setLoading(true);
-			// Get current user ID
-			const user = await authService.getCurrentUser();
-			if (!user) {
-				Alert.alert("Error", "Usuario no autenticado");
-				setLoading(false);
-				return;
-			}
-
-			// Process receipt with backend
-			try {
-				console.log("📸 Iniciando procesamiento del ticket...");
-				console.log("Usuario ID:", user.id);
-				console.log("Imagen URI:", capturedImage);
-
-				const receiptData = await receiptApi.processReceipt(
-					capturedImage,
-					user.id
-				);
-
-				console.log("✅ Ticket procesado exitosamente");
-
-				// Success - navigate to confirmation screen
-				router.push({
-					pathname: "/receipt-confirmation",
-					params: { receipt: JSON.stringify(receiptData) },
-				});
-			} catch (error) {
-				console.error("❌ Error al procesar el ticket:", error);
-
-				// Extract more detailed error information
-				let errorMessage = "No se pudo procesar el ticket. Inténtalo de nuevo.";
-				let errorDetails = "";
-
-				if (error instanceof Error) {
-					errorDetails = error.message;
-					console.error("Error message:", error.message);
-
-					// Parse backend error response if available
-					if (error.message.includes("Receipt API error")) {
-						// Extract status code and error text
-						const statusMatch = error.message.match(/error (\d+):/);
-						const status = statusMatch ? statusMatch[1] : "unknown";
-
-						if (status === "400") {
-							errorMessage =
-								"La imagen no es clara o el formato no es válido. Por favor, intenta tomar una foto mejor iluminada.";
-						} else if (status === "429") {
-							errorMessage =
-								"Has alcanzado el límite de escaneos por ahora. Por favor, intenta más tarde.";
-						} else if (status === "500") {
-							// Try to extract specific error type
-							if (error.message.includes("Textract")) {
-								errorMessage =
-									"No pudimos leer el texto del ticket. Asegúrate de que esté bien iluminado y enfocado.";
-							} else if (error.message.includes("Bedrock")) {
-								errorMessage =
-									"La IA tuvo problemas para entender el ticket. Intenta tomar la foto desde otro ángulo.";
-							} else {
-								errorMessage =
-									"Ocurrió un problema en nuestros servidores. Estamos trabajando en ello.";
-							}
-						} else if (
-							status === "unknown" ||
-							error.message.includes("fetch") ||
-							error.message.includes("Network request failed")
-						) {
-							errorMessage =
-								"No se pudo conectar al servidor. Verifica tu conexión a internet.";
-						}
-					}
-				}
-
-				Alert.alert("Ups, algo salió mal", errorMessage, [
-					{ text: "Entendido" },
-				]);
-			} finally {
-				setLoading(false);
-			}
-		} catch (error) {
-			console.error("❌ Error general:", error);
-			Alert.alert(
-				"Error Inesperado",
-				"Ocurrió un error inesperado. Por favor, intenta nuevamente."
-			);
-			setLoading(false);
-		}
-	};
-
 	return (
 		<View style={core.flex1}>
 			{capturedImage ? (
@@ -286,13 +171,13 @@ export default function Capture() {
 					) : (
 						<View style={styles.captureOverlay}>
 							<Button
-								onPress={handleRetake}
+								onPress={retakePicture}
 								title="Reintentar"
 								variant="outline"
 								style={{ flex: 1, marginRight: theme.spacing.sm }}
 							/>
 							<Button
-								onPress={handleConfirm}
+								onPress={processReceipt}
 								title="Usar foto"
 								style={{ flex: 1, marginLeft: theme.spacing.sm }}
 							/>
@@ -321,7 +206,7 @@ export default function Capture() {
 						</TouchableOpacity>
 						<Button
 							testID="capture-button"
-							onPress={handleCapture}
+							onPress={takePicture}
 							leftIcon={<Ionicons name="camera" />}
 							disabled={loading}
 							loading={loading}
@@ -385,17 +270,5 @@ const styles = StyleSheet.create({
 		flexDirection: "row",
 		alignItems: "center",
 		opacity: 0.7,
-	},
-	permissionContainer: {
-		justifyContent: "center",
-		alignItems: "center",
-		padding: theme.spacing.xl,
-		backgroundColor: theme.colors.background,
-	},
-	permissionText: {
-		textAlign: "center",
-		marginBottom: theme.spacing.lg,
-		color: theme.colors.text,
-		fontSize: theme.font.size.md,
 	},
 });

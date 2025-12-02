@@ -1,6 +1,6 @@
 {
   "name": "finanzapp-aws-api",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "FinanzApp backend with AWS Textract, Bedrock, and Supabase",
   "main": "dist/index.js",
   "scripts": {
@@ -26,7 +26,8 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "multer": "^1.4.5-lts.1",
-    "uuid": "^13.0.0"
+    "uuid": "^13.0.0",
+    "zod": "^4.1.13"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",

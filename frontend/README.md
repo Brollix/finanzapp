@@ -2,7 +2,7 @@
 
 Aplicación móvil construida con **Expo** y **React Native**.
 
-## 🚀 Quick Start
+## Quick Start
 
 1.  **Instalar dependencias:**
 
@@ -34,7 +34,7 @@ Aplicación móvil construida con **Expo** y **React Native**.
     ```
     Usa la app **Expo Go** en tu celular o un emulador para escanear el QR.
 
-## 📁 Estructura Clave
+## Estructura Clave
 
 - `app/`: Rutas y navegación (Expo Router).
 - `src/components/`: Componentes reutilizables.

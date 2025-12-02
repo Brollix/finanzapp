@@ -25,29 +25,24 @@ This guide will walk you through setting up AWS services (Textract and Bedrock) 
 
 ```json
 {
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "TextractAccess",
-      "Effect": "Allow",
-      "Action": [
-        "textract:DetectDocumentText",
-        "textract:AnalyzeDocument"
-      ],
-      "Resource": "*"
-    },
-    {
-      "Sid": "BedrockAccess",
-      "Effect": "Allow",
-      "Action": [
-        "bedrock:InvokeModel"
-      ],
-      "Resource": [
-        "arn:aws:bedrock:*::foundation-model/anthropic.claude-3-haiku-20240307-v1:0",
-        "arn:aws:bedrock:*::foundation-model/anthropic.claude-3-5-sonnet-20240620-v1:0"
-      ]
-    }
-  ]
+	"Version": "2012-10-17",
+	"Statement": [
+		{
+			"Sid": "TextractAccess",
+			"Effect": "Allow",
+			"Action": ["textract:DetectDocumentText", "textract:AnalyzeDocument"],
+			"Resource": "*"
+		},
+		{
+			"Sid": "BedrockAccess",
+			"Effect": "Allow",
+			"Action": ["bedrock:InvokeModel"],
+			"Resource": [
+				"arn:aws:bedrock:*::foundation-model/anthropic.claude-3-haiku-20240307-v1:0",
+				"arn:aws:bedrock:*::foundation-model/anthropic.claude-3-5-sonnet-20240620-v1:0"
+			]
+		}
+	]
 }
 ```
 
@@ -59,10 +54,11 @@ This guide will walk you through setting up AWS services (Textract and Bedrock) 
 ### Option B: Use AWS Managed Policies (Less Secure)
 
 Attach these managed policies:
+
 - `AmazonTextractFullAccess`
 - `AmazonBedrockFullAccess`
 
-⚠️ **Note**: Managed policies grant broader permissions than needed.
+Note: Managed policies grant broader permissions than needed.
 
 ## Step 3: Create Access Keys
 
@@ -73,10 +69,11 @@ Attach these managed policies:
 5. Select **Application running outside AWS**
 6. Click **Next** → **Create access key**
 7. **IMPORTANT**: Copy both:
+
    - Access key ID
    - Secret access key
-   
-   ⚠️ You won't be able to see the secret key again!
+
+   You won't be able to see the secret key again!
 
 ## Step 4: Enable Bedrock Models
 
@@ -106,10 +103,10 @@ BEDROCK_MODEL_ID=anthropic.claude-3-haiku-20240307-v1:0
 
 ### Available Claude Models
 
-| Model | ID | Speed | Cost | Use Case |
-|-------|-----|-------|------|----------|
-| Claude 3 Haiku | `anthropic.claude-3-haiku-20240307-v1:0` | Fast | Low | Production (recommended) |
-| Claude 3.5 Sonnet | `anthropic.claude-3-5-sonnet-20240620-v1:0` | Medium | High | High accuracy needs |
+| Model             | ID                                          | Speed  | Cost | Use Case                 |
+| ----------------- | ------------------------------------------- | ------ | ---- | ------------------------ |
+| Claude 3 Haiku    | `anthropic.claude-3-haiku-20240307-v1:0`    | Fast   | Low  | Production (recommended) |
+| Claude 3.5 Sonnet | `anthropic.claude-3-5-sonnet-20240620-v1:0` | Medium | High | High accuracy needs      |
 
 ## Step 6: Test Configuration
 
@@ -127,11 +124,12 @@ curl http://localhost:8080/health
 ```
 
 Expected response:
+
 ```json
 {
-  "status": "healthy",
-  "timestamp": "2025-11-22T10:00:00.000Z",
-  "service": "finanzapp-aws-api"
+	"status": "healthy",
+	"timestamp": "2025-11-22T10:00:00.000Z",
+	"service": "finanzapp-aws-api"
 }
 ```
 
@@ -188,14 +186,15 @@ If successful, you should get a JSON response with extracted receipt data.
 
 ## Next Steps
 
-- ✅ AWS configured
-- ⏭️ Set up Supabase (see main README)
-- ⏭️ Test the complete flow
-- ⏭️ Deploy to production
+- AWS configured
+- Set up Supabase (see main README)
+- Test the complete flow
+- Deploy to production
 
 ## Support
 
 For AWS-specific issues:
+
 - [AWS Textract Documentation](https://docs.aws.amazon.com/textract/)
 - [AWS Bedrock Documentation](https://docs.aws.amazon.com/bedrock/)
 - [AWS Support Center](https://console.aws.amazon.com/support/)
