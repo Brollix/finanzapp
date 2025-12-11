@@ -44,7 +44,7 @@ export const receiptApi = {
 	 * @param imageUri Local URI of the captured photo (e.g., expo file URI)
 	 * @param userId Current authenticated user ID
 	 */
-	async processReceipt(imageUri: string): Promise<ReceiptData> {
+	async processReceipt(imageUri: string): Promise<Receipt> {
 		// Use env variable if set, otherwise resolve dynamically
 		const backendUrl =
 			process.env.EXPO_PUBLIC_BACKEND_URL ||
@@ -78,7 +78,7 @@ export const receiptApi = {
 		}
 		const json = await response.json();
 		// Backend returns { success: true, data: receipt }
-		return json.data as ReceiptData;
+		return json.data as Receipt;
 	},
 
 	/**
@@ -86,7 +86,7 @@ export const receiptApi = {
 	 * @param receiptData The receipt data to save
 	 * @param userId Current authenticated user ID
 	 */
-	async createManualReceipt(receiptData: ReceiptData): Promise<ReceiptData> {
+	async createManualReceipt(receiptData: ReceiptData): Promise<Receipt> {
 		const backendUrl =
 			process.env.EXPO_PUBLIC_BACKEND_URL ||
 			Constants.expoConfig?.extra?.backendUrl ||
@@ -115,7 +115,7 @@ export const receiptApi = {
 		}
 
 		const json = await response.json();
-		return json.data as ReceiptData;
+		return json.data as Receipt;
 	},
 
 	/**
@@ -127,7 +127,7 @@ export const receiptApi = {
 	async updateReceipt(
 		receiptId: string,
 		receiptData: ReceiptData
-	): Promise<ReceiptData> {
+	): Promise<Receipt> {
 		const backendUrl =
 			process.env.EXPO_PUBLIC_BACKEND_URL ||
 			Constants.expoConfig?.extra?.backendUrl ||
@@ -156,6 +156,6 @@ export const receiptApi = {
 		}
 
 		const json = await response.json();
-		return json.data as ReceiptData;
+		return json.data as Receipt;
 	},
 };

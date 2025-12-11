@@ -9,11 +9,13 @@ import { theme } from "../src/styles/theme";
 import { ReceiptData, Receipt } from "../src/types/receipt.types";
 import { receiptApi } from "../src/services/receiptApi";
 import { useAuth } from "../src/features/auth/context/AuthContext";
+import { useReceipts } from "../src/context/ReceiptContext";
 
 export default function ReceiptConfirmationScreen() {
 	const router = useRouter();
 	const params = useLocalSearchParams();
 	const { user } = useAuth();
+	const { addReceipt } = useReceipts();
 	const [loading, setLoading] = useState(false);
 
 	// Parse receipt data from params
@@ -45,11 +47,16 @@ export default function ReceiptConfirmationScreen() {
 
 			if ((receiptData as Receipt).id) {
 				// Already saved, just go home
+				// Ideally we should add it to context if it's not there, but since it was processed
+				// it might not be in the list yet if we didn't refresh.
+				// So let's add it to be safe.
+				addReceipt(receiptData as Receipt);
 				router.dismissAll();
 				router.replace("/dashboard");
 			} else {
 				// Not saved yet (manual creation flow or if process didn't save)
-				await receiptApi.createManualReceipt(receiptData);
+				const created = await receiptApi.createManualReceipt(receiptData);
+				addReceipt(created);
 				router.dismissAll();
 				router.replace("/dashboard");
 			}

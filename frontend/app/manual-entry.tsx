@@ -24,10 +24,12 @@ import { authService } from "../src/features/auth/services/authService";
 import { SuccessModal } from "../src/components/modals";
 import { ManualItemForm } from "../src/components/forms/ManualItemForm";
 import { formatCurrency } from "../src/utils/formatCurrency";
+import { useReceipts } from "../src/context/ReceiptContext";
 
 export default function ManualEntryScreen() {
 	const router = useRouter();
 	const params = useLocalSearchParams();
+	const { addReceipt, updateReceipt } = useReceipts();
 	const [supermarket, setSupermarket] = useState("");
 	const [datetime, setDatetime] = useState(
 		new Date().toLocaleString("es-AR", {
@@ -218,10 +220,12 @@ export default function ManualEntryScreen() {
 			// Check if we're editing (receiptId exists) or creating new
 			if (receiptId) {
 				// Update existing receipt
-				await receiptApi.updateReceipt(receiptId, receiptData);
+				const updated = await receiptApi.updateReceipt(receiptId, receiptData);
+				updateReceipt(updated);
 			} else {
 				// Create new receipt
-				await receiptApi.createManualReceipt(receiptData);
+				const created = await receiptApi.createManualReceipt(receiptData);
+				addReceipt(created);
 			}
 
 			setShowSuccessModal(true);

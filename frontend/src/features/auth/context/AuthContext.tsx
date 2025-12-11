@@ -9,6 +9,7 @@ import React, {
 import { AuthCredentials, AuthContextType, User } from "../types";
 import { authService } from "../services/authService";
 import { supabase } from "../../../lib/supabase";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const AuthContext = createContext<AuthContextType | undefined>(
 	undefined
@@ -43,6 +44,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 					console.warn(
 						"Refresh token inválido detectado. Cerrando sesión para limpiar estado."
 					);
+					// Force clear everything
+					await AsyncStorage.removeItem(
+						"sb-bluhllaqxvvflaguamwe.supabase.co-auth-token"
+					);
 					await supabase.auth.signOut();
 				}
 				setUser(null);
@@ -59,10 +64,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 		const {
 			data: { subscription },
 		} = supabase.auth.onAuthStateChange(async (_event, session) => {
-			if (session?.user) {
-				const userWithProfile = await authService.getCurrentUser();
-				setUser(userWithProfile);
-			} else {
+			try {
+				if (session?.user) {
+					const userWithProfile = await authService.getCurrentUser();
+					setUser(userWithProfile);
+				} else {
+					setUser(null);
+				}
+			} catch (error) {
+				console.error("Error en onAuthStateChange:", error);
 				setUser(null);
 			}
 		});

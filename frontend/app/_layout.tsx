@@ -10,6 +10,7 @@ SplashScreen.preventAutoHideAsync().catch(() => {});
 // Root navigator: simple Stack with no header (screens may override)
 import { AuthProvider } from "../src/features/auth/context/AuthContext";
 import { OcrProvider } from "../src/context/OcrContext";
+import { ReceiptProvider } from "../src/context/ReceiptContext";
 
 import * as Linking from "expo-linking";
 
@@ -41,9 +42,11 @@ export default function RootLayout() {
 	}
 	return (
 		<AuthProvider>
-			<OcrProvider>
-				<Stack screenOptions={{ headerShown: false }} />
-			</OcrProvider>
+			<ReceiptProvider>
+				<OcrProvider>
+					<Stack screenOptions={{ headerShown: false }} />
+				</OcrProvider>
+			</ReceiptProvider>
 		</AuthProvider>
 	);
 }

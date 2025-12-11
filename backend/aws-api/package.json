@@ -1,13 +1,15 @@
 {
   "name": "finanzapp-aws-api",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "FinanzApp backend with AWS Textract, Bedrock, and Supabase",
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test:optimization": "npm run build && node dist/scripts/test_optimization.js",
+    "test:timing": "npm run build && node dist/scripts/test_timing_analysis.js"
   },
   "keywords": [
     "finanzapp",

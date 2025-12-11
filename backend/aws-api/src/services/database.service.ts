@@ -101,39 +101,65 @@ export async function saveReceipt(
 			0
 		);
 
-		// Calculate total_saved from items (sum of all item discounts)
-		const calculatedTotalSaved = receiptData.items.reduce(
+		// Calculate explicit savings from items (sum of all item discounts)
+		const explicitItemSavings = receiptData.items.reduce(
 			(sum, item) => sum + (item.discount || 0),
 			0
 		);
 
-		// Calculate correct total (subtotal - discounts)
-		const calculatedTotal = calculatedSubtotal - calculatedTotalSaved;
+		let finalTotal = 0;
+		let finalSubtotal = calculatedSubtotal;
+		let finalTotalSaved = 0;
 
-		// Check if AI-provided total matches our calculation
-		const totalDifference = Math.abs(receiptData.total - calculatedTotal);
-		const TOLERANCE = 0.01; // Allow 1 cent difference due to rounding
-
-		if (totalDifference > TOLERANCE) {
-			logger.warn(
-				`Total mismatch! AI: ${receiptData.total}, Calculated: ${calculatedTotal}. Using calculated.`
+		// Logic to determine final total and savings
+		if (
+			receiptData.total &&
+			receiptData.total > 0 &&
+			receiptData.total < calculatedSubtotal
+		) {
+			// Case 1: AI Total is valid and less than subtotal -> Trust AI Total (Net)
+			// This implies there are general discounts or unlinked item discounts
+			finalTotal = receiptData.total;
+			finalTotalSaved = calculatedSubtotal - finalTotal;
+			logger.info(
+				`Using AI Total (${finalTotal}) which is less than Subtotal (${calculatedSubtotal}). Inferred Savings: ${finalTotalSaved.toFixed(
+					2
+				)}`
 			);
+		} else {
+			// Case 2: AI Total is missing, zero, or greater/equal to subtotal
+			// Fallback to standard calculation
+			finalTotal = calculatedSubtotal - explicitItemSavings;
+			finalTotalSaved = explicitItemSavings;
+
+			// Warn if AI total was provided but significantly different (and not lower)
+			if (receiptData.total && Math.abs(receiptData.total - finalTotal) > 1.0) {
+				logger.warn(
+					`AI Total (${receiptData.total}) mismatch with calculated (${finalTotal}). Using calculated.`
+				);
+			}
 		}
 
-		// Use calculated values (they are always correct based on items)
-		const finalTotal = calculatedTotal;
-		const finalSubtotal = calculatedSubtotal;
-		const finalTotalSaved = calculatedTotalSaved;
-
-		// Build discounts array from items if not provided or empty
+		// Build discounts array
 		let finalDiscounts = receiptData.discounts || [];
-		if (finalDiscounts.length === 0 && calculatedTotalSaved > 0) {
-			finalDiscounts = receiptData.items
-				.filter((item) => (item.discount || 0) > 0)
-				.map((item) => ({
-					description: item.promotion || "Descuento",
-					amount: item.discount || 0,
-				}));
+
+		// If we have savings but no discount entries, try to populate them
+		if (finalTotalSaved > 0) {
+			const existingSavings = finalDiscounts.reduce(
+				(sum: number, d: any) => sum + (d.amount || 0),
+				0
+			);
+
+			// If explicit discounts don't match total saved, add a general discount entry
+			if (Math.abs(finalTotalSaved - existingSavings) > 1.0) {
+				const diff = finalTotalSaved - existingSavings;
+				if (diff > 0) {
+					finalDiscounts.push({
+						description: "Descuentos Varios / Generales",
+						amount: parseFloat(diff.toFixed(2)),
+					});
+				}
+			}
 		}
 
 		logger.info(
@@ -231,39 +257,62 @@ export async function updateReceipt(
 			0
 		);
 
-		// Calculate total_saved from items (sum of all item discounts)
-		const calculatedTotalSaved = receiptData.items.reduce(
+		// Calculate explicit savings from items (sum of all item discounts)
+		const explicitItemSavings = receiptData.items.reduce(
 			(sum, item) => sum + (item.discount || 0),
 			0
 		);
 
-		// Calculate correct total (subtotal - discounts)
-		const calculatedTotal = calculatedSubtotal - calculatedTotalSaved;
+		let finalTotal = 0;
+		let finalSubtotal = calculatedSubtotal;
+		let finalTotalSaved = 0;
 
-		// Check if provided total matches our calculation
-		const totalDifference = Math.abs(receiptData.total - calculatedTotal);
-		const TOLERANCE = 0.01; // Allow 1 cent difference due to rounding
-
-		if (totalDifference > TOLERANCE) {
-			logger.warn(
-				`Total mismatch! Provided: ${receiptData.total}, Calculated: ${calculatedTotal}. Using calculated.`
+		// Logic to determine final total and savings
+		if (
+			receiptData.total &&
+			receiptData.total > 0 &&
+			receiptData.total < calculatedSubtotal
+		) {
+			// Case 1: AI Total is valid and less than subtotal -> Trust AI Total (Net)
+			finalTotal = receiptData.total;
+			finalTotalSaved = calculatedSubtotal - finalTotal;
+			logger.info(
+				`Using AI Total (${finalTotal}) which is less than Subtotal (${calculatedSubtotal}). Inferred Savings: ${finalTotalSaved.toFixed(
+					2
+				)}`
 			);
+		} else {
+			// Case 2: Fallback to standard calculation
+			finalTotal = calculatedSubtotal - explicitItemSavings;
+			finalTotalSaved = explicitItemSavings;
+
+			if (receiptData.total && Math.abs(receiptData.total - finalTotal) > 1.0) {
+				logger.warn(
+					`AI Total (${receiptData.total}) mismatch with calculated (${finalTotal}). Using calculated.`
+				);
+			}
 		}
 
-		// Use calculated values (they are always correct based on items)
-		const finalTotal = calculatedTotal;
-		const finalSubtotal = calculatedSubtotal;
-		const finalTotalSaved = calculatedTotalSaved;
-
-		// Build discounts array from items if not provided or empty
+		// Build discounts array
 		let finalDiscounts = receiptData.discounts || [];
-		if (finalDiscounts.length === 0 && calculatedTotalSaved > 0) {
-			finalDiscounts = receiptData.items
-				.filter((item) => (item.discount || 0) > 0)
-				.map((item) => ({
-					description: item.promotion || "Descuento",
-					amount: item.discount || 0,
-				}));
+
+		// If we have savings but no discount entries, try to populate them
+		if (finalTotalSaved > 0) {
+			const existingSavings = finalDiscounts.reduce(
+				(sum: number, d: any) => sum + (d.amount || 0),
+				0
+			);
+
+			// If explicit discounts don't match total saved, add a general discount entry
+			if (Math.abs(finalTotalSaved - existingSavings) > 1.0) {
+				const diff = finalTotalSaved - existingSavings;
+				if (diff > 0) {
+					finalDiscounts.push({
+						description: "Descuentos Varios / Generales",
+						amount: parseFloat(diff.toFixed(2)),
+					});
+				}
+			}
 		}
 
 		logger.info(

@@ -5,81 +5,59 @@ import logger from "../utils/logger.js";
 
 const BEDROCK_MODEL_ID =
 	process.env.BEDROCK_MODEL_ID || "anthropic.claude-3-haiku-20240307-v1:0";
+const BEDROCK_SONNET_MODEL_ID =
+	"global.anthropic.claude-sonnet-4-20250514-v1:0";
+
+// Optimized static system prompt for Haiku (cached for 5 minutes)
+const HAIKU_SYSTEM_PROMPT = `Extract supermarket receipt data to JSON.
+
+NUMBERS: Argentine format. "5.850,00" → 5850.00 (remove dots, comma to period). Positive except discounts.
+
+STRUCTURE:
+- supermarket: Commercial name only (Carrefour, Coto, Disco, Jumbo, Día, Vea)
+- datetime: 24h format "DD/MM/YYYY HH:MM:SS" (e.g., "30/11/2024 14:30:00")
+- total: Final amount (float)
+- items: [{ product, brand?, quantity, price, discount?, promotion?, is_weight? }]
+- discounts: [{ description, amount }]
+
+RULES:
+1. Group duplicate products (sum quantity/price)
+2. Product names: descriptive, Title Case ("Leche Entera 1L", "Galletitas Chocolate")
+3. Brands: McCain, Paty, Bimbo, Tang, Coca Cola, La Serenisima, Arcor, Lucchetti, Knorr, Hellmanns, Dove, Colgate, etc. Extract if clear, else null
+4. Discounts: Link to product above, use absolute values. Price = gross (before discount)
+5. Exclude: Total, Subtotal, Pago, Vuelto, tax lines
+6. is_weight: true if sold by weight (kg, peso, quantity like 0.750)
+
+EXAMPLES:
+"MCCAIN PAPAS 2.5KG" → {product: "Papas Fritas", brand: "McCain", is_weight: true}
+"FIDEOS RINA 4.800,00\\n2do 50% -1.200,00" → {product: "Fideos", brand: "Rina", price: 4800, discount: 1200, promotion: "2do al 50%"}
+"GALLETITAS OREO" (x2) → Group into one item
+
+Return JSON only.`;
 
 export async function formatReceiptWithBedrock(
 	ocrText: string
 ): Promise<ReceiptData> {
 	try {
 		logger.info("Haiku: Extracting data from OCR...");
-		const prompt = `Please analyze the following text from an OCR scan of a supermarket receipt.
-Extract the key information and format it into a single JSON object.
 
-**VERY IMPORTANT RULE FOR NUMBERS:**
-The source text uses the Argentinian number format. The period '.' is a thousands separator and the comma ',' is the decimal separator.
-To create a valid JSON number (float), you MUST first REMOVE all periods '.' from the number string, and then REPLACE the comma ',' with a period '.'.
-For example, the text "5.850,00" must be converted to the number 5850.00 in the JSON. Always positive numbers except for discounts, may be negative.
-
-**IMPORTANT RULES FOR STORE/PRODUCT/BRAND:**
-1. **Supermarket Name:** Extract ONLY the commercial name (e.g., "Carrefour", "Disco", "Jumbo", "Día", "Coto", "Vea"). Ignore CUIT, address, legal info.
-2. **Item Extraction & Grouping:**
-   - **Group Identical Items:** If the same product (same name and brand) appears multiple times, GROUP them into a single item entry by summing their quantities and prices.
-   - **Product Name:** The name MUST be descriptive. Include qualifiers like 'Integral', 'Light', '1.5L', flavor, or type. Do NOT strip these details. Example: "Leche Entera 1L", "Galletitas Chocolate", "Queso Crema Light". Use Title Case.
-   - **Brand Name:** Extract the brand. It is often at the start or end of the line.
-     - *Common Brands:* McCain, Paty, Bimbo, Tang, Coca Cola, La Serenisima, Arcor, Lucchetti, Matarazzo, Knorr, Hellmanns, Natura, Cocinero, Villavicencio, Villa del Sur, Brahma, Quilmes, Colgate, Dove, Plusbelle, Ala, Skip, Ayudin, Magistral.
-     - If the brand is NOT clearly visible, leave it as null.
-   - **Is Weight:** Set to true ONLY if the item is clearly sold by weight (e.g., "kg", "x kg", "peso", or quantity like 0.750).
-   - **Promotions & Discounts (CRITICAL):**
-     - **Look for separate discount lines:** Discounts often appear on the line BELOW the product. They may have negative prices (e.g., "-1.200,00") or text like "2do al 50%", "Desc.", "Oferta".
-     - **Link to Product:** You MUST associate these discount lines with the product immediately above them.
-     - **Calculation:**
-       - The "price" field of the item should be the GROSS price (before discount).
-       - The "discount" field should be the absolute value of the discount amount (e.g., if the line says "-1.200", discount is 1200).
-       - The "promotion" field should contain the description (e.g., "2do al 50%").
-     - **Example:**
-       - Line 1: "Fideos RINA ... 4.800,00"
-       - Line 2: "2do al 50% Fideos ... -1.200,00"
-       - Result: One item -> { product: "Fideos RINA", price: 4800, discount: 1200, promotion: "2do al 50%" }
-
-**EXAMPLES:**
-- Text: "MCCAIN PAPAS FRITAS 2.5KG" -> product: "Papas Fritas", brand: "McCain", is_weight: true
-- Text: "JABON LIQ ARIEL" -> product: "Jabon Liquido", brand: "Ariel"
-- Text: "TOMATE PERITA KG" -> product: "Tomate Perita", brand: null, is_weight: true
-- Text: "GALLETITAS OREO" + "GALLETITAS OREO" -> Group into one item with summed quantity and price.
-- Text: "SHAMPOO DOVE" + "50% 2DA UNIDAD (-1.500)" -> product: "Shampoo", brand: "Dove", promotion: "50% 2da u.", discount: 1500.00, price: 3000.00
-
-The JSON object should have the following structure:
-- "supermarket": The commercial name of the store ONLY (string).
-- "datetime": The date and time of the purchase (string). **CRITICAL: Use 24-hour format HH:MM:SS (00-23 hours). Example: "30/11/2024 14:30:00" for 2:30 PM. NEVER use 12-hour format or AM/PM indicators.**
-- "total": The final total amount of the ticket (float).
-- "items": A list of all purchased items. Each item in the list should be a JSON object with:
-    - "product": The generic product name without brand (string).
-    - "brand": The brand name if clearly present (string, optional).
-    - "quantity": The quantity of the item (float). If sold by weight, this is the weight in kg.
-    - "price": The total price for that item line (float).
-    - "is_weight": Boolean, true if sold by weight (optional).
-    - "discount": The total discount amount for this item (float, optional, default 0).
-    - "promotion": The promotion description (string, optional).
-- "discounts": A list of ALL discounts found in the receipt. Each object should have:
-    - "description": The text description of the discount (e.g., "2do al 50% Fideos", "Oferta").
-    - "amount": The absolute value of the discount amount (float).
-    - IMPORTANT: Just extract what is written. DO NOT calculate the total sum yourself.
-
-Here is the OCR text:
----
-${ocrText}
----
-
-Return ONLY the JSON object, without any additional text or explanations.`;
-
-		// Prepare the request payload for Claude
+		// Prepare the request payload for Claude with prompt caching
+		// Note: cache_control may not be available in all Bedrock regions
 		const payload = {
 			anthropic_version: "bedrock-2023-05-31",
-			max_tokens: 4096,
+			max_tokens: 2048, // Reduced from 4096
 			temperature: 0.0,
+			system: [
+				{
+					type: "text",
+					text: HAIKU_SYSTEM_PROMPT,
+					// cache_control: { type: "ephemeral" }, // Disabled: not available in all regions
+				},
+			],
 			messages: [
 				{
 					role: "user",
-					content: prompt,
+					content: `OCR Text:\n---\n${ocrText}\n---`,
 				},
 			],
 		};
@@ -127,8 +105,7 @@ Return ONLY the JSON object, without any additional text or explanations.`;
 				`Last 200 chars: ${jsonText.substring(jsonText.length - 200)}`
 			);
 			throw new Error(
-				`Invalid JSON from Bedrock: ${
-					parseError instanceof Error ? parseError.message : String(parseError)
+				`Invalid JSON from Bedrock: ${parseError instanceof Error ? parseError.message : String(parseError)
 				}`
 			);
 		}
@@ -142,13 +119,12 @@ Return ONLY the JSON object, without any additional text or explanations.`;
 				...item,
 				quantity: parseArgentineNumber(item.quantity),
 				price: parseArgentineNumber(item.price),
-				discount: item.discount
-					? Math.abs(parseArgentineNumber(item.discount))
-					: 0,
+				discount: item.discount ? parseArgentineNumber(item.discount) : 0,
 			})),
-			discounts: rawData.discounts?.map((discount: any) => ({
-				...discount,
-				amount: Math.abs(parseArgentineNumber(discount.amount)),
+			// Pass discounts to Sonnet if needed, or handle them there
+			discounts: rawData.discounts?.map((d: any) => ({
+				description: d.description,
+				amount: Math.abs(parseArgentineNumber(d.amount)),
 			})),
 		};
 
@@ -163,16 +139,21 @@ Return ONLY the JSON object, without any additional text or explanations.`;
 		}
 
 		logger.info(
-			`🔄 [1/2] Haiku: Extracted ${receiptData.items.length} items. Skipping Sonnet refinement...`
+			`🔄 [1/2] Haiku: Extracted ${receiptData.items.length} raw items.`
 		);
-		// Chain to Sonnet for final refinement
-		// return await refineProductNames(receiptData);
+
+		// Conditional refinement: Skip Sonnet for simple receipts
+		if (needsRefinement(receiptData)) {
+			logger.info("Complex receipt detected, refining with Sonnet...");
+			return await refineProductNames(receiptData);
+		}
+
+		logger.info("✅ Simple receipt, skipping Sonnet refinement");
 		return receiptData;
 	} catch (error) {
 		logger.error(`Bedrock error: ${error}`);
 		throw new Error(
-			`Failed to format receipt with Bedrock: ${
-				error instanceof Error ? error.message : "Unknown error"
+			`Failed to format receipt with Bedrock: ${error instanceof Error ? error.message : "Unknown error"
 			}`
 		);
 	}
@@ -193,6 +174,30 @@ export function parseArgentineNumber(value: string | number): number {
 	const cleanValue = value.replace(/\./g, "").replace(",", ".");
 	const parsed = parseFloat(cleanValue);
 	return isNaN(parsed) ? 0 : parsed;
+}
+
+/**
+ * Determines if a receipt needs Sonnet refinement based on complexity.
+ * Skip Sonnet for simple receipts to reduce latency by ~50%.
+ */
+function needsRefinement(data: ReceiptData): boolean {
+	// Check for unassigned discounts
+	const hasUnassignedDiscounts = data.discounts && data.discounts.length > 0;
+
+	// Check if receipt is complex (many items)
+	const isComplex = data.items.length > 10;
+
+	// Check for weird characters in product names (OCR artifacts)
+	const hasWeirdChars = data.items.some((item) =>
+		/[^a-zA-Z0-9\s\.\,\-áéíóúñÁÉÍÓÚÑüÜ]/.test(item.product)
+	);
+
+	// Check if any product name is all caps (needs Title Case fix)
+	const hasAllCaps = data.items.some(
+		(item) => item.product === item.product.toUpperCase() && item.product.length > 3
+	);
+
+	return hasUnassignedDiscounts || isComplex || hasWeirdChars || hasAllCaps;
 }
 
 export async function generateEmbedding(text: string): Promise<number[]> {
@@ -219,8 +224,7 @@ export async function generateEmbedding(text: string): Promise<number[]> {
 	} catch (error) {
 		logger.error(`Bedrock embedding error: ${error}`);
 		throw new Error(
-			`Failed to generate embedding: ${
-				error instanceof Error ? error.message : "Unknown error"
+			`Failed to generate embedding: ${error instanceof Error ? error.message : "Unknown error"
 			}`
 		);
 	}
@@ -281,34 +285,43 @@ Return ONLY the category name, nothing else.`;
 	}
 }
 
+// Optimized Sonnet system prompt (cached)
+const SONNET_SYSTEM_PROMPT = `Receipt data cleaner. Fix typos, map discounts, use Title Case. Output JSON only.`;
+
 export async function refineProductNames(
 	receiptData: ReceiptData
 ): Promise<ReceiptData> {
 	try {
-		logger.info("✨ [2/2] Sonnet: Refining product names...");
+		logger.info("✨ [2/2] Sonnet: Refining names and mapping discounts...");
 		const itemsJson = JSON.stringify(receiptData.items);
+		const discountsJson = JSON.stringify(receiptData.discounts || []);
 
-		const systemPrompt = `Eres un agente de estandarización de datos de supermercado experto y altamente preciso. Tu tarea es tomar una lista de ítems extraída (que contiene nombres descriptivos y marcas) y limpiar y estandarizar los campos 'product' y 'brand'. Tu objetivo es reducir la variabilidad y preparar los datos para la categorización y el catálogo de vectores de la aplicación FinanzApp. Debes devolver la salida estrictamente como un ARRAY de JSON, SIN preámbulos, explicaciones o texto adicional.`;
+		const userPrompt = `Items: ${itemsJson}
+Discounts: ${discountsJson}
 
-		const userPrompt = `Aplica las siguientes reglas estrictas para estandarizar y refinar cada ítem de esta lista.
+Tasks:
+1. Fix typos, use Title Case
+2. Extract brands from product names
+3. Link unassigned discounts to items (add discount/promotion fields to item)
+4. Remove non-product lines (Total, Subtotal, Pago, Vuelto)
+5. PRESERVE all discount and promotion values from items
+6. IMPORTANT: Remove linked discounts from the discounts array. Only keep truly unassigned discounts.
 
-REGLAS DE ESTANDARIZACIÓN (APLICACIÓN RIGUROSA):
-1. **Nombre del Producto ('product'):** Debe ser el nombre **más completo y comercialmente conocido**. Debe usar **Title Case** e incluir la variedad, el sabor y el formato/peso (litros/kg/unidades) siempre que sea posible inferirlo.
-2. **Marca ('brand'):** Debe ser el nombre comercial oficial. Si es un producto genérico o de panadería de supermercado, usa **'Producto Propio Disco'** o **'Producto Propio Panadería'** en lugar de null si es aplicable.
-3. **No Modificar:** NO modifiques **NUNCA** los campos 'price', 'quantity', 'discount', 'is_weight', 'promotion' ni 'product_id'. Mantenlos idénticos al input.
-
-Lista de Ítems a Refinar:
----
-${itemsJson}
----
-
-Devuelve ÚNICAMENTE el array JSON con los ítems corregidos, comenzando con '['.`;
+Return: {"items": [...], "discounts": [...]}
+- items: Array with discount/promotion fields for items that have them
+- discounts: Array with ONLY unlinked/unassigned discounts (empty if all discounts were linked)`;
 
 		const payload = {
 			anthropic_version: "bedrock-2023-05-31",
-			max_tokens: 4096,
+			max_tokens: 2048, // Increased from 1024 to handle complex receipts with many items
 			temperature: 0,
-			system: [{ text: systemPrompt }],
+			system: [
+				{
+					type: "text",
+					text: SONNET_SYSTEM_PROMPT,
+					// cache_control: { type: "ephemeral" }, // Disabled: not available in all regions
+				},
+			],
 			messages: [
 				{
 					role: "user",
@@ -318,7 +331,7 @@ Devuelve ÚNICAMENTE el array JSON con los ítems corregidos, comenzando con '['
 		};
 
 		const command = new InvokeModelCommand({
-			modelId: "anthropic.claude-3-5-sonnet-20240620-v1:0",
+			modelId: BEDROCK_SONNET_MODEL_ID,
 			contentType: "application/json",
 			accept: "application/json",
 			body: JSON.stringify(payload),
@@ -344,13 +357,23 @@ Devuelve ÚNICAMENTE el array JSON con los ítems corregidos, comenzando con '['
 			jsonText = jsonText.replace(/^```\s*/, "").replace(/\s*```$/, "");
 		}
 
-		const refinedItems = JSON.parse(jsonText);
+		let refinedData;
+		try {
+			refinedData = JSON.parse(jsonText);
+		} catch (parseError) {
+			logger.error(`Failed to parse Sonnet JSON response. Raw text length: ${jsonText.length}`);
+			logger.error(`First 500 chars: ${jsonText.substring(0, 500)}`);
+			logger.error(`Last 500 chars: ${jsonText.substring(Math.max(0, jsonText.length - 500))}`);
+			logger.error(`Parse error: ${parseError instanceof Error ? parseError.message : String(parseError)}`);
+			throw parseError;
+		}
 
 		logger.info("✅ [2/2] Sonnet: Refinement complete.");
 		// Return updated receipt data
 		return {
 			...receiptData,
-			items: refinedItems,
+			items: refinedData.items || [],
+			discounts: refinedData.discounts || [],
 		};
 	} catch (error) {
 		logger.error(`Bedrock refinement error: ${error}`);
