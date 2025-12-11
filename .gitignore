@@ -89,3 +89,27 @@ frontend/.env.production
 # Private Documentation
 API_ENDPOINTS.md
 
+################
+# 7. Test & Sample Files
+################
+# Test results
+test-results/
+**/test-results/
+
+# Sample images and test data
+samples/
+**/samples/
+
+# Agent workflows (optional - can be kept if useful)
+.agent/
+
+# Sample data files
+**/src/data/*.json
+!**/src/data/.gitkeep
+
+# Design source files (large binary files)
+**/*.ai
+**/*.psd
+docs/*.ai
+docs/*.psd
+docs/*.mp4
