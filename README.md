@@ -1,32 +1,38 @@
 # FinanzApp
 
-App móvil para escanear y analizar tickets de compra usando IA.
+![React Native](https://img.shields.io/badge/React%20Native-0.72-blue?logo=react)
+![Expo](https://img.shields.io/badge/Expo-49.0-black?logo=expo)
+![Node.js](https://img.shields.io/badge/Node.js-18+-green?logo=node.js)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?logo=typescript)
+![AWS](https://img.shields.io/badge/AWS-Bedrock%20%2B%20Textract-orange?logo=amazon-aws)
+![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-green?logo=supabase)
 
-## Stack Tecnológico
+Aplicación móvil que automatiza el registro de gastos mediante escaneo inteligente de tickets. Utiliza **OCR** y **IA** para extraer y estructurar información de compras, facilitando el seguimiento financiero personal.
 
-- **Frontend**: React Native + Expo
-- **Backend**: Node.js + Express
+## 🎯 Características Principales
+
+- **📸 Escaneo Inteligente**: Captura tickets con la cámara y extrae automáticamente productos, precios y totales usando AWS Textract
+- **🤖 Procesamiento con IA**: Claude 3 (AWS Bedrock) estructura y categoriza los datos de compra
+- **📊 Dashboard Analítico**: Visualiza gastos, estadísticas y análisis de descuentos por supermercado
+- **💾 Sincronización en Tiempo Real**: Base de datos PostgreSQL en Supabase con autenticación integrada
+- **🚀 Arquitectura Escalable**: Backend en Node.js/Express desplegado en AWS con Docker
+
+## 🏗️ Arquitectura
+
+![Flujo de la Aplicación](docs/flowchart.png)
+
+Ver [documentación técnica completa](docs/) para detalles de implementación.
+
+## 🛠️ Stack Tecnológico
+
+- **Frontend**: React Native + Expo (TypeScript)
+- **Backend**: Node.js + Express + TypeScript
 - **Base de datos**: Supabase (PostgreSQL)
 - **IA**: AWS Bedrock (Claude 3 Haiku)
 - **OCR**: AWS Textract
+- **Deployment**: AWS EC2 + CloudFront, EAS Build
 
-## Estructura del Proyecto
-
-```
-finanzapp/
-├── frontend/          # App React Native
-│   ├── src/
-│   ├── app.json
-│   └── package.json
-├── backend/
-│   └── aws-api/      # API Node.js
-│       ├── src/
-│       ├── Dockerfile
-│       └── package.json
-└── docs/             # Documentación técnica
-```
-
-## Quick Start
+## 🚀 Quick Start
 
 ### Frontend (Desarrollo)
 
@@ -45,21 +51,38 @@ npm install
 npm run dev
 ```
 
-## Deployment
+## 📦 Estructura del Proyecto
 
-Ver documentación en `/docs`:
+```
+finanzapp/
+├── frontend/          # App React Native (Expo)
+│   ├── app/          # Rutas y navegación
+│   └── src/          # Componentes, servicios, hooks
+├── backend/
+│   └── aws-api/      # API Node.js/Express
+│       ├── src/
+│       │   ├── controllers/
+│       │   ├── services/  # Textract, Bedrock, DB
+│       │   └── routes/
+│       └── Dockerfile
+└── docs/             # Documentación técnica
+```
 
-- **Backend**: [docs/deploy-backend.md](docs/deploy-backend.md)
-- **Mobile**: [docs/deploy-mobile.md](docs/deploy-mobile.md)
+## 📚 Documentación
 
-## Configuración
+- **Setup Completo**: [docs/setup-completo.md](docs/setup-completo.md)
+- **Deploy Backend**: [docs/deploy-backend.md](docs/deploy-backend.md)
+- **Deploy Mobile**: [docs/deploy-mobile.md](docs/deploy-mobile.md)
+- **Configuración AWS**: [docs/aws-setup.md](docs/aws-setup.md)
 
-Copia `.env.example` y configura:
+## ⚙️ Configuración
 
-- Credenciales AWS (Bedrock + Textract)
-- Credenciales Supabase
-- URL del backend (para el móvil)
+Copia `.env.example` en cada módulo y configura:
 
-## Licencia
+- **AWS**: Credenciales IAM (Bedrock + Textract)
+- **Supabase**: URL del proyecto y service role key
+- **Backend URL**: Para el cliente móvil (producción)
+
+## 📄 Licencia
 
 Uso privado - Brollix © 2025
