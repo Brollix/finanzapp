@@ -19,7 +19,7 @@ Aplicación móvil que automatiza el registro de gastos mediante escaneo intelig
 
 ## 🏗️ Arquitectura
 
-![Flujo de la Aplicación](docs/flowchart.png)
+![Flujo de la Aplicación](docs/flowchart-architecture.jpg)
 
 Ver [documentación técnica completa](docs/) para detalles de implementación.
 
