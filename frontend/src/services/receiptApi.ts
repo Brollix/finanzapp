@@ -33,7 +33,30 @@ export const receiptApi = {
 
 		if (!response.ok) {
 			const errText = await response.text();
-			throw new Error(`Receipt API error ${response.status}: ${errText}`);
+			// Try to parse error as JSON to extract errorType
+			let errorType: string | undefined;
+			let errorMessage: string = errText;
+			
+			try {
+				const errorJson = JSON.parse(errText);
+				if (errorJson.errorType) {
+					errorType = errorJson.errorType;
+				}
+				if (errorJson.message) {
+					errorMessage = errorJson.message;
+				} else if (errorJson.error) {
+					errorMessage = errorJson.error;
+				}
+			} catch {
+				// If parsing fails, use errText as-is (plain text error)
+			}
+			
+			// Include errorType in error message for easier detection
+			const errorMsg = errorType
+				? `Receipt API error ${response.status}: errorType: ${errorType} | ${errorMessage}`
+				: `Receipt API error ${response.status}: ${errorMessage}`;
+			
+			throw new Error(errorMsg);
 		}
 
 		const json = await response.json();
@@ -74,7 +97,30 @@ export const receiptApi = {
 		});
 		if (!response.ok) {
 			const errText = await response.text();
-			throw new Error(`Receipt API error ${response.status}: ${errText}`);
+			// Try to parse error as JSON to extract errorType
+			let errorType: string | undefined;
+			let errorMessage: string = errText;
+			
+			try {
+				const errorJson = JSON.parse(errText);
+				if (errorJson.errorType) {
+					errorType = errorJson.errorType;
+				}
+				if (errorJson.message) {
+					errorMessage = errorJson.message;
+				} else if (errorJson.error) {
+					errorMessage = errorJson.error;
+				}
+			} catch {
+				// If parsing fails, use errText as-is (plain text error)
+			}
+			
+			// Include errorType in error message for easier detection
+			const errorMsg = errorType
+				? `Receipt API error ${response.status}: errorType: ${errorType} | ${errorMessage}`
+				: `Receipt API error ${response.status}: ${errorMessage}`;
+			
+			throw new Error(errorMsg);
 		}
 		const json = await response.json();
 		// Backend returns { success: true, data: receipt }
@@ -111,7 +157,30 @@ export const receiptApi = {
 
 		if (!response.ok) {
 			const errText = await response.text();
-			throw new Error(`Receipt API error ${response.status}: ${errText}`);
+			// Try to parse error as JSON to extract errorType
+			let errorType: string | undefined;
+			let errorMessage: string = errText;
+			
+			try {
+				const errorJson = JSON.parse(errText);
+				if (errorJson.errorType) {
+					errorType = errorJson.errorType;
+				}
+				if (errorJson.message) {
+					errorMessage = errorJson.message;
+				} else if (errorJson.error) {
+					errorMessage = errorJson.error;
+				}
+			} catch {
+				// If parsing fails, use errText as-is (plain text error)
+			}
+			
+			// Include errorType in error message for easier detection
+			const errorMsg = errorType
+				? `Receipt API error ${response.status}: errorType: ${errorType} | ${errorMessage}`
+				: `Receipt API error ${response.status}: ${errorMessage}`;
+			
+			throw new Error(errorMsg);
 		}
 
 		const json = await response.json();
@@ -152,7 +221,30 @@ export const receiptApi = {
 
 		if (!response.ok) {
 			const errText = await response.text();
-			throw new Error(`Receipt API error ${response.status}: ${errText}`);
+			// Try to parse error as JSON to extract errorType
+			let errorType: string | undefined;
+			let errorMessage: string = errText;
+			
+			try {
+				const errorJson = JSON.parse(errText);
+				if (errorJson.errorType) {
+					errorType = errorJson.errorType;
+				}
+				if (errorJson.message) {
+					errorMessage = errorJson.message;
+				} else if (errorJson.error) {
+					errorMessage = errorJson.error;
+				}
+			} catch {
+				// If parsing fails, use errText as-is (plain text error)
+			}
+			
+			// Include errorType in error message for easier detection
+			const errorMsg = errorType
+				? `Receipt API error ${response.status}: errorType: ${errorType} | ${errorMessage}`
+				: `Receipt API error ${response.status}: ${errorMessage}`;
+			
+			throw new Error(errorMsg);
 		}
 
 		const json = await response.json();

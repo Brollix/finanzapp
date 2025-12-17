@@ -55,6 +55,10 @@ export const useReceiptScanner = () => {
 					const statusMatch = error.message.match(/error (\d+):/);
 					const status = statusMatch ? statusMatch[1] : "unknown";
 
+					// Extract errorType from error message (format: "errorType: textract_error")
+					const errorTypeMatch = error.message.match(/errorType: (\w+)/);
+					const errorType = errorTypeMatch ? errorTypeMatch[1] : null;
+
 					if (status === "400") {
 						errorMessage =
 							"La imagen no es clara o el formato no es válido. Por favor, intenta tomar una foto mejor iluminada.";
@@ -62,15 +66,31 @@ export const useReceiptScanner = () => {
 						errorMessage =
 							"Has alcanzado el límite de escaneos por ahora. Por favor, intenta más tarde.";
 					} else if (status === "500") {
-						if (error.message.includes("Textract")) {
+						// Prioritize errorType detection over text matching
+						if (errorType === "textract_error") {
 							errorMessage =
 								"No pudimos leer el texto del ticket. Asegúrate de que esté bien iluminado y enfocado.";
-						} else if (error.message.includes("Bedrock")) {
+						} else if (errorType === "bedrock_error") {
 							errorMessage =
 								"La IA tuvo problemas para entender el ticket. Intenta tomar la foto desde otro ángulo.";
-						} else {
+						} else if (errorType === "database_error") {
 							errorMessage =
-								"Ocurrió un problema en nuestros servidores. Estamos trabajando en ello.";
+								"No se pudo guardar el ticket. Por favor, intenta de nuevo en unos momentos.";
+						} else if (errorType === "unknown_error") {
+							errorMessage =
+								"Ocurrió un problema inesperado. Estamos trabajando en ello.";
+						} else {
+							// Fallback to text matching for backward compatibility
+							if (error.message.includes("Textract") || error.message.includes("textract")) {
+								errorMessage =
+									"No pudimos leer el texto del ticket. Asegúrate de que esté bien iluminado y enfocado.";
+							} else if (error.message.includes("Bedrock") || error.message.includes("bedrock")) {
+								errorMessage =
+									"La IA tuvo problemas para entender el ticket. Intenta tomar la foto desde otro ángulo.";
+							} else {
+								errorMessage =
+									"Ocurrió un problema en nuestros servidores. Estamos trabajando en ello.";
+							}
 						}
 					} else if (
 						status === "unknown" ||

@@ -1,78 +1,123 @@
-name: Deploy Backend to AWS EC2
+name: Deploy Backend to EC2
 
 on:
   push:
     branches:
       - main
     paths:
-      - "backend/aws-api/**"
-  workflow_dispatch: # Permite ejecutar manualmente desde GitHub
+      - 'backend/aws-api/**'
+      - '.github/workflows/deploy-backend.yml'
+  workflow_dispatch:  # Permite ejecutar manualmente
 
 jobs:
   deploy:
     name: Deploy to EC2
     runs-on: ubuntu-latest
-
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+          SSH_HOST: ${{ secrets.EC2_HOST }}
+          SSH_USER: ${{ secrets.EC2_USER }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H $SSH_HOST >> ~/.ssh/known_hosts
+
       - name: Deploy to EC2
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            # Limpiar espacio en disco antes de empezar
-            docker system prune -a -f --volumes
-
+        env:
+          SSH_HOST: ${{ secrets.EC2_HOST }}
+          SSH_USER: ${{ secrets.EC2_USER }}
+        run: |
+          ssh $SSH_USER@$SSH_HOST << 'ENDSSH'
+            set -e
+            
+            echo "📥 Pulling latest changes..."
             cd ~/finanzapp
-            # Intentar limpiar git si quedó corrupto por falta de espacio
-            git gc --prune=now || true
-
             git pull origin main
+            
+            echo "🚀 Deploying backend..."
             cd backend/aws-api
+            chmod +x deploy.sh
+            ./deploy.sh
+            
+            echo "✅ Deployment completed!"
+          ENDSSH
 
-            # Construir nueva imagen
-            docker build -t finanzapp-backend:latest .
+      - name: Health Check
+        env:
+          API_URL: ${{ secrets.EC2_API_URL }}
+        run: |
+          echo "🏥 Checking API health..."
+          sleep 10
+          
+          MAX_RETRIES=6
+          RETRY_COUNT=0
+          
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            if curl -f $API_URL/health; then
+              echo "✅ API is healthy!"
+              exit 0
+            fi
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+            echo "Retry $RETRY_COUNT/$MAX_RETRIES..."
+            sleep 10
+          done
+          
+          echo "❌ API health check failed"
+          exit 1
 
-            # Detener y eliminar contenedor viejo
-            docker stop finanzapp-api || true
-            docker rm finanzapp-api || true
+      - name: Cleanup old Docker images on EC2
+        if: success()
+        env:
+          SSH_HOST: ${{ secrets.EC2_HOST }}
+          SSH_USER: ${{ secrets.EC2_USER }}
+        run: |
+          ssh $SSH_USER@$SSH_HOST << 'ENDSSH'
+            echo "🧹 Post-deployment cleanup agresivo..."
+            
+            # 1. Remover imágenes antiguas (mantener solo las últimas 2)
+            echo "Limpiando imágenes antiguas de finanzapp-backend..."
+            docker images finanzapp-backend -q | tail -n +3 | xargs -r docker rmi -f 2>/dev/null || true
+            
+            # 2. Remover TODAS las imágenes sin tag (dangling)
+            echo "Removiendo imágenes dangling..."
+            docker images -f "dangling=true" -q | xargs -r docker rmi -f 2>/dev/null || true
+            
+            # 3. Limpiar contenedores detenidos
+            echo "Limpiando contenedores detenidos..."
+            docker container prune -f
+            
+            # 4. Limpiar build cache antiguo (>24h)
+            echo "Limpiando build cache..."
+            docker builder prune -f --filter "until=24h"
+            
+            # 5. Limpiar networks no usadas
+            echo "Limpiando networks..."
+            docker network prune -f
+            
+            # 6. Limpiar volumes no usados (cuidado!)
+            echo "Limpiando volumes huérfanos..."
+            docker volume prune -f
+            
+            # 7. Mostrar estado final
+            echo ""
+            echo "📊 Estado final:"
+            docker system df
+            echo ""
+            echo "💾 Espacio en disco:"
+            df -h / | grep -E '(Filesystem|/dev/root)'
+            
+            echo "✅ Cleanup completado"
+          ENDSSH
 
-            # Correr nuevo contenedor
-            docker run -d \
-              --name finanzapp-api \
-              --restart unless-stopped \
-              -p 8080:8080 \
-              --env-file .env \
-              finanzapp-backend:latest
-
-            # Verificar que el contenedor está corriendo
-            sleep 3
-            docker ps | grep finanzapp-api
-
-            # Mostrar logs
-            echo "=== Últimos logs ==="
-            docker logs --tail 20 finanzapp-api
-
-      - name: Verify deployment
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            # Health check
-            for i in {1..10}; do
-              if curl -s http://localhost:8080/health > /dev/null 2>&1; then
-                echo "✅ Servicio respondiendo correctamente"
-                exit 0
-              fi
-              echo "Intento $i/10..."
-              sleep 2
-            done
-            echo "❌ El servicio no responde"
-            docker logs --tail 30 finanzapp-api
-            exit 1
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "❌ Deployment failed! Check the logs above."
+          # Aquí puedes agregar notificaciones (Slack, Discord, email, etc.)

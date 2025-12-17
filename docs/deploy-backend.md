@@ -44,22 +44,48 @@ SUPABASE_ANON_KEY=tu_key
 SUPABASE_SERVICE_ROLE_KEY=tu_key
 ```
 
-### 4. Desplegar
+### 4. Subir script de deployment
 
 ```bash
+# Desde tu computadora
+scp -i "finanzapp-backend.pem" backend/aws-api/deploy.sh ubuntu@ec2-18-222-119-175.us-east-2.compute.amazonaws.com:~/finanzapp/backend/aws-api/
+
+# Conectar y dar permisos
+ssh -i "finanzapp-backend.pem" ubuntu@ec2-18-222-119-175.us-east-2.compute.amazonaws.com
+cd ~/finanzapp/backend/aws-api
 chmod +x deploy.sh
+```
+
+### 5. Desplegar
+
+```bash
 ./deploy.sh
 ```
 
+**El script hace limpieza automática de:**
+- ✅ Imágenes Docker antiguas
+- ✅ Contenedores detenidos
+- ✅ Build cache (>7 días)
+- ✅ Networks no usadas
+- ✅ Logs rotativos (máx 30MB)
+
 ## Redesplegar (Actualizaciones)
 
+### Opción A: Manual
+
 ```bash
-ssh -i "finanzapp-backend.pem" ubuntu@ec2-18-222-119-175.us-east-2.compute.amazonaws.com
+ssh aws  # Si configuraste el SSH config
 cd ~/finanzapp
 git pull origin main
 cd backend/aws-api
 ./deploy.sh
 ```
+
+### Opción B: Automático con GitHub Actions
+
+Solo haz push a `main` y GitHub Actions se encarga del resto.
+
+Ver instrucciones completas en: [`backend/aws-api/DEPLOYMENT.md`](../backend/aws-api/DEPLOYMENT.md)
 
 ## Comandos Útiles
 
