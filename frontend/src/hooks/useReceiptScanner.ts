@@ -2,10 +2,17 @@ import { useState, useRef } from "react";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { Alert } from "react-native";
 import { useRouter } from "expo-router";
+import {
+	useMediaLibraryPermissions,
+	launchImageLibraryAsync,
+	MediaTypeOptions,
+} from "expo-image-picker";
 import { receiptApi } from "../services/receiptApi";
 
 export const useReceiptScanner = () => {
 	const [permission, requestPermission] = useCameraPermissions();
+	const [mediaPermission, requestMediaPermission] =
+		useMediaLibraryPermissions();
 	const [loading, setLoading] = useState(false);
 	const [capturedImage, setCapturedImage] = useState<string | null>(null);
 	const cameraRef = useRef<CameraView>(null);
@@ -31,6 +38,38 @@ export const useReceiptScanner = () => {
 
 	const retakePicture = () => {
 		setCapturedImage(null);
+	};
+
+	const pickImageFromGallery = async () => {
+		if (loading) return;
+
+		try {
+			// Request permission if not granted
+			if (!mediaPermission?.granted) {
+				const permissionResult = await requestMediaPermission();
+				if (!permissionResult.granted) {
+					Alert.alert(
+						"Permisos necesarios",
+						"Necesitamos acceso a tu galería para seleccionar imágenes de tickets."
+					);
+					return;
+				}
+			}
+
+			// Launch image picker
+			const result = await launchImageLibraryAsync({
+				mediaTypes: MediaTypeOptions.Images,
+				quality: 0.5,
+				allowsEditing: false,
+			});
+
+			if (!result.canceled && result.assets && result.assets.length > 0) {
+				setCapturedImage(result.assets[0].uri);
+			}
+		} catch (error) {
+			console.error("Error picking image from gallery:", error);
+			Alert.alert("Error", "No se pudo seleccionar la imagen de la galería");
+		}
 	};
 
 	const processReceipt = async () => {
@@ -81,10 +120,16 @@ export const useReceiptScanner = () => {
 								"Ocurrió un problema inesperado. Estamos trabajando en ello.";
 						} else {
 							// Fallback to text matching for backward compatibility
-							if (error.message.includes("Textract") || error.message.includes("textract")) {
+							if (
+								error.message.includes("Textract") ||
+								error.message.includes("textract")
+							) {
 								errorMessage =
 									"No pudimos leer el texto del ticket. Asegúrate de que esté bien iluminado y enfocado.";
-							} else if (error.message.includes("Bedrock") || error.message.includes("bedrock")) {
+							} else if (
+								error.message.includes("Bedrock") ||
+								error.message.includes("bedrock")
+							) {
 								errorMessage =
 									"La IA tuvo problemas para entender el ticket. Intenta tomar la foto desde otro ángulo.";
 							} else {
@@ -112,10 +157,13 @@ export const useReceiptScanner = () => {
 	return {
 		permission,
 		requestPermission,
+		mediaPermission,
+		requestMediaPermission,
 		loading,
 		capturedImage,
 		cameraRef,
 		takePicture,
+		pickImageFromGallery,
 		retakePicture,
 		processReceipt,
 	};

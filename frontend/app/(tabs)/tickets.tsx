@@ -2,7 +2,6 @@ import { useEffect, useState, useCallback } from "react";
 import {
 	View,
 	Text,
-	Pressable,
 	Alert,
 	FlatList,
 	RefreshControl,
@@ -10,27 +9,22 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useFocusEffect } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
-import Menu from "../src/components/Menu";
-import { DeleteConfirmationModal } from "../src/components/modals/DeleteConfirmationModal";
-import { TicketActionModal } from "../src/components/modals/TicketActionModal";
-import { supabase } from "../src/lib/supabase";
-import { useAuth } from "../src/features/auth/context/AuthContext";
+import { DeleteConfirmationModal } from "../../src/components/modals/DeleteConfirmationModal";
+import { TicketActionModal } from "../../src/components/modals/TicketActionModal";
+import { supabase } from "../../src/lib/supabase";
+import { useAuth } from "../../src/features/auth/context/AuthContext";
 
-import { core } from "../src/styles/core.styles";
-import { theme } from "../src/styles/theme";
+import { core } from "../../src/styles/core.styles";
+import { theme } from "../../src/styles/theme";
 
-import { useReceipts } from "../src/context/ReceiptContext";
-import { Receipt } from "../src/types/receipt.types";
-import { FabModal } from "../src/components/modals/FabModal";
-import { TicketListItem } from "../src/components/dashboard/TicketListItem";
-import { LoadingModal } from "../src/components/modals/LoadingModal";
+import { useReceipts } from "../../src/context/ReceiptContext";
+import { Receipt } from "../../src/types/receipt.types";
+import { TicketListItem } from "../../src/components/dashboard/TicketListItem";
+import { LoadingModal } from "../../src/components/modals/LoadingModal";
 
-export default function HomeScreen() {
+export default function TicketsScreen() {
 	const router = useRouter();
 	const { user } = useAuth();
-	const [menuVisible, setMenuVisible] = useState(false);
-	const [fabModalVisible, setFabModalVisible] = useState(false);
 	const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 	const [actionModalVisible, setActionModalVisible] = useState(false);
 	const [selectedReceiptId, setSelectedReceiptId] = useState<string | null>(
@@ -48,16 +42,6 @@ export default function HomeScreen() {
 		setRefreshing(true);
 		await refreshReceipts();
 		setRefreshing(false);
-	};
-
-	const handleAddManually = () => {
-		setFabModalVisible(false);
-		router.push("/manual-entry");
-	};
-
-	const handleScanTicket = () => {
-		setFabModalVisible(false);
-		router.push("/capture");
 	};
 
 	const handleLongPress = (id: string) => {
@@ -102,23 +86,11 @@ export default function HomeScreen() {
 
 			if (!data || data.length === 0) {
 				console.warn("No rows deleted. Possible RLS issue or ID mismatch.");
-				// Optional: Alert the user if it looked like it failed silently
-				// Alert.alert("Aviso", "No se encontró el registro para borrar.");
 			}
 
 			removeReceipt(selectedReceiptId);
 			setDeleteModalVisible(false);
 			setSelectedReceiptId(null);
-
-			// Check if we need to navigate away if list is empty (optional, based on previous logic)
-			// But since we are using context, receipts will update automatically.
-			// If we want to replicate exact behavior:
-			const remainingReceipts = receipts.filter(
-				(r) => r.id !== selectedReceiptId
-			);
-			if (remainingReceipts.length === 0) {
-				// router.replace("/home"); // Keeping this commented as per original logic intent check
-			}
 		} catch (error) {
 			console.error("Error deleting receipt:", error);
 			Alert.alert("Error", "No se pudo eliminar el ticket");
@@ -127,15 +99,10 @@ export default function HomeScreen() {
 
 	return (
 		<SafeAreaView style={core.safeArea}>
-			<Menu isVisible={menuVisible} onClose={() => setMenuVisible(false)} />
 			<View style={styles.homeContainer}>
 				{/* Header */}
 				<View style={styles.homeHeader}>
-					<Pressable onPress={() => setMenuVisible(true)}>
-						<Ionicons name="menu" style={styles.headerIcon} />
-					</Pressable>
 					<Text style={styles.homeTitle}>Tus Tickets</Text>
-					<View style={styles.headerPlaceholder} />
 				</View>
 
 				{/* Body Content */}
@@ -151,22 +118,6 @@ export default function HomeScreen() {
 						)}
 					/>
 				</View>
-
-				{/* FAB */}
-				<Pressable
-					style={styles.fabCentered}
-					onPress={() => setFabModalVisible(true)}
-				>
-					<Ionicons name="add" size={40} color={theme.colors.onPrimary} />
-				</Pressable>
-
-				{/* FAB Modal */}
-				<FabModal
-					visible={fabModalVisible}
-					onClose={() => setFabModalVisible(false)}
-					onScan={handleScanTicket}
-					onManual={handleAddManually}
-				/>
 			</View>
 
 			{/* Loading Spinner Modal */}
@@ -203,42 +154,17 @@ const styles = StyleSheet.create({
 		padding: theme.spacing.md,
 	},
 	homeHeader: {
-		flexDirection: "row",
-		justifyContent: "space-between",
 		alignItems: "center",
+		justifyContent: "center",
 		marginBottom: theme.spacing.lg,
-	},
-	headerIcon: {
-		fontSize: 28,
-		color: theme.colors.text,
 	},
 	homeTitle: {
 		fontSize: theme.font.size.h1,
 		fontFamily: theme.font.family.bold,
 		color: theme.colors.text,
-		flex: 1,
 		textAlign: "center",
-	},
-	headerPlaceholder: {
-		width: 28,
 	},
 	homeCardContainer: {
 		flex: 1,
-	},
-	fabCentered: {
-		position: "absolute",
-		bottom: theme.spacing.lg,
-		alignSelf: "center",
-		width: 72,
-		height: 72,
-		borderRadius: 36,
-		backgroundColor: theme.colors.primary,
-		justifyContent: "center",
-		alignItems: "center",
-		elevation: 8,
-		shadowColor: "#000",
-		shadowOffset: { width: 0, height: 4 },
-		shadowOpacity: 0.3,
-		shadowRadius: 4.65,
 	},
 });

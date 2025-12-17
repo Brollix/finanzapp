@@ -59,7 +59,7 @@ export default function AuthCallback() {
 					if (error) throw error;
 
 					// Redirect to home on success
-					router.replace("/home");
+					router.replace("/(tabs)");
 				} else {
 					// If no tokens found, go to login
 					// console.warn("No tokens found in URL:", url);

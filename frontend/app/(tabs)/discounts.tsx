@@ -10,16 +10,16 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { theme } from "../src/styles/theme";
-import { core } from "../src/styles/core.styles";
-import { useAuth } from "../src/features/auth/context/AuthContext";
-import { receiptApi } from "../src/services/receiptApi";
-import { Receipt } from "../src/types/receipt.types";
+import { theme } from "../../src/styles/theme";
+import { core } from "../../src/styles/core.styles";
+import { useAuth } from "../../src/features/auth/context/AuthContext";
+import { receiptApi } from "../../src/services/receiptApi";
+import { Receipt } from "../../src/types/receipt.types";
 import {
 	parseReceiptDate,
 	formatReceiptDateTime,
-} from "../src/utils/dateUtils";
-import { formatCurrency } from "../src/utils/formatCurrency";
+} from "../../src/utils/dateUtils";
+import { formatCurrency } from "../../src/utils/formatCurrency";
 
 interface MonthSavings {
 	month: string; // "YYYY-MM"
@@ -130,11 +130,7 @@ export default function DiscountsScreen() {
 	return (
 		<SafeAreaView style={core.safeArea}>
 			<View style={styles.header}>
-				<Pressable onPress={() => router.back()} style={styles.backButton}>
-					<Ionicons name="arrow-back" size={24} color={theme.colors.text} />
-				</Pressable>
 				<Text style={styles.title}>Mis Ahorros</Text>
-				<View style={{ width: 40 }} />
 			</View>
 
 			<View style={styles.summaryContainer}>
@@ -274,11 +270,8 @@ const styles = StyleSheet.create({
 	header: {
 		flexDirection: "row",
 		alignItems: "center",
-		justifyContent: "space-between",
+		justifyContent: "center",
 		padding: theme.spacing.md,
-	},
-	backButton: {
-		padding: theme.spacing.sm,
 	},
 	title: {
 		fontSize: theme.font.size.h4,

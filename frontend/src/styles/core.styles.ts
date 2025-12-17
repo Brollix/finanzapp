@@ -199,50 +199,6 @@ export const core = StyleSheet.create({
 		fontSize: theme.font.size.sm,
 	},
 
-	// Menu
-	menuBackdrop: {
-		position: "absolute",
-		top: 0,
-		left: 0,
-		right: 0,
-		bottom: 0,
-		backgroundColor: "rgba(0, 0, 0, 0.5)",
-		zIndex: 1,
-	},
-	menuContent: {
-		position: "absolute",
-		top: 0,
-		bottom: 0,
-		left: 0,
-		backgroundColor: theme.colors.backgroundVariant,
-		paddingTop: 60, // For status bar
-		zIndex: 2,
-		elevation: 8,
-		shadowColor: "#000",
-		shadowOffset: { width: 2, height: 0 },
-		shadowOpacity: 0.2,
-		shadowRadius: 5,
-	},
-	menuItem: {
-		flexDirection: "row",
-		alignItems: "center",
-		paddingVertical: 16,
-		paddingHorizontal: 20,
-	},
-	menuItemPressed: {
-		backgroundColor: theme.colors.backgroundVariant,
-	},
-	menuItemIcon: {
-		marginRight: theme.spacing.md,
-		color: theme.colors.text,
-	},
-	menuItemText: {
-		color: theme.colors.text,
-		fontSize: theme.font.size.lg,
-		fontFamily: theme.font.family.regular,
-		marginLeft: theme.spacing.md,
-	},
-
 	// FAB - Floating Action Button
 	fab: {
 		position: "absolute",

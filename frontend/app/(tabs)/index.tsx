@@ -2,39 +2,31 @@ import { useEffect, useState, useCallback } from "react";
 import {
 	View,
 	Text,
-	Pressable,
-	Alert,
 	ActivityIndicator,
 	RefreshControl,
 	ScrollView,
 	StyleSheet,
-	Modal,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useFocusEffect } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
-import Menu from "../src/components/Menu";
-import { TopProductsModal } from "../src/components/modals/TopProductsModal";
-import { receiptApi } from "../src/services/receiptApi";
-import { Receipt } from "../src/types/receipt.types";
-import { useAuth } from "../src/features/auth/context/AuthContext";
-import { core } from "../src/styles/core.styles";
-import { theme } from "../src/styles/theme";
-import { calculateStatistics } from "../src/utils/statistics";
-import { Statistics } from "../src/types/receipt.types";
-import { StatsGrid } from "../src/components/dashboard/StatsGrid";
-import { HighlightCard } from "../src/components/dashboard/HighlightCard";
-import { SupermarketCard } from "../src/components/dashboard/SupermarketCard";
-import { DashboardActionCard } from "../src/components/dashboard/DashboardActionCard";
-import { FabModal } from "../src/components/modals/FabModal";
-import { SavingsSummaryCard } from "../src/components/dashboard/SavingsSummaryCard";
+import { TopProductsModal } from "../../src/components/modals/TopProductsModal";
+import { receiptApi } from "../../src/services/receiptApi";
+import { Receipt } from "../../src/types/receipt.types";
+import { useAuth } from "../../src/features/auth/context/AuthContext";
+import { core } from "../../src/styles/core.styles";
+import { theme } from "../../src/styles/theme";
+import { calculateStatistics } from "../../src/utils/statistics";
+import { Statistics } from "../../src/types/receipt.types";
+import { StatsGrid } from "../../src/components/dashboard/StatsGrid";
+import { HighlightCard } from "../../src/components/dashboard/HighlightCard";
+import { SupermarketCard } from "../../src/components/dashboard/SupermarketCard";
+import { DashboardActionCard } from "../../src/components/dashboard/DashboardActionCard";
+import { SavingsSummaryCard } from "../../src/components/dashboard/SavingsSummaryCard";
 
 export default function HomeScreen() {
 	const router = useRouter();
 	const { user } = useAuth();
-	const [menuVisible, setMenuVisible] = useState(false);
 	const [topProductsModalVisible, setTopProductsModalVisible] = useState(false);
-	const [fabModalVisible, setFabModalVisible] = useState(false);
 	const [receipts, setReceipts] = useState<Receipt[]>([]);
 	const [loading, setLoading] = useState(false);
 	const [refreshing, setRefreshing] = useState(false);
@@ -76,19 +68,8 @@ export default function HomeScreen() {
 		setRefreshing(false);
 	}, [fetchReceipts]);
 
-	const handleAddManually = () => {
-		setFabModalVisible(false);
-		router.push("/manual-entry");
-	};
-
-	const handleScanTicket = () => {
-		setFabModalVisible(false);
-		router.push("/capture");
-	};
-
 	return (
 		<SafeAreaView style={core.safeArea}>
-			<Menu isVisible={menuVisible} onClose={() => setMenuVisible(false)} />
 			<TopProductsModal
 				visible={topProductsModalVisible}
 				onClose={() => setTopProductsModalVisible(false)}
@@ -97,11 +78,7 @@ export default function HomeScreen() {
 			<View style={styles.homeContainer}>
 				{/* Header */}
 				<View style={styles.homeHeader}>
-					<Pressable onPress={() => setMenuVisible(true)}>
-						<Ionicons name="menu" style={styles.headerIcon} />
-					</Pressable>
 					<Text style={styles.homeTitle}>Inicio</Text>
-					<View style={styles.headerPlaceholder} />
 				</View>
 
 				{/* Body Content */}
@@ -156,7 +133,7 @@ export default function HomeScreen() {
 									<SavingsSummaryCard
 										totalSaved={totalSaved}
 										bestStore={bestStore}
-										onPress={() => router.push("/discounts")}
+										onPress={() => router.push("/(tabs)/discounts")}
 									/>
 								);
 							})()}
@@ -177,26 +154,14 @@ export default function HomeScreen() {
 								supermarketName={statistics.mostFrequentSupermarket}
 							/>
 
-							{/* View All Tickets Button or Load Ticket Button */}
+							{/* View All Tickets Button */}
 							<DashboardActionCard
 								hasTickets={statistics.totalTickets > 0}
-								onPress={() =>
-									statistics.totalTickets > 0
-										? router.push("/dashboard")
-										: setFabModalVisible(true)
-								}
+								onPress={() => router.push("/(tabs)/tickets")}
 							/>
 						</>
 					)}
 				</ScrollView>
-
-				{/* FAB Modal */}
-				<FabModal
-					visible={fabModalVisible}
-					onClose={() => setFabModalVisible(false)}
-					onScan={handleScanTicket}
-					onManual={handleAddManually}
-				/>
 			</View>
 		</SafeAreaView>
 	);
@@ -208,24 +173,15 @@ const styles = StyleSheet.create({
 		padding: theme.spacing.md,
 	},
 	homeHeader: {
-		flexDirection: "row",
-		justifyContent: "space-between",
 		alignItems: "center",
+		justifyContent: "center",
 		marginBottom: theme.spacing.lg,
-	},
-	headerIcon: {
-		fontSize: 28,
-		color: theme.colors.text,
 	},
 	homeTitle: {
 		fontSize: theme.font.size.h1,
 		fontFamily: theme.font.family.bold,
 		color: theme.colors.text,
-		flex: 1,
 		textAlign: "center",
-	},
-	headerPlaceholder: {
-		width: 28,
 	},
 	scrollView: {
 		flex: 1,

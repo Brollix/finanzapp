@@ -52,13 +52,13 @@ export default function ReceiptConfirmationScreen() {
 				// So let's add it to be safe.
 				addReceipt(receiptData as Receipt);
 				router.dismissAll();
-				router.replace("/dashboard");
+				router.replace("/(tabs)/tickets");
 			} else {
 				// Not saved yet (manual creation flow or if process didn't save)
 				const created = await receiptApi.createManualReceipt(receiptData);
 				addReceipt(created);
 				router.dismissAll();
-				router.replace("/dashboard");
+				router.replace("/(tabs)/tickets");
 			}
 		} catch (error) {
 			console.error("Error saving receipt:", error);

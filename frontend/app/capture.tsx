@@ -32,6 +32,7 @@ export default function Capture() {
 		capturedImage,
 		cameraRef,
 		takePicture,
+		pickImageFromGallery,
 		retakePicture,
 		processReceipt,
 	} = useReceiptScanner();
@@ -192,24 +193,35 @@ export default function Capture() {
 						facing="back"
 						enableTorch={isFlashOn}
 					/>
+					<TouchableOpacity
+						style={styles.flashButtonTop}
+						onPress={() => setIsFlashOn(!isFlashOn)}
+						disabled={loading}
+					>
+						<Ionicons
+							name={isFlashOn ? "flash" : "flash-off"}
+							size={24}
+							color={isFlashOn ? theme.colors.warning : theme.colors.text}
+						/>
+					</TouchableOpacity>
 					<View style={styles.captureOverlay}>
-						<TouchableOpacity
-							style={styles.flashButton}
-							onPress={() => setIsFlashOn(!isFlashOn)}
-							disabled={loading}
-						>
-							<Ionicons
-								name={isFlashOn ? "flash" : "flash-off"}
-								size={28}
-								color={isFlashOn ? theme.colors.warning : theme.colors.text}
-							/>
-						</TouchableOpacity>
 						<Button
 							testID="capture-button"
 							onPress={takePicture}
+							title="Tomar Foto"
 							leftIcon={<Ionicons name="camera" />}
 							disabled={loading}
 							loading={loading}
+							style={styles.captureButton}
+						/>
+						<Button
+							testID="gallery-button"
+							onPress={pickImageFromGallery}
+							title="Galería"
+							leftIcon={<Ionicons name="image-outline" />}
+							disabled={loading}
+							variant="outline"
+							style={styles.captureButton}
 						/>
 					</View>
 				</>
@@ -227,14 +239,29 @@ const styles = StyleSheet.create({
 		bottom: 0,
 		left: 0,
 		right: 0,
-		padding: theme.spacing.lg,
+		padding: theme.spacing.md,
+		paddingBottom: theme.spacing.lg,
 		backgroundColor: theme.colors.backdrop,
 		flexDirection: "row",
-		justifyContent: "space-around",
+		justifyContent: "space-between",
 		alignItems: "center",
+		gap: theme.spacing.sm,
 	},
-	flashButton: {
-		padding: theme.spacing.sm,
+	captureButton: {
+		flex: 1,
+		minWidth: 0,
+	},
+	flashButtonTop: {
+		position: "absolute",
+		top: theme.spacing.xl,
+		right: theme.spacing.lg,
+		width: 48,
+		height: 48,
+		borderRadius: 24,
+		backgroundColor: theme.colors.backdrop,
+		justifyContent: "center",
+		alignItems: "center",
+		zIndex: 10,
 	},
 	loadingOverlay: {
 		position: "absolute",

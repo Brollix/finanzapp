@@ -8,7 +8,6 @@ import {
 	StyleSheet,
 	KeyboardAvoidingView,
 	Platform,
-	FlatList,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -117,9 +116,9 @@ export default function ManualEntryScreen() {
 	const handleSupermarketChange = (text: string) => {
 		setSupermarket(text);
 		if (text.length > 0) {
-			const filtered = allSupermarkets.filter((s) =>
-				s.toLowerCase().includes(text.toLowerCase())
-			);
+			const filtered = allSupermarkets
+				.filter((s) => s.toLowerCase().includes(text.toLowerCase()))
+				.slice(0, 5);
 			setSuggestions(filtered);
 			setShowSuggestions(true);
 		} else {
@@ -274,20 +273,21 @@ export default function ManualEntryScreen() {
 							/>
 							{showSuggestions && suggestions.length > 0 && (
 								<View style={styles.suggestionsContainer}>
-									<FlatList
-										data={suggestions}
-										keyExtractor={(item) => item}
+									<ScrollView
+										style={{ maxHeight: 150 }}
+										nestedScrollEnabled={true}
 										keyboardShouldPersistTaps="handled"
-										renderItem={({ item }) => (
+									>
+										{suggestions.map((item) => (
 											<TouchableOpacity
+												key={item}
 												style={styles.suggestionItem}
 												onPress={() => selectSupermarket(item)}
 											>
 												<Text style={styles.suggestionText}>{item}</Text>
 											</TouchableOpacity>
-										)}
-										style={{ maxHeight: 150 }}
-									/>
+										))}
+									</ScrollView>
 								</View>
 							)}
 						</View>

@@ -40,14 +40,6 @@ export const styles = StyleSheet.create({
 	uiInputIcon: core.inputIcon,
 	uiInputErrorText: core.inputErrorText,
 
-	// Menu aliases
-	menuBackdrop: core.menuBackdrop,
-	menuContent: core.menuContent,
-	menuItem: core.menuItem,
-	menuItemPressed: core.menuItemPressed,
-	menuItemIcon: core.menuItemIcon,
-	menuItemText: core.menuItemText,
-
 	// --- Screen Specific ---
 
 	// Home Screen
