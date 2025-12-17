@@ -2,7 +2,7 @@
   "expo": {
     "name": "Finanzapp",
     "slug": "finanzapp",
-		"version": "1.3.3",
+    "version": "1.3.3",
     "orientation": "portrait",
     "scheme": "finanzapp",
     "userInterfaceStyle": "dark",
