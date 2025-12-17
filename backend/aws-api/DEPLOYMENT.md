@@ -58,7 +58,7 @@ Agrega estos secrets:
 - `EC2_SSH_KEY`: Contenido de `finanzapp-backend.pem` (todo el archivo)
 - `EC2_HOST`: `ec2-18-222-119-175.us-east-2.compute.amazonaws.com`
 - `EC2_USER`: `ubuntu`
-- `EC2_API_URL`: `http://18.222.119.175:8080`
+- `EC2_API_URL`: `https://d245522eugz5ge.cloudfront.net` (tu CloudFront distribution URL)
 
 2. **Push los cambios:**
 

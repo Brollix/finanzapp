@@ -7,6 +7,9 @@ Guía para deployar el backend de FinanzApp en AWS EC2 usando Docker.
 - **Host**: `ec2-18-222-119-175.us-east-2.compute.amazonaws.com`
 - **IP**: `18.222.119.175`
 - **Puerto**: `8080`
+- **CloudFront URL**: `https://d245522eugz5ge.cloudfront.net` (CDN público)
+
+> **Nota**: La app móvil usa CloudFront como CDN para acceder al backend, pero el deployment se hace directamente en EC2.
 
 ## Primera Vez (Setup)
 
@@ -105,11 +108,25 @@ curl http://localhost:8080/health
 
 ## Verificar Deployment
 
+### Opción A: Verificar directamente en EC2 (SSH)
+
+```bash
+curl http://localhost:8080/health
+```
+
+### Opción B: Verificar desde IP pública
+
 ```bash
 curl http://18.222.119.175:8080/health
 ```
 
-Debe responder:
+### Opción C: Verificar desde CloudFront (producción)
+
+```bash
+curl https://d245522eugz5ge.cloudfront.net/health
+```
+
+Todas deben responder:
 
 ```json
 {
@@ -122,3 +139,13 @@ Debe responder:
 ## Security Group
 
 Asegúrate que el puerto 8080 esté abierto en AWS Console → EC2 → Security Groups.
+
+## CloudFront (CDN)
+
+El backend está expuesto públicamente a través de CloudFront para HTTPS y mejor performance:
+
+- **Distribution URL**: `https://d245522eugz5ge.cloudfront.net`
+- **Origin**: EC2 en `http://18.222.119.175:8080`
+- **Beneficios**: HTTPS gratuito, CDN global, protección DDoS
+
+Las apps móviles usan CloudFront (`https://...`), pero el deployment se hace directamente en EC2 por SSH.
