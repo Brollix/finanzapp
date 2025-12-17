@@ -1,6 +1,5 @@
 import { Response } from "express";
 import { z } from "zod";
-import fs from "fs/promises";
 import { AuthenticatedRequest } from "../middleware/auth.js";
 import {
 	saveReceipt,
@@ -65,8 +64,8 @@ export const processReceipt = async (
 		const textractStart = Date.now();
 		let ocrText: string;
 		try {
-			// Read file from disk
-			const imageBuffer = await fs.readFile(req.file.path);
+			// Use file buffer from memory storage (no disk I/O needed)
+			const imageBuffer = req.file.buffer;
 			ocrText = await extractTextFromImage(imageBuffer);
 			console.log("Textract successful");
 			console.log("  - Time taken:", Date.now() - textractStart, "ms");
@@ -140,17 +139,8 @@ export const processReceipt = async (
 			errorType: "unknown_error",
 			message: error instanceof Error ? error.message : "Unknown error",
 		});
-	} finally {
-		// Cleanup uploaded file
-		if (req.file && req.file.path) {
-			try {
-				await fs.unlink(req.file.path);
-				console.log("Uploaded file cleaned up:", req.file.path);
-			} catch (cleanupError) {
-				console.error("Failed to cleanup file:", cleanupError);
-			}
-		}
 	}
+	// Note: No file cleanup needed - using memory storage instead of disk storage
 };
 
 export const createManualReceipt = async (

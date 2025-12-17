@@ -1,31 +1,9 @@
 import multer from "multer";
-import path from "path";
-const { v4: uuidv4 } = require("uuid");
-import os from "os";
 import { Request } from "express";
 
-// Configure storage
-const storage = multer.diskStorage({
-	destination: (req, file, cb) => {
-		// Use system temp directory
-		cb(null, os.tmpdir());
-	},
-	filename: (req, file, cb) => {
-		// Sanitization: UUID + extension derived from MIME type
-		// We do NOT use file.originalname to avoid any potential path traversal or spoofing
-		const MIME_TYPE_MAP: Record<string, string> = {
-			"image/png": ".png",
-			"image/jpeg": ".jpg",
-			"image/jpg": ".jpg",
-			"image/webp": ".webp",
-		};
-
-		const uniqueSuffix = uuidv4();
-		// Default to .bin if mimetype is unknown (though fileFilter should catch this)
-		const ext = MIME_TYPE_MAP[file.mimetype] || ".bin";
-		cb(null, `${uniqueSuffix}${ext}`);
-	},
-});
+// Configure memory storage (better for serverless/Lambda environments)
+// This avoids disk space issues in /tmp/ directory
+const storage = multer.memoryStorage();
 
 // File Filter
 const fileFilter = (
