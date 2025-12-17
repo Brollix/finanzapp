@@ -1,9 +1,9 @@
 # FinanzApp
 
-![React Native](https://img.shields.io/badge/React%20Native-0.72-blue?logo=react)
-![Expo](https://img.shields.io/badge/Expo-49.0-black?logo=expo)
-![Node.js](https://img.shields.io/badge/Node.js-18+-green?logo=node.js)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?logo=typescript)
+![React Native](https://img.shields.io/badge/React%20Native-0.81.5-blue?logo=react)
+![Expo](https://img.shields.io/badge/Expo-54.0-black?logo=expo)
+![Node.js](https://img.shields.io/badge/Node.js-20+-green?logo=node.js)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue?logo=typescript)
 ![AWS](https://img.shields.io/badge/AWS-Bedrock%20%2B%20Textract-orange?logo=amazon-aws)
 ![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-green?logo=supabase)
 
@@ -70,7 +70,6 @@ finanzapp/
 
 ## 📚 Documentación
 
-- **Setup Completo**: [docs/setup-completo.md](docs/setup-completo.md)
 - **Deploy Backend**: [docs/deploy-backend.md](docs/deploy-backend.md)
 - **Deploy Mobile**: [docs/deploy-mobile.md](docs/deploy-mobile.md)
 - **Configuración AWS**: [docs/aws-setup.md](docs/aws-setup.md)
