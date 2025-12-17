@@ -1,11 +1,11 @@
 {
   "name": "finanzapp",
   "main": "expo-router/entry",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "scripts": {
     "start": "expo start",
-    "start:local": "cross-env EXPO_PUBLIC_BACKEND_URL=http://192.168.0.152:8080 expo start --clear --tunnel",
-    "start:prod": "cross-env EXPO_PUBLIC_BACKEND_URL=https://d245522eugz5ge.cloudfront.net expo start --clear --tunnel",
+    "start:local": "expo start --clear --tunnel",
+    "start:prod": "expo start --clear --tunnel",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",

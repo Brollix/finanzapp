@@ -2,13 +2,11 @@ import { Response } from "express";
 import { z } from "zod";
 import { AuthenticatedRequest } from "../middleware/auth.js";
 import {
-	saveReceipt,
 	getReceiptById as getReceiptByIdService,
 	getReceiptsByUserId,
-	updateReceipt as updateReceiptService,
 } from "../services/database.service.js";
-import { extractTextFromImage } from "../services/textract.service.js";
-import { formatReceiptWithBedrock } from "../services/bedrock.service.js";
+import { receiptService } from "../services/receipt.service.js";
+import logger from "../utils/logger.js";
 
 // Validation Schemas
 const ReceiptItemSchema = z.object({
@@ -35,13 +33,12 @@ export const processReceipt = async (
 	req: AuthenticatedRequest,
 	res: Response
 ): Promise<void> => {
-	const startTime = Date.now();
-	console.log("\n===== NEW RECEIPT PROCESSING REQUEST =====");
+	logger.info("\n===== NEW RECEIPT PROCESSING REQUEST =====");
 
 	try {
 		// Validate image file
 		if (!req.file) {
-			console.log("No image file provided");
+			logger.warn("No image file provided");
 			res.status(400).json({
 				error: "No image file provided",
 				errorType: "validation_error",
@@ -49,98 +46,34 @@ export const processReceipt = async (
 			return;
 		}
 
-		// Log image details
-		console.log("Image received:");
-		console.log("  - Size:", (req.file.size / 1024).toFixed(2), "KB");
-		console.log("  - Mimetype:", req.file.mimetype);
-		console.log("  - Original name:", req.file.originalname);
-
 		// Get user ID from authenticated request
 		const userId = req.user!.id;
-		console.log("User ID:", userId);
+		logger.info(`User ID: ${userId}`);
 
-		// Step 1: Extract text with Textract
-		console.log("\nStep 1: Extracting text with Textract...");
-		const textractStart = Date.now();
-		let ocrText: string;
-		try {
-			// Use file buffer from memory storage (no disk I/O needed)
-			const imageBuffer = req.file.buffer;
-			ocrText = await extractTextFromImage(imageBuffer);
-			console.log("Textract successful");
-			console.log("  - Time taken:", Date.now() - textractStart, "ms");
-			console.log("  - Text length:", ocrText.length, "characters");
-			console.log("  - Preview:", ocrText.substring(0, 100) + "...");
-		} catch (error) {
-			console.error("Textract failed:", error);
-			res.status(500).json({
-				error: "Failed to extract text from image",
-				errorType: "textract_error",
-				message: error instanceof Error ? error.message : "Unknown error",
-			});
-			return;
-		}
-
-		// Step 2: Format with Bedrock
-		console.log("\nStep 2: Formatting receipt with Bedrock...");
-		const bedrockStart = Date.now();
-		let receiptData;
-		try {
-			receiptData = await formatReceiptWithBedrock(ocrText);
-			console.log("Bedrock successful");
-			console.log("  - Time taken:", Date.now() - bedrockStart, "ms");
-			console.log("  - Supermarket:", receiptData.supermarket);
-			console.log("  - Items count:", receiptData.items?.length || 0);
-			console.log("  - Total:", receiptData.total);
-		} catch (error) {
-			console.error("Bedrock failed:", error);
-			res.status(500).json({
-				error: "Failed to format receipt data",
-				errorType: "bedrock_error",
-				message: error instanceof Error ? error.message : "Unknown error",
-			});
-			return;
-		}
-
-		// Step 3: Save to Supabase
-		console.log("\nStep 3: Saving receipt to database...");
-		const dbStart = Date.now();
-		let savedReceipt;
-		try {
-			savedReceipt = await saveReceipt(userId, receiptData);
-			console.log("Database save successful");
-			console.log("  - Time taken:", Date.now() - dbStart, "ms");
-			console.log("  - Receipt ID:", savedReceipt.id);
-		} catch (error) {
-			console.error("Database save failed:", error);
-			res.status(500).json({
-				error: "Failed to save receipt to database",
-				errorType: "database_error",
-				message: error instanceof Error ? error.message : "Unknown error",
-			});
-			return;
-		}
-
-		const totalTime = Date.now() - startTime;
-		console.log("\n===== RECEIPT PROCESSING COMPLETED =====");
-		console.log("Total time:", totalTime, "ms");
-		console.log("===========================================\n");
+		const savedReceipt = await receiptService.processReceiptFromImage(
+			userId,
+			req.file.buffer,
+			{
+				size: req.file.size,
+				mimetype: req.file.mimetype,
+				originalname: req.file.originalname,
+			}
+		);
 
 		res.status(200).json({
 			success: true,
 			data: savedReceipt,
 		});
 	} catch (error) {
-		console.error("\n===== UNEXPECTED ERROR =====");
-		console.error("Error:", error);
-		console.error("================================\n");
+		logger.error("\n===== UNEXPECTED ERROR =====");
+		logger.error(`Error: ${error}`);
+		logger.error("================================\n");
 		res.status(500).json({
 			error: "Failed to process receipt",
 			errorType: "unknown_error",
 			message: error instanceof Error ? error.message : "Unknown error",
 		});
 	}
-	// Note: No file cleanup needed - using memory storage instead of disk storage
 };
 
 export const createManualReceipt = async (
@@ -163,32 +96,19 @@ export const createManualReceipt = async (
 
 		const validatedData = validationResult.data;
 
-		// Calculate total if not provided
-		if (validatedData.total === undefined) {
-			const subtotal = validatedData.items.reduce(
-				(sum, item) => sum + item.price,
-				0
-			);
-			const savings = validatedData.items.reduce(
-				(sum, item) => sum + (item.discount || 0),
-				0
-			);
-			validatedData.total = subtotal - savings;
-		}
-
-		// Save to database
-		console.log("Saving manual receipt to database...");
-		// We cast validatedData to any because our service expects the full type,
-		// and Zod schema might be slightly different (optional fields)
-		const savedReceipt = await saveReceipt(userId, validatedData as any);
-		console.log("Manual receipt saved successfully");
+		// Delegate to service
+		// We cast validatedData to any because our service expects the full type
+		const savedReceipt = await receiptService.createManualReceipt(
+			userId,
+			validatedData as any
+		);
 
 		res.status(201).json({
 			success: true,
 			data: savedReceipt,
 		});
 	} catch (error) {
-		console.error("Error creating manual receipt:", error);
+		logger.error(`Error creating manual receipt: ${error}`);
 		res.status(500).json({
 			error: "Failed to create manual receipt",
 			message: error instanceof Error ? error.message : "Unknown error",
@@ -217,34 +137,19 @@ export const updateReceipt = async (
 
 		const validatedData = validationResult.data;
 
-		// Calculate total if not provided
-		if (validatedData.total === undefined) {
-			const subtotal = validatedData.items.reduce(
-				(sum, item) => sum + item.price,
-				0
-			);
-			const savings = validatedData.items.reduce(
-				(sum, item) => sum + (item.discount || 0),
-				0
-			);
-			validatedData.total = subtotal - savings;
-		}
-
-		// Update in database
-		console.log("Updating receipt in database...");
-		const updatedReceipt = await updateReceiptService(
+		// Delegate to service
+		const updatedReceipt = await receiptService.updateReceipt(
 			id,
 			userId,
 			validatedData as any
 		);
-		console.log("Receipt updated successfully");
 
 		res.status(200).json({
 			success: true,
 			data: updatedReceipt,
 		});
 	} catch (error) {
-		console.error("Error updating receipt:", error);
+		logger.error(`Error updating receipt: ${error}`);
 
 		// Handle specific errors
 		if (error instanceof Error) {
@@ -296,7 +201,7 @@ export const getReceiptById = async (
 			data: receipt,
 		});
 	} catch (error) {
-		console.error("Error getting receipt:", error);
+		logger.error(`Error getting receipt: ${error}`);
 		res.status(500).json({
 			error: "Failed to get receipt",
 			message: error instanceof Error ? error.message : "Unknown error",
@@ -310,7 +215,7 @@ export const getUserReceipts = async (
 ): Promise<void> => {
 	try {
 		const userId = req.user!.id;
-		console.log(`Fetching receipts for user: ${userId}`);
+		logger.info(`Fetching receipts for user: ${userId}`);
 		const limit = req.query.limit
 			? parseInt(req.query.limit as string, 10)
 			: 50;
@@ -323,7 +228,7 @@ export const getUserReceipts = async (
 			count: receipts.length,
 		});
 	} catch (error) {
-		console.error("Error getting receipts:", error);
+		logger.error(`Error getting receipts: ${error}`);
 		res.status(500).json({
 			error: "Failed to get receipts",
 			message: error instanceof Error ? error.message : "Unknown error",
