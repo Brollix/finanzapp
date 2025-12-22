@@ -1,6 +1,6 @@
 {
   "name": "finanzapp-aws-api",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "FinanzApp backend with AWS Textract, Bedrock, and Supabase",
   "main": "dist/index.js",
   "scripts": {
@@ -8,8 +8,12 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "type-check": "tsc --noEmit",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
     "test:optimization": "npm run build && node dist/scripts/test_optimization.js",
-    "test:timing": "npm run build && node dist/scripts/test_timing_analysis.js"
+    "test:timing": "npm run build && node dist/scripts/test_timing_analysis.js",
+    "benchmark": "npm run build && node dist/src/scripts/benchmark.js"
   },
   "keywords": [
     "finanzapp",
@@ -32,11 +36,15 @@
     "helmet": "^8.1.0",
     "morgan": "^1.10.1",
     "multer": "^1.4.5-lts.1",
+    "@sentry/node": "^8.48.0",
+    "sharp": "^0.33.5",
+    "p-retry": "^6.2.0",
     "uuid": "^9.0.1",
     "winston": "^3.18.3",
     "zod": "^4.1.13"
   },
   "devDependencies": {
+    "@faker-js/faker": "^9.3.0",
     "@types/compression": "^1.8.1",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
@@ -47,6 +55,7 @@
     "@types/supertest": "^6.0.3",
     "@types/uuid": "^9.0.7",
     "jest": "^30.2.0",
+    "nock": "^13.5.5",
     "supertest": "^7.1.4",
     "ts-jest": "^29.4.6",
     "tsx": "^4.19.2",

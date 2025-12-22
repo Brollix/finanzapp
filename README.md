@@ -70,9 +70,7 @@ finanzapp/
 
 ## 📚 Documentación
 
-- **Deploy Backend**: [docs/deploy-backend.md](docs/deploy-backend.md)
-- **Deploy Mobile**: [docs/deploy-mobile.md](docs/deploy-mobile.md)
-- **Configuración AWS**: [docs/aws-setup.md](docs/aws-setup.md)
+- **Deployment Guide**: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) - Guía completa de AWS setup, backend y mobile deployment
 
 ## ⚙️ Configuración
 
