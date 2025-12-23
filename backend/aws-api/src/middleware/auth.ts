@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { supabase } from "../config/supabase.js";
+import logger from "../utils/logger.js";
 
 export interface AuthenticatedRequest extends Request {
 	user?: {
@@ -34,7 +35,7 @@ export const authenticate = async (
 		} = await supabase.auth.getUser(token);
 
 		if (error || !user) {
-			console.error("Auth error:", error);
+			logger.error(`Auth error: ${error?.message || "Unknown error"}`);
 			res.status(401).json({ error: "Invalid or expired token" });
 			return;
 		}
@@ -46,7 +47,11 @@ export const authenticate = async (
 
 		next();
 	} catch (error) {
-		console.error("Auth middleware error:", error);
+		logger.error(
+			`Auth middleware error: ${
+				error instanceof Error ? error.message : String(error)
+			}`
+		);
 		res
 			.status(500)
 			.json({ error: "Internal server error during authentication" });

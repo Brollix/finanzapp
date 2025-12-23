@@ -30,6 +30,7 @@ export default function Capture() {
 		requestPermission,
 		loading,
 		capturedImage,
+		progress,
 		cameraRef,
 		takePicture,
 		pickImageFromGallery,
@@ -38,18 +39,11 @@ export default function Capture() {
 	} = useReceiptScanner();
 
 	const [isFlashOn, setIsFlashOn] = useState(false);
-	const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
 	const fadeAnim = useRef(new Animated.Value(0)).current;
 
 	useEffect(() => {
-		let interval: any;
-		if (loading) {
-			// Start message rotation
-			interval = setInterval(() => {
-				setLoadingMessageIndex((prev) => (prev + 1) % LOADING_MESSAGES.length);
-			}, 2500);
-
-			// Fade in animation
+		if (loading && progress) {
+			// Fade in animation when loading starts
 			Animated.timing(fadeAnim, {
 				toValue: 1,
 				duration: 500,
@@ -57,14 +51,9 @@ export default function Capture() {
 				easing: Easing.out(Easing.ease),
 			}).start();
 		} else {
-			setLoadingMessageIndex(0);
 			fadeAnim.setValue(0);
 		}
-
-		return () => {
-			if (interval) clearInterval(interval);
-		};
-	}, [loading]);
+	}, [loading, progress]);
 
 	if (!permission) {
 		// Camera permissions are still loading
@@ -149,24 +138,40 @@ export default function Capture() {
 								<ActivityIndicator size="large" color={theme.colors.primary} />
 								<Text style={styles.loadingTitle}>Procesando Ticket</Text>
 								<Text style={styles.loadingMessage}>
-									{LOADING_MESSAGES[loadingMessageIndex]}
+									{progress?.message || "Procesando..."}
 								</Text>
-								<View style={styles.loadingDots}>
-									<Ionicons
-										name="cloud-upload-outline"
-										size={24}
-										color={theme.colors.textSecondary}
-									/>
-									<Text style={{ color: theme.colors.textSecondary }}>
-										{" "}
-										• • •{" "}
-									</Text>
-									<Ionicons
-										name="receipt-outline"
-										size={24}
-										color={theme.colors.textSecondary}
-									/>
-								</View>
+								{progress && (
+									<View style={{ marginTop: theme.spacing.md, width: "100%" }}>
+										<View
+											style={{
+												width: "100%",
+												height: 6,
+												backgroundColor: theme.colors.surface,
+												borderRadius: 3,
+												overflow: "hidden",
+											}}
+										>
+											<Animated.View
+												style={{
+													height: "100%",
+													width: `${progress.progress}%`,
+													backgroundColor: theme.colors.primary,
+													borderRadius: 3,
+												}}
+											/>
+										</View>
+										<Text
+											style={{
+												marginTop: theme.spacing.xs,
+												fontSize: 12,
+												color: theme.colors.textSecondary,
+												textAlign: "center",
+											}}
+										>
+											{progress.progress}%
+										</Text>
+									</View>
+								)}
 							</View>
 						</Animated.View>
 					) : (

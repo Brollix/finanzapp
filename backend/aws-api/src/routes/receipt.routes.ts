@@ -24,6 +24,13 @@ router.put("/:id", authenticate, receiptController.updateReceipt);
 // GET /api/receipt/user/me - Get all receipts for the current user
 router.get("/user/me", authenticate, receiptController.getUserReceipts);
 
+// GET /api/receipt/process/:jobId/status - Get processing status for a job
+router.get(
+	"/process/:jobId/status",
+	authenticate,
+	receiptController.getProcessingStatus
+);
+
 // GET /api/receipt/:id - Get a receipt by ID
 router.get("/:id", authenticate, receiptController.getReceiptById);
 

@@ -34,8 +34,8 @@ export default function AuthCallback() {
 				}
 
 				// 2. Fallback: Try expo-linking queryParams (in case it's sent as query params)
+				const parsed = Linking.parse(url);
 				if (!accessToken || !refreshToken) {
-					const parsed = Linking.parse(url);
 					if (parsed.queryParams) {
 						if (parsed.queryParams.access_token) {
 							accessToken = Array.isArray(parsed.queryParams.access_token)
@@ -58,8 +58,36 @@ export default function AuthCallback() {
 
 					if (error) throw error;
 
-					// Redirect to home on success
-					router.replace("/(tabs)");
+					// Verificar si es un nuevo usuario (confirmación de signup)
+					// Supabase incluye type=signup en la URL cuando es confirmación de registro
+					const isSignupConfirmation =
+						parsed.queryParams?.type === "signup" ||
+						url.includes("type=signup");
+
+					// Obtener el usuario para verificar si tiene perfil completo
+					const {
+						data: { user },
+					} = await supabase.auth.getUser();
+
+					if (user) {
+						// Verificar si el usuario tiene username (perfil completo)
+						const { data: profile } = await supabase
+							.from("profiles")
+							.select("username")
+							.eq("id", user.id)
+							.single();
+
+						// Si es signup confirmation o no tiene username, ir a profile-setup
+						if (isSignupConfirmation || !profile?.username) {
+							router.replace("/profile-setup");
+						} else {
+							// Usuario existente, ir a home
+							router.replace("/(tabs)");
+						}
+					} else {
+						// Fallback: ir a home
+						router.replace("/(tabs)");
+					}
 				} else {
 					// If no tokens found, go to login
 					// console.warn("No tokens found in URL:", url);

@@ -1,6 +1,7 @@
 import { DetectDocumentTextCommand } from "@aws-sdk/client-textract";
 import { textractClient } from "../config/aws.js";
 import logger from "../utils/logger.js";
+import { retryTextractCall } from "../utils/retry.js";
 
 export async function extractTextFromImage(
 	imageBuffer: Buffer
@@ -12,7 +13,7 @@ export async function extractTextFromImage(
 			},
 		});
 
-		const response = await textractClient.send(command);
+		const response = await retryTextractCall(() => textractClient.send(command));
 
 		if (!response.Blocks) {
 			throw new Error("No text detected in image");

@@ -27,10 +27,11 @@ Ver [documentación técnica completa](docs/) para detalles de implementación.
 
 - **Frontend**: React Native + Expo (TypeScript)
 - **Backend**: Node.js + Express + TypeScript
+- **Website**: Next.js 14 + TypeScript + Tailwind CSS
 - **Base de datos**: Supabase (PostgreSQL)
 - **IA**: AWS Bedrock (Claude 3 Haiku)
 - **OCR**: AWS Textract
-- **Deployment**: AWS EC2 + CloudFront, EAS Build
+- **Deployment**: AWS EC2 + CloudFront, EAS Build, Nginx
 
 ## 🚀 Quick Start
 
@@ -51,6 +52,16 @@ npm install
 npm run dev
 ```
 
+### Website (Desarrollo Local)
+
+```bash
+cd website
+npm install
+npm run dev
+```
+
+Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
+
 ## 📦 Estructura del Proyecto
 
 ```
@@ -65,12 +76,18 @@ finanzapp/
 │       │   ├── services/  # Textract, Bedrock, DB
 │       │   └── routes/
 │       └── Dockerfile
+├── website/          # Landing page (Next.js)
+│   ├── app/          # Páginas y layouts
+│   ├── components/   # Componentes React
+│   └── Dockerfile
 └── docs/             # Documentación técnica
 ```
 
 ## 📚 Documentación
 
 - **Deployment Guide**: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) - Guía completa de AWS setup, backend y mobile deployment
+- **Website Deployment**: [website/DEPLOYMENT.md](website/DEPLOYMENT.md) - Guía para desplegar el sitio web en EC2 con Nginx
+- **Sitio Web**: [https://finanzapp.info](https://finanzapp.info) - Landing page de FinanzApp
 
 ## ⚙️ Configuración
 

@@ -13,6 +13,12 @@ import testRoutes from "./routes/test.routes.js";
 import { apiLimiter } from "./middleware/rateLimit.js";
 import logger from "./utils/logger.js";
 import { validateEnv } from "./utils/validateEnv.js";
+import {
+	isErrorWithCode,
+	RateLimitError,
+	ValidationError,
+	AuthenticationError,
+} from "./utils/errors.js";
 
 // Validate environment variables
 validateEnv();
@@ -57,13 +63,49 @@ app.use(express.urlencoded({ extended: true }));
 // Global rate limiter
 app.use(apiLimiter);
 
-// Health check endpoint
+// Health check endpoints
 app.get("/health", (req: Request, res: Response) => {
 	res.status(200).json({
 		status: "healthy",
 		timestamp: new Date().toISOString(),
 		service: "finanzapp-aws-api",
 	});
+});
+
+// Liveness probe - simple check if app is running
+app.get("/health/live", (req: Request, res: Response) => {
+	res.status(200).json({ status: "alive" });
+});
+
+// Readiness probe - check if app can serve requests (AWS + Supabase connectivity)
+app.get("/health/ready", async (req: Request, res: Response) => {
+	try {
+		// Check Supabase connection
+		const { supabase } = await import("./config/supabase.js");
+		const { error } = await supabase.from("receipts").select("id").limit(1);
+
+		if (error && error.code !== "PGRST116") {
+			// PGRST116 is "no rows returned" which is fine for health check
+			return res.status(503).json({
+				status: "not ready",
+				reason: "Database connection failed",
+			});
+		}
+
+		// AWS connectivity is checked implicitly when services are called
+		res.status(200).json({
+			status: "ready",
+			checks: {
+				database: "ok",
+			},
+		});
+	} catch (error) {
+		logger.error(`Readiness check failed: ${error}`);
+		res.status(503).json({
+			status: "not ready",
+			reason: "Health check failed",
+		});
+	}
 });
 
 // API Routes
@@ -80,10 +122,49 @@ app.use((req: Request, res: Response) => {
 
 // Global error handler
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-	logger.error(`Unhandled error: ${err.message}`);
+	// Log error with stack trace in development
+	if (process.env.NODE_ENV === "development") {
+		logger.error(`Unhandled error: ${err.message}`, { stack: err.stack });
+	} else {
+		logger.error(`Unhandled error: ${err.message}`);
+	}
+
+	// Capture error in Sentry (only for non-validation errors)
+	if (!(err instanceof ValidationError)) {
+		captureException(err, {
+			url: req.url,
+			method: req.method,
+			user: (req as any).user?.id,
+		});
+	}
+
+	// Handle custom error types
+	if (isErrorWithCode(err)) {
+		const statusCode =
+			err instanceof RateLimitError
+				? 429
+				: err instanceof ValidationError
+					? 400
+					: err instanceof AuthenticationError
+						? 401
+						: 500;
+
+		return res.status(statusCode).json({
+			error: err.code,
+			message: err.message,
+			...(err instanceof ValidationError && err.details
+				? { details: err.details }
+				: {}),
+		});
+	}
+
+	// Default error response
 	res.status(500).json({
 		error: "Internal Server Error",
-		message: err.message || "An unexpected error occurred",
+		message:
+			process.env.NODE_ENV === "development"
+				? err.message
+				: "An unexpected error occurred",
 	});
 });
 

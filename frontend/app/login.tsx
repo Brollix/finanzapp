@@ -9,17 +9,20 @@ import {
 	StyleSheet,
 	Alert,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { core } from "../src/styles/core.styles";
 import { theme } from "../src/styles/theme";
 import { useAuth } from "../src/features/auth/context/AuthContext";
 import { Input } from "../src/components/ui/Input";
 import { Button } from "../src/components/ui/Button";
+import { ForgotPasswordModal } from "../src/components/modals/ForgotPasswordModal";
 
 function LoginForm() {
-	const { signIn } = useAuth();
+	const { signIn, resendConfirmationEmail } = useAuth();
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [loading, setLoading] = useState(false);
+	const [rememberMe, setRememberMe] = useState(true);
 
 	const router = useRouter();
 
@@ -31,28 +34,64 @@ function LoginForm() {
 
 		setLoading(true);
 		try {
-			await signIn({ email, password });
+			await signIn({ email, password }, rememberMe);
 			router.replace("/");
 		} catch (error: any) {
-			// Solo logueamos el error si NO es credenciales inválidas
-			if (!error.message?.includes("Invalid login credentials")) {
+			// Manejar error de email no verificado
+			if (
+				error.message?.includes("Email not confirmed") ||
+				error.message?.includes("email_not_confirmed")
+			) {
+				Alert.alert(
+					"Email no verificado",
+					"Por favor confirma tu email antes de iniciar sesión. ¿Quieres reenviar el email de confirmación?",
+					[
+						{
+							text: "Cancelar",
+							style: "cancel",
+						},
+						{
+							text: "Reenviar",
+							onPress: async () => {
+								try {
+									await resendConfirmationEmail(email);
+									Alert.alert(
+										"Éxito",
+										"Email reenviado. Revisa tu bandeja de entrada."
+									);
+								} catch (e: any) {
+									Alert.alert(
+										"Error",
+										e.message || "No se pudo reenviar el email"
+									);
+								}
+							},
+						},
+					]
+				);
+			} else if (error.message?.includes("Invalid login credentials")) {
+				// Solo logueamos el error si NO es credenciales inválidas
+				Alert.alert(
+					"Error de inicio de sesión",
+					"Email o contraseña incorrectos. ¿Quieres crear una cuenta nueva?",
+					[
+						{
+							text: "Intentar de nuevo",
+							style: "cancel",
+						},
+						{
+							text: "Crear cuenta",
+							onPress: () => router.push("/register"),
+						},
+					]
+				);
+			} else {
 				console.error("Error al iniciar sesión:", error);
+				Alert.alert(
+					"Error de inicio de sesión",
+					error.message || "No pudimos iniciar sesión. Inténtalo de nuevo."
+				);
 			}
-
-			Alert.alert(
-				"Error de inicio de sesión",
-				"No pudimos iniciar sesión. ¿Quieres crear una cuenta nueva?",
-				[
-					{
-						text: "Intentar de nuevo",
-						style: "cancel",
-					},
-					{
-						text: "Crear cuenta",
-						onPress: () => router.push("/register"),
-					},
-				]
-			);
 		} finally {
 			setLoading(false);
 		}
@@ -76,6 +115,22 @@ function LoginForm() {
 				onChangeText={setPassword}
 				secureTextEntry
 			/>
+			<View style={styles.rememberMeContainer}>
+				<TouchableOpacity
+					onPress={() => setRememberMe(!rememberMe)}
+					style={styles.checkboxContainer}
+					activeOpacity={0.7}
+				>
+					<Ionicons
+						name={rememberMe ? "checkbox" : "square-outline"}
+						size={24}
+						color={
+							rememberMe ? theme.colors.primary : theme.colors.textSecondary
+						}
+					/>
+					<Text style={styles.rememberMeText}>Recordarme</Text>
+				</TouchableOpacity>
+			</View>
 			<Button
 				title={loading ? "Cargando..." : "Iniciar sesión"}
 				onPress={handleLogin}
@@ -90,9 +145,11 @@ function LoginForm() {
 
 export default function LoginScreen() {
 	const router = useRouter();
+	const [forgotPasswordModalVisible, setForgotPasswordModalVisible] =
+		useState(false);
 
 	const handleForgotPassword = () => {
-		alert("Función de recuperación de contraseña");
+		setForgotPasswordModalVisible(true);
 	};
 
 	const handleRegister = () => {
@@ -126,6 +183,11 @@ export default function LoginScreen() {
 						<Text style={core.linkText}>¿No tienes una cuenta?</Text>
 					</TouchableOpacity>
 				</View>
+
+				<ForgotPasswordModal
+					visible={forgotPasswordModalVisible}
+					onClose={() => setForgotPasswordModalVisible(false)}
+				/>
 			</View>
 		</KeyboardAvoidingView>
 	);
@@ -157,6 +219,20 @@ const styles = StyleSheet.create({
 	},
 	button: {
 		marginTop: theme.spacing.md,
+	},
+	rememberMeContainer: {
+		marginTop: theme.spacing.md,
+		marginBottom: theme.spacing.sm,
+	},
+	checkboxContainer: {
+		flexDirection: "row",
+		alignItems: "center",
+	},
+	rememberMeText: {
+		...core.text,
+		fontSize: theme.font.size.sm,
+		color: theme.colors.text,
+		marginLeft: theme.spacing.sm,
 	},
 	forgotPassword: {
 		marginTop: theme.spacing.lg,

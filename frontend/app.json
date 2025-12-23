@@ -72,7 +72,9 @@
       "router": {},
       "eas": {
         "projectId": "7db8111d-f386-402c-9403-4a076bd2981d"
-      }
+      },
+      "EXPO_PUBLIC_SUPABASE_URL": "https://bluhllaqxvvflaguamwe.supabase.co",
+      "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_5InsdEEVCaEQ9l6t4i3VLQ_Snc5xulb"
     }
   }
 }

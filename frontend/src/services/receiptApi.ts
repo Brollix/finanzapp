@@ -1,6 +1,25 @@
 import { ReceiptData, Receipt } from "../types/receipt.types";
 import { apiClient } from "./api";
 
+export interface ProcessingProgress {
+	status:
+		| "extracting_text"
+		| "processing_ai"
+		| "saving"
+		| "completed"
+		| "error";
+	progress: number; // 0-100
+	message: string;
+	receiptId?: string;
+	error?: string;
+}
+
+export interface ProcessReceiptResponse {
+	success: boolean;
+	data: Receipt;
+	jobId?: string;
+}
+
 /**
  * Service to upload a receipt image and obtain the formatted receipt data.
  */
@@ -16,9 +35,9 @@ export const receiptApi = {
 	/**
 	 * Sends a receipt image to the backend and returns the formatted receipt data.
 	 * @param imageUri Local URI of the captured photo (e.g., expo file URI)
-	 * @param userId Current authenticated user ID
+	 * @returns Receipt data and optional jobId for progress tracking
 	 */
-	async processReceipt(imageUri: string): Promise<Receipt> {
+	async processReceipt(imageUri: string): Promise<ProcessReceiptResponse> {
 		const form = new FormData();
 		// Append the image; the backend expects field name "image"
 		form.append("image", {
@@ -27,7 +46,19 @@ export const receiptApi = {
 			type: "image/jpeg", // Force mime type to image/jpeg
 		} as any);
 
-		return apiClient.post<Receipt>("/api/receipt/process", form);
+		return apiClient.post<ProcessReceiptResponse>("/api/receipt/process", form);
+	},
+
+	/**
+	 * Get processing status for a job
+	 * @param jobId Job ID returned from processReceipt
+	 */
+	async getProcessingStatus(jobId: string): Promise<ProcessingProgress> {
+		const response = await apiClient.get<{
+			success: boolean;
+			data: ProcessingProgress;
+		}>(`/api/receipt/process/${jobId}/status`);
+		return response.data;
 	},
 
 	/**

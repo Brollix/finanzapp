@@ -7,6 +7,7 @@ import {
 	StyleSheet,
 	ScrollView,
 	Pressable,
+	ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../src/features/auth/context/AuthContext";
@@ -113,6 +114,45 @@ export default function ProfileScreen() {
 					</Pressable>
 				</AnimatedCard>
 
+				{/* Logout Section */}
+				<AnimatedCard style={styles.card}>
+					<Pressable
+						style={[styles.menuItem, loading && styles.menuItemDisabled]}
+						onPress={handleSignOut}
+						disabled={loading}
+					>
+						<View style={styles.menuItemLeft}>
+							<View
+								style={[
+									styles.iconContainer,
+									{ backgroundColor: theme.colors.error },
+								]}
+							>
+								{loading ? (
+									<ActivityIndicator
+										size="small"
+										color={theme.colors.onError}
+									/>
+								) : (
+									<Ionicons
+										name="log-out"
+										size={20}
+										color={theme.colors.onError}
+									/>
+								)}
+							</View>
+							<Text style={styles.menuItemText}>Cerrar Sesión</Text>
+						</View>
+						{!loading && (
+							<Ionicons
+								name="chevron-forward"
+								size={20}
+								color={theme.colors.textSecondary}
+							/>
+						)}
+					</Pressable>
+				</AnimatedCard>
+
 				{/* Password Change Modal */}
 				<ChangePasswordModal
 					visible={showPasswordChange}
@@ -183,5 +223,8 @@ const styles = StyleSheet.create({
 		fontSize: theme.font.size.md,
 		fontFamily: theme.font.family.regular,
 		color: theme.colors.text,
+	},
+	menuItemDisabled: {
+		opacity: 0.6,
 	},
 });

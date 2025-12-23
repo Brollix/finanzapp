@@ -1,0 +1,236 @@
+{
+  "supermarket": "Disco Salguero",
+  "datetime": "21/11/2025 09:49:49",
+  "total": 122428.58,
+  "items": [
+    {
+      "product": "Nachos Tostitos Argentina",
+      "brand": "Tostitos",
+      "quantity": 1,
+      "price": 7150,
+      "barcode": "7790310006870",
+      "discount": 0
+    },
+    {
+      "product": "Batatas Fritas Chips de Batatitas",
+      "brand": "Nuest",
+      "quantity": 1,
+      "price": 1800,
+      "barcode": "7798171730026",
+      "discount": 0
+    },
+    {
+      "product": "Tostaditas Crackines de Arroz",
+      "brand": null,
+      "quantity": 1,
+      "price": 2400,
+      "barcode": "7798200050019",
+      "discount": 0
+    },
+    {
+      "product": "Tostadas Arroz Molinos Ala Integ",
+      "brand": "Molinos",
+      "quantity": 1,
+      "price": 2400,
+      "discount": 1200,
+      "promotion": "2do al 50% MOLINOS",
+      "barcode": "7791120098109"
+    },
+    {
+      "product": "Tostadas Arroz Molinos Ala Clasic",
+      "brand": "Molinos",
+      "quantity": 2,
+      "price": 2300,
+      "discount": 1150,
+      "promotion": "2do al 50% MOLINOS",
+      "barcode": "7791120098093"
+    },
+    {
+      "product": "Tostadas Molinos Ala Veggie",
+      "brand": "Molinos",
+      "quantity": 1,
+      "price": 2650,
+      "barcode": "7791120102868",
+      "discount": 0
+    },
+    {
+      "product": "Mermelada La Campagnola Durazno",
+      "brand": "La Campagnola",
+      "quantity": 1,
+      "price": 3600,
+      "discount": 1260,
+      "promotion": "35% Untables",
+      "barcode": "7793360131400"
+    },
+    {
+      "product": "Mermelada Aran Patagonia Berries",
+      "brand": "Patagonia",
+      "quantity": 1,
+      "price": 7350,
+      "discount": 2572.5,
+      "promotion": "35% Untables",
+      "barcode": "7793126002005"
+    },
+    {
+      "product": "Yogurt Entero Natural Sin Azucar Dahi",
+      "brand": "Dahi",
+      "quantity": 1,
+      "price": 2550,
+      "barcode": "7798136870545",
+      "discount": 0
+    },
+    {
+      "product": "Leche Entera Casanto",
+      "brand": "Casanto",
+      "quantity": 4,
+      "price": 1700,
+      "discount": 1644,
+      "promotion": "OFERTA CASANTO",
+      "barcode": "7790742192301"
+    },
+    {
+      "product": "Aceitunas Castell Verde",
+      "brand": "Castell",
+      "quantity": 1,
+      "price": 8200,
+      "discount": 2870,
+      "promotion": "35% CASTELL",
+      "barcode": "7791675000121"
+    },
+    {
+      "product": "Petits Pains",
+      "brand": null,
+      "quantity": 2,
+      "price": 7142,
+      "discount": 4285.2,
+      "promotion": "30% PANADERIA JD B",
+      "barcode": "3495584230968"
+    },
+    {
+      "product": "Queso Azul Bavaria",
+      "brand": "Bavaria",
+      "quantity": 0.16,
+      "price": 28900,
+      "is_weight": true,
+      "barcode": "98727",
+      "discount": 0
+    },
+    {
+      "product": "Rosetas Blancas Elaboradas Localmente",
+      "brand": null,
+      "quantity": 0.248,
+      "price": 3550,
+      "is_weight": true,
+      "barcode": "17316",
+      "discount": 0
+    },
+    {
+      "product": "Salame Cagnoli Baston Oferta",
+      "brand": "Cagnoli",
+      "quantity": 0.22,
+      "price": 35175,
+      "is_weight": true,
+      "barcode": "25655",
+      "discount": 0
+    },
+    {
+      "product": "Salame Cagnoli Baston Oferta",
+      "brand": "Cagnoli",
+      "quantity": 0.172,
+      "price": 35175,
+      "is_weight": true,
+      "barcode": "25655",
+      "discount": 0
+    },
+    {
+      "product": "Tostadas Finas Salvado C&Co",
+      "brand": "C&Co",
+      "quantity": 1,
+      "price": 2150,
+      "barcode": "7792052174916",
+      "discount": 0
+    },
+    {
+      "product": "Queso Pategras La Paulina Mayorista",
+      "brand": "La Paulina",
+      "quantity": 0.53,
+      "price": 19690,
+      "is_weight": true,
+      "barcode": "72645",
+      "discount": 0
+    },
+    {
+      "product": "Queso Gruyere La Quesera",
+      "brand": "La Quesera",
+      "quantity": 0.478,
+      "price": 38900,
+      "is_weight": true,
+      "barcode": "73748",
+      "discount": 0
+    },
+    {
+      "product": "Ciruela President Sin Carozo",
+      "brand": "President",
+      "quantity": 1,
+      "price": 2499,
+      "barcode": "7798175827258",
+      "discount": 0
+    },
+    {
+      "product": "Queso Procesado Finlandia",
+      "brand": "Finlandia",
+      "quantity": 1,
+      "price": 5150,
+      "barcode": "7790742373205",
+      "discount": 0
+    },
+    {
+      "product": "Queso Mozzarella Boconccinos C&Co",
+      "brand": "C&Co",
+      "quantity": 1,
+      "price": 3940,
+      "barcode": "7792052181259",
+      "discount": 0
+    },
+    {
+      "product": "Queso Brie Wapi",
+      "brand": "Wapi",
+      "quantity": 0.22,
+      "price": 47644,
+      "is_weight": true,
+      "barcode": "83848",
+      "discount": 0
+    },
+    {
+      "product": "Rosetas Blancas Elaboradas Localmente",
+      "brand": null,
+      "quantity": 0.246,
+      "price": 3650,
+      "is_weight": true,
+      "barcode": "17316",
+      "discount": 0
+    }
+  ],
+  "discounts": [
+    {
+      "description": "2do al 50% MOLINOS ALA",
+      "amount": 2350
+    },
+    {
+      "description": "35% Untables",
+      "amount": 3832.5
+    },
+    {
+      "description": "OFERTA CASANTO",
+      "amount": 1644
+    },
+    {
+      "description": "35% CASTELL",
+      "amount": 2870
+    },
+    {
+      "description": "30% PANADERIA ID BA",
+      "amount": 4285.2
+    }
+  ]
+}

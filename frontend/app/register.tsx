@@ -55,10 +55,21 @@ function RegisterForm() {
 		setLoading(true);
 		try {
 			await signUp({ email, password });
-			router.replace("/profile-setup");
+			// Si llega aquí sin error, redirigir a confirmación
+			router.replace({
+				pathname: "/email-confirmation",
+				params: { email },
+			});
 		} catch (error: any) {
-			console.error("Error al registrarse:", error);
-			alert(error.message || "Error al crear la cuenta.");
+			if (error.message === "EMAIL_CONFIRMATION_REQUIRED") {
+				router.replace({
+					pathname: "/email-confirmation",
+					params: { email },
+				});
+			} else {
+				console.error("Error al registrarse:", error);
+				Alert.alert("Error", error.message || "Error al crear la cuenta.");
+			}
 		} finally {
 			setLoading(false);
 		}

@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { Alert } from "react-native";
 import { useRouter } from "expo-router";
@@ -7,7 +7,7 @@ import {
 	launchImageLibraryAsync,
 	MediaTypeOptions,
 } from "expo-image-picker";
-import { receiptApi } from "../services/receiptApi";
+import { receiptApi, ProcessingProgress } from "../services/receiptApi";
 
 export const useReceiptScanner = () => {
 	const [permission, requestPermission] = useCameraPermissions();
@@ -15,8 +15,10 @@ export const useReceiptScanner = () => {
 		useMediaLibraryPermissions();
 	const [loading, setLoading] = useState(false);
 	const [capturedImage, setCapturedImage] = useState<string | null>(null);
+	const [progress, setProgress] = useState<ProcessingProgress | null>(null);
 	const cameraRef = useRef<CameraView>(null);
 	const router = useRouter();
+	const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
 	const takePicture = async () => {
 		if (cameraRef.current && !loading) {
@@ -72,17 +74,129 @@ export const useReceiptScanner = () => {
 		}
 	};
 
+	// Cleanup polling on unmount
+	useEffect(() => {
+		return () => {
+			if (pollingIntervalRef.current) {
+				clearInterval(pollingIntervalRef.current);
+			}
+		};
+	}, []);
+
 	const processReceipt = async () => {
 		if (!capturedImage) return;
 
+		let receiptData: any = null;
+		let jobId: string | undefined;
+
 		try {
 			setLoading(true);
-			const receiptData = await receiptApi.processReceipt(capturedImage);
-
-			router.push({
-				pathname: "/receipt-confirmation",
-				params: { receipt: JSON.stringify(receiptData) },
+			setProgress({
+				status: "extracting_text",
+				progress: 0,
+				message: "Iniciando procesamiento...",
 			});
+
+			// Start processing
+			const response = await receiptApi.processReceipt(capturedImage);
+			receiptData = response.data;
+			jobId = response.jobId;
+
+			// If we have a jobId, start polling for progress
+			if (jobId) {
+				let pollCount = 0;
+				const MAX_POLLS = 120; // Max 60 seconds (120 * 500ms)
+				
+				// Start polling immediately
+				pollingIntervalRef.current = setInterval(async () => {
+					pollCount++;
+					
+					// Safety: stop polling after max attempts
+					if (pollCount > MAX_POLLS) {
+						if (pollingIntervalRef.current) {
+							clearInterval(pollingIntervalRef.current);
+							pollingIntervalRef.current = null;
+						}
+						setLoading(false);
+						Alert.alert(
+							"Tiempo agotado",
+							"El procesamiento está tomando más tiempo del esperado. Por favor, intenta nuevamente."
+						);
+						return;
+					}
+					
+					try {
+						const progressData = await receiptApi.getProcessingStatus(jobId!);
+						setProgress(progressData);
+
+						// If completed or error, stop polling
+						if (
+							progressData.status === "completed" ||
+							progressData.status === "error"
+						) {
+							if (pollingIntervalRef.current) {
+								clearInterval(pollingIntervalRef.current);
+								pollingIntervalRef.current = null;
+							}
+
+							setLoading(false);
+
+							if (progressData.status === "completed") {
+								// If receiptId is available, fetch full receipt
+								if (progressData.receiptId) {
+									try {
+										const fullReceipt = await receiptApi.getUserReceipts();
+										const receipt = fullReceipt.find(r => r.id === progressData.receiptId);
+										if (receipt) {
+											router.push({
+												pathname: "/receipt-confirmation",
+												params: { receipt: JSON.stringify(receipt) },
+											});
+											return;
+										}
+									} catch (error) {
+										console.error("Error fetching receipt:", error);
+									}
+								}
+								
+								// Fallback to original receiptData
+								if (receiptData) {
+									router.push({
+										pathname: "/receipt-confirmation",
+										params: { receipt: JSON.stringify(receiptData) },
+									});
+								}
+							} else {
+								// Handle error
+								Alert.alert(
+									"Error",
+									progressData.error || "Error procesando el ticket"
+								);
+							}
+						}
+					} catch (error) {
+						console.error("Error polling progress:", error);
+						// Continue polling even if one request fails, but log consecutive failures
+						if (pollCount % 10 === 0) {
+							console.warn(`Failed to poll progress ${pollCount} times`);
+						}
+					}
+				}, 500); // Poll every 500ms
+			} else {
+				// No jobId, use old flow (immediate response)
+				setProgress({
+					status: "completed",
+					progress: 100,
+					message: "Completado",
+				});
+				setLoading(false);
+				if (receiptData) {
+					router.push({
+						pathname: "/receipt-confirmation",
+						params: { receipt: JSON.stringify(receiptData) },
+					});
+				}
+			}
 		} catch (error) {
 			console.error("Error processing receipt:", error);
 			let errorMessage = "No se pudo procesar el ticket. Inténtalo de nuevo.";
@@ -148,9 +262,19 @@ export const useReceiptScanner = () => {
 				}
 			}
 
+			setProgress({
+				status: "error",
+				progress: 0,
+				message: "Error",
+				error: errorMessage,
+			});
 			Alert.alert("Ups, algo salió mal", errorMessage);
 		} finally {
-			setLoading(false);
+			// Don't set loading to false here if we're polling
+			// It will be set to false when polling completes
+			if (!pollingIntervalRef.current) {
+				setLoading(false);
+			}
 		}
 	};
 
@@ -161,6 +285,7 @@ export const useReceiptScanner = () => {
 		requestMediaPermission,
 		loading,
 		capturedImage,
+		progress,
 		cameraRef,
 		takePicture,
 		pickImageFromGallery,

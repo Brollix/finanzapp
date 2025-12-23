@@ -1,3 +1,7 @@
+# FinanzApp - Cursor Rules
+
+## Version Management
+
 Always check if the changes justify a new version before committing and pushing.
 If a new version is needed:
 
@@ -6,20 +10,427 @@ If a new version is needed:
 3. Create a git tag "vX.Y.Z".
 4. Push commits and tags.
 
-# Styling Rules
+## Styling Rules
 
 - ALWAYS use the `theme` object from `src/styles/theme.ts` for colors, fonts, spacing, and border radius.
 - NEVER use hardcoded colors (hex, rgb, names) directly in components.
 - If a color is missing in the theme, add it to `src/styles/theme.ts` first.
 
-# Tech Stack & Architecture
+## Tech Stack & Architecture
 
 - **Frontend**: Expo (React Native), TypeScript.
-- **Backend**: AWS Lambda (Node.js) for OCR/AI processing.
+- **Backend**: Node.js + Express (deployed on AWS EC2), TypeScript.
 - **Database**: Supabase (PostgreSQL).
-  - **Extensions**: `pgvector` is ENABLED for vector similarity search.
-- **AI**: AWS Bedrock (Claude for OCR, Titan for Embeddings).
+  - **Extensions**: `pgvector` is ENABLED for vector similarity search (prepared but not actively used yet).
+- **AI**: AWS Bedrock (Claude 3.5 Haiku for OCR processing, Claude Sonnet 4 for refinement).
+  - **Embeddings**: Titan Embeddings service is prepared but NOT currently active. Code is commented out in `database.service.ts`.
+- **OCR**: AWS Textract.
+- **Monitoring**: Sentry for error tracking and APM.
+- **CI/CD**: GitHub Actions for automated testing and deployment.
 
-# Database Rules
+## Testing Strategy
+
+### Backend Testing
+
+- **Framework**: Jest with ts-jest for TypeScript support.
+- **Location**: Tests in `backend/aws-api/tests/` directory.
+- **Coverage Goal**: Minimum 50% for critical paths, target 70%+ for services handling financial data.
+- **Test Files**:
+  - `health.test.ts` - Health check endpoint tests
+  - `auth.middleware.test.ts` - Authentication middleware tests
+  - `bedrock.service.test.ts` - Bedrock service utility tests (parseArgentineNumber, etc.)
+  - `database.service.test.ts` - Database batch operations tests
+  - `receipt.controller.test.ts` - Receipt controller validation tests
+
+### Test Commands
+
+```bash
+npm test              # Run all tests
+npm run test:watch    # Watch mode
+npm run test:coverage # Generate coverage report
+```
+
+### Testing Best Practices
+
+- **Unit Tests**: Test individual functions and services in isolation.
+- **Mocking**: Use Jest mocks for external dependencies (AWS SDK, Supabase).
+- **Test Names**: Use descriptive names following pattern: `should [expected behavior] when [condition]`.
+- **Coverage**: Focus on critical business logic (number parsing, validation, data transformation).
+- **Setup**: Use `tests/setup.ts` for test environment configuration.
+
+### Frontend Testing
+
+- Tests should be added for critical components (AuthContext, ReceiptContext, Dashboard).
+- Use React Native Testing Library when adding frontend tests.
+
+## Error Handling
+
+### Custom Error Classes
+
+ALWAYS use custom error classes from `backend/aws-api/src/utils/errors.ts`:
+
+- `ValidationError` (400): Input validation failures
+- `AuthenticationError` (401): Auth failures
+- `RateLimitError` (429): Rate limiting
+- `OCRProcessingError` (500): OCR failures
+- `BedrockError` (500): AI processing failures
+- `TextractError` (500): Textract failures
+- `DatabaseError` (500): Database operation failures
+
+### Error Handling Pattern
+
+```typescript
+// ✅ GOOD: Use custom error classes
+if (!req.file) {
+	throw new ValidationError("No image file provided");
+}
+
+// ❌ BAD: Generic Error or manual status codes
+if (!req.file) {
+	res.status(400).json({ error: "No image file provided" });
+	return;
+}
+```
+
+### Error Response Format
+
+All errors follow this format:
+
+```json
+{
+	"error": "ERROR_CODE",
+	"message": "Human-readable message",
+	"details": {} // Optional, for validation errors
+}
+```
+
+### Sentry Integration
+
+- Errors are automatically captured in Sentry (except ValidationError).
+- Use `captureException()` from `src/config/sentry.ts` for manual error tracking.
+- Health check endpoints are filtered out from Sentry.
+
+## Retry Logic
+
+### When to Use Retry
+
+ALWAYS use retry logic for:
+
+- AWS service calls (Bedrock, Textract)
+- Database operations (Supabase queries)
+- Network requests that may fail transiently
+
+### Retry Utilities
+
+Use utilities from `backend/aws-api/src/utils/retry.ts`:
+
+```typescript
+// ✅ GOOD: Use retry wrappers
+const response = await retryBedrockCall(() => bedrockClient.send(command));
+const response = await retryTextractCall(() => textractClient.send(command));
+const result = await retryDatabaseCall(() => supabase.from("table").select());
+
+// ❌ BAD: Direct calls without retry
+const response = await bedrockClient.send(command);
+```
+
+### Retry Configuration
+
+- Default: 3 retries with exponential backoff (1s, 2s, 4s)
+- Max timeout: 10 seconds
+- Retryable errors: Network errors, throttling, service unavailable
+
+## Logging
+
+### Logger Usage
+
+- **NEVER** use `console.log`, `console.error`, `console.warn` in production code.
+- **ALWAYS** use `logger` from `backend/aws-api/src/utils/logger.ts`.
+- Scripts in `src/scripts/` can use `console.*` (they are development tools).
+
+### Logger Levels
+
+- `logger.error()` - Errors that need attention
+- `logger.warn()` - Warnings (retries, fallbacks)
+- `logger.info()` - Important business events
+- `logger.debug()` - Detailed debugging (development only)
+- `logger.http()` - HTTP requests (via Morgan middleware)
+
+### Logging Pattern
+
+```typescript
+// ✅ GOOD: Use logger
+logger.error(`Auth error: ${error?.message || "Unknown error"}`);
+logger.info(`Processing receipt for user: ${userId}`);
+
+// ❌ BAD: Use console
+console.error("Auth error:", error);
+console.log("Processing receipt");
+```
+
+## Input Validation
+
+### Zod Validation
+
+- **ALWAYS** validate input with Zod schemas before processing.
+- Use `ReceiptDataSchema` from `backend/aws-api/src/controllers/receipt.controller.ts`.
+- Throw `ValidationError` when validation fails.
+
+### Validation Pattern
+
+```typescript
+// ✅ GOOD: Validate and throw ValidationError
+const validationResult = ReceiptDataSchema.safeParse(receiptData);
+if (!validationResult.success) {
+	throw new ValidationError(
+		"Invalid receipt data",
+		validationResult.error.issues
+	);
+}
+const validatedData = validationResult.data;
+
+// ❌ BAD: Manual validation or no validation
+if (!receiptData.supermarket) {
+	res.status(400).json({ error: "Missing supermarket" });
+	return;
+}
+```
+
+## Database Rules
 
 - **Migrations**: ALWAYS use SQL migrations for schema changes. Never modify the database schema manually in the dashboard without creating a migration file.
+- **Migrations Location**: `backend/aws-api/migrations/`
+- **RLS**: Row Level Security is enabled. Always verify RLS policies when adding new tables.
+
+## Service Architecture
+
+### Bedrock Service Structure
+
+The Bedrock service has been refactored into modules:
+
+- `bedrock-utils.ts` - Utility functions (parseArgentineNumber, string similarity)
+- `bedrock-prompts.ts` - System prompts for AI models
+- `bedrock-embeddings.service.ts` - Embedding generation and category suggestion
+- `bedrock.service.ts` - Main receipt processing functions
+
+When adding new Bedrock functionality:
+
+- Put utility functions in `bedrock-utils.ts`
+- Put prompts in `bedrock-prompts.ts`
+- Put service functions in appropriate service file
+
+### Database Service
+
+- Use batch operations (`getOrCreateProductsBatch`) for multiple products.
+- Handle race conditions (unique violations) gracefully.
+- Background processing for non-critical operations.
+
+## CI/CD Pipeline
+
+### GitHub Actions Workflows
+
+- **Backend CI** (`.github/workflows/backend-ci.yml`):
+
+  - Runs on PRs and pushes to main
+  - Executes: type-check, tests, lint, build Docker image
+  - Auto-deploys to EC2 on push to main (if tests pass)
+
+- **Frontend CI** (`.github/workflows/frontend-ci.yml`):
+
+  - Runs on PRs and pushes to main
+  - Executes: type-check, tests, lint
+
+- **Dependabot** (`.github/dependabot.yml`):
+  - Weekly dependency updates
+  - Separate configs for backend and frontend
+
+### Deployment
+
+- Backend deploys automatically via GitHub Actions on push to `main`.
+- Manual deployment: Use `backend/aws-api/deploy.sh` script.
+- Health checks: `/health`, `/health/live`, `/health/ready`
+
+## API Design
+
+### Endpoints
+
+- All endpoints documented in `docs/API.md`
+- Use consistent response format: `{ success: boolean, data: T, error?: string }`
+- Health checks: `/health`, `/health/live`, `/health/ready`
+
+### Rate Limiting
+
+- General API: 100 requests per 15 minutes per IP
+- Receipt processing: 10 requests per hour per IP
+- Rate limit headers included in responses
+
+### Authentication
+
+- All endpoints (except health checks) require Bearer token.
+- Use `authenticate` middleware from `src/middleware/auth.ts`.
+- Token validation via Supabase Auth.
+
+## Frontend Patterns
+
+### Progress Tracking
+
+- Use `jobId` from `processReceipt` response for progress tracking.
+- Poll `/api/receipt/process/:jobId/status` every 500ms.
+- Maximum polling time: 60 seconds (120 polls).
+- Handle timeout gracefully with user-friendly message.
+
+### State Management
+
+- Use Context API for global state (AuthContext, ReceiptContext).
+- Consider React Query for future improvements (caching, optimistic updates).
+
+### Error Boundaries
+
+- Add React Error Boundaries for critical components.
+- Display user-friendly error messages.
+
+## Code Quality
+
+### TypeScript
+
+- **ALWAYS** use TypeScript (no `any` unless absolutely necessary).
+- Use proper types from `src/types/` directory.
+- Enable strict mode in `tsconfig.json`.
+
+### Code Organization
+
+- Services in `src/services/`
+- Controllers in `src/controllers/`
+- Middleware in `src/middleware/`
+- Utils in `src/utils/`
+- Types in `src/types/`
+
+### Naming Conventions
+
+- Files: `kebab-case.ts` or `PascalCase.tsx` for components
+- Functions: `camelCase`
+- Classes: `PascalCase`
+- Constants: `UPPER_SNAKE_CASE`
+
+## Documentation
+
+### ADRs (Architecture Decision Records)
+
+- Location: `docs/ADRs/`
+- Document major architectural decisions.
+- Current ADRs:
+  - `001-testing-strategy.md` - Testing approach
+  - `002-error-handling-strategy.md` - Error handling approach
+
+### API Documentation
+
+- Location: `docs/API.md`
+- Keep updated when adding/modifying endpoints.
+
+## Security
+
+### Environment Variables
+
+- **NEVER** commit `.env` files.
+- Use `.env.example` as template.
+- Required variables documented in `docs/`.
+
+### Secrets Management
+
+- Use GitHub Secrets for CI/CD.
+- Use Supabase environment variables for frontend (anon keys are safe, but use env vars anyway).
+
+### CORS
+
+- Currently allows all origins in development.
+- Should be restricted to specific origins in production.
+
+## Performance
+
+### Backend Optimizations
+
+- Image optimization before Textract (reduce size if >2MB).
+- Batch database operations.
+- Background processing for non-critical tasks.
+- Retry logic with exponential backoff.
+
+### Frontend Optimizations
+
+- Progress tracking with polling (500ms interval).
+- Timeout handling (60s max).
+- Error recovery in polling.
+
+## Monitoring
+
+### Sentry
+
+- Configured in `backend/aws-api/src/config/sentry.ts`.
+- Captures errors automatically (except ValidationError).
+- Performance monitoring enabled (10% sample rate in production).
+- Health checks filtered out.
+
+### Logging
+
+- Winston logger with structured logging.
+- JSON format in production (for CloudWatch).
+- Console format in development.
+
+## When Adding New Features
+
+1. **Write tests first** (TDD approach for critical features).
+2. **Use custom error classes** for error handling.
+3. **Add retry logic** for external service calls.
+4. **Validate input** with Zod.
+5. **Use logger** instead of console.
+6. **Update documentation** (API.md, ADRs if needed).
+7. **Run tests** before committing.
+8. **Check CI/CD** passes before merging.
+
+## Common Patterns
+
+### Processing a Receipt
+
+```typescript
+// 1. Validate input
+if (!req.file) {
+	throw new ValidationError("No image file provided");
+}
+
+// 2. Create job for progress tracking
+const jobId = progressTracker.createJob();
+
+// 3. Process with retry logic
+const receiptData = await retryBedrockCall(() =>
+	formatReceiptWithBedrock(ocrText)
+);
+
+// 4. Save to database
+const savedReceipt = await saveReceiptFast(userId, receiptData);
+
+// 5. Complete job
+progressTracker.completeJob(jobId, savedReceipt.id);
+```
+
+### Error Handling in Controllers
+
+```typescript
+try {
+	// ... processing ...
+} catch (error) {
+	// Custom errors are handled by global error handler
+	// Just throw them
+	if (error instanceof ValidationError) {
+		throw error; // Will be caught by global handler
+	}
+	// Log unexpected errors
+	logger.error(`Unexpected error: ${error}`);
+	throw error;
+}
+```
+
+## References
+
+- **Testing Strategy**: `docs/ADRs/001-testing-strategy.md`
+- **Error Handling Strategy**: `docs/ADRs/002-error-handling-strategy.md`
+- **API Documentation**: `docs/API.md`
+- **Deployment Guide**: `docs/deploy-backend.md`

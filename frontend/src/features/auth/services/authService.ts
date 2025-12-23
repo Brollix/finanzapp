@@ -1,9 +1,23 @@
-import { supabase } from "../../../lib/supabase";
+import { supabase, isSupabaseConfigured } from "../../../lib/supabase";
 import { AuthCredentials, User } from "../types";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { withTimeout } from "../../../utils/timeout";
 
 export const authService = {
-	async signIn(credentials: AuthCredentials): Promise<User> {
+	async signIn(
+		credentials: AuthCredentials,
+		rememberMe: boolean = true
+	): Promise<User> {
 		const { email, password } = credentials;
+
+		// Si no quiere ser recordado, limpiar sesión persistente antes de login
+		if (!rememberMe) {
+			// Limpiar cualquier sesión persistente previa
+			await AsyncStorage.removeItem(
+				"sb-bluhllaqxvvflaguamwe.supabase.co-auth-token"
+			);
+		}
+
 		const { data, error } = await supabase.auth.signInWithPassword({
 			email,
 			password,
@@ -28,6 +42,9 @@ export const authService = {
 		const { data, error } = await supabase.auth.signUp({
 			email,
 			password,
+			options: {
+				emailRedirectTo: "finanzapp://auth/callback",
+			},
 		});
 
 		if (error) {
@@ -36,6 +53,11 @@ export const authService = {
 
 		if (!data.user) {
 			throw new Error("No se pudo crear el usuario");
+		}
+
+		// Verificar si necesita confirmación de email
+		if (data.session === null) {
+			throw new Error("EMAIL_CONFIRMATION_REQUIRED");
 		}
 
 		return {
@@ -52,27 +74,85 @@ export const authService = {
 	},
 
 	async getCurrentUser(): Promise<User | null> {
-		const {
-			data: { user },
-			error,
-		} = await supabase.auth.getUser();
-
-		if (error || !user) {
+		// Verificar configuración de Supabase antes de intentar llamadas
+		if (!isSupabaseConfigured) {
+			console.warn(
+				"Supabase no está configurado correctamente. No se puede obtener usuario."
+			);
 			return null;
 		}
 
-		// Fetch profile data
-		const { data: profile } = await supabase
-			.from("profiles")
-			.select("username, full_name, avatar_url")
-			.eq("id", user.id)
-			.single();
+		try {
+			// Get user with timeout (5 seconds)
+			const getUserPromise = supabase.auth.getUser();
+			const {
+				data: { user },
+				error,
+			} = await withTimeout(
+				getUserPromise,
+				5000,
+				"Timeout al obtener usuario de Supabase"
+			);
 
-		return {
-			id: user.id,
-			email: user.email || "",
-			...profile,
-		};
+			if (error || !user) {
+				console.log("No hay usuario autenticado:", error?.message);
+				return null;
+			}
+
+			// Fetch profile data with timeout (5 seconds)
+			try {
+				const profilePromise = supabase
+					.from("profiles")
+					.select("username, full_name, avatar_url")
+					.eq("id", user.id)
+					.single();
+
+				const { data: profile, error: profileError } = await withTimeout(
+					profilePromise,
+					5000,
+					"Timeout al obtener perfil de usuario"
+				);
+
+				if (profileError) {
+					console.warn(
+						"Error al obtener perfil (continuando con usuario básico):",
+						profileError.message
+					);
+					// Return user without profile data if profile fetch fails
+					return {
+						id: user.id,
+						email: user.email || "",
+					};
+				}
+
+				return {
+					id: user.id,
+					email: user.email || "",
+					...(profile || {}),
+				};
+			} catch (profileError: any) {
+				console.warn(
+					"Error al obtener perfil (continuando con usuario básico):",
+					profileError.message
+				);
+				// Return user without profile data if profile fetch fails
+				return {
+					id: user.id,
+					email: user.email || "",
+				};
+			}
+		} catch (error: any) {
+			// Cambiar a console.warn para que no se muestre como error crítico
+			// El timeout es esperado si hay problemas de conectividad
+			if (error.message?.includes("Timeout")) {
+				console.warn(
+					"Timeout al conectar con Supabase. Verifica tu conexión a internet y la configuración."
+				);
+			} else {
+				console.warn("Error al obtener usuario:", error.message);
+			}
+			return null;
+		}
 	},
 
 	async updateProfile(userId: string, updates: Partial<User>): Promise<void> {
@@ -92,6 +172,19 @@ export const authService = {
 			redirectTo: "finanzapp://reset-password",
 		});
 
+		if (error) {
+			throw new Error(error.message);
+		}
+	},
+
+	async resendConfirmationEmail(email: string): Promise<void> {
+		const { error } = await supabase.auth.resend({
+			type: "signup",
+			email: email,
+			options: {
+				emailRedirectTo: "finanzapp://auth/callback",
+			},
+		});
 		if (error) {
 			throw new Error(error.message);
 		}

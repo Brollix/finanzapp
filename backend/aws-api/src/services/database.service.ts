@@ -3,6 +3,114 @@ import { supabase } from "../config/supabase.js";
 import { generateEmbedding, suggestCategory } from "./bedrock.service.js";
 import logger from "../utils/logger.js";
 
+/**
+ * Batch version: Get or create multiple products in a single operation
+ * Much faster than individual queries for receipts with many items
+ */
+async function getOrCreateProductsBatch(
+	items: ReceiptItem[]
+): Promise<Map<string, string>> {
+	const productMap = new Map<string, string>();
+
+	// Extract unique product names
+	const productNames = [...new Set(items.map((item) => item.product))];
+
+	if (productNames.length === 0) {
+		return productMap;
+	}
+
+	try {
+		// 1. Search for all existing products in a single query
+		const { data: existingProducts, error: searchError } = await supabase
+			.from("products")
+			.select("id, name, brand")
+			.in("name", productNames);
+
+		if (searchError) {
+			logger.error(`Error searching products: ${searchError}`);
+			throw searchError;
+		}
+
+		// 2. Create a fast lookup map
+		existingProducts?.forEach((p) => {
+			const key = `${p.name}|${p.brand || ""}`;
+			productMap.set(key, p.id);
+		});
+
+		// 3. Identify missing products
+		const missingItems = items.filter((item) => {
+			const key = `${item.product}|${item.brand || ""}`;
+			return !productMap.has(key);
+		});
+
+		// 4. Create missing products in batch (if any)
+		if (missingItems.length > 0) {
+			// Get unique missing items (by name+brand combination)
+			const uniqueMissing = Array.from(
+				new Map(
+					missingItems.map((item) => [
+						`${item.product}|${item.brand || ""}`,
+						item,
+					])
+				).values()
+			);
+
+			const newProducts = uniqueMissing.map((item) => ({
+				name: item.product,
+				brand: item.brand || null,
+				is_weight: item.is_weight || false,
+				category: "Otros", // Default category, can be updated later
+				embedding: null,
+			}));
+
+			const { data: created, error: insertError } = await supabase
+				.from("products")
+				.insert(newProducts)
+				.select("id, name, brand");
+
+			if (insertError) {
+				// Handle race condition: products might have been created between check and insert
+				if (insertError.code === "23505") {
+					// Unique violation - retry search for the conflicting products
+					logger.warn(
+						`Race condition detected, retrying search for ${newProducts.length} products`
+					);
+					const retryNames = newProducts.map((p) => p.name);
+					const { data: retryProducts } = await supabase
+						.from("products")
+						.select("id, name, brand")
+						.in("name", retryNames);
+
+					retryProducts?.forEach((p) => {
+						const key = `${p.name}|${p.brand || ""}`;
+						if (!productMap.has(key)) {
+							productMap.set(key, p.id);
+						}
+					});
+				} else {
+					logger.error(`Error creating products: ${insertError}`);
+					throw insertError;
+				}
+			} else {
+				// Add created products to map
+				created?.forEach((p) => {
+					const key = `${p.name}|${p.brand || ""}`;
+					productMap.set(key, p.id);
+				});
+			}
+		}
+
+		logger.info(
+			`Batch product lookup: ${items.length} items, ${productMap.size} products found/created`
+		);
+
+		return productMap;
+	} catch (error) {
+		logger.error(`Error in batch product lookup: ${error}`);
+		throw error;
+	}
+}
+
 async function getOrCreateProduct(item: ReceiptItem): Promise<string> {
 	let query = supabase.from("products").select("id").eq("name", item.product);
 
@@ -351,7 +459,7 @@ export async function updateReceipt(
 			.eq("receipt_id", receiptId);
 
 		if (deleteError) {
-			console.error("Error deleting old receipt items:", deleteError);
+			logger.error(`Error deleting old receipt items: ${deleteError.message}`);
 			// Continue anyway - we'll insert new items
 		}
 
@@ -436,5 +544,158 @@ export async function getReceiptsByUserId(
 				error instanceof Error ? error.message : "Unknown error"
 			}`
 		);
+	}
+}
+
+/**
+ * Fast version: Save receipt with items as JSON, without processing products
+ * Used for early return optimization
+ */
+export async function saveReceiptFast(
+	userId: string,
+	receiptData: ReceiptData,
+	imageUrl?: string
+): Promise<Receipt> {
+	try {
+		// Calculate totals
+		const calculatedSubtotal = receiptData.items.reduce(
+			(sum, item) => sum + (item.price || 0),
+			0
+		);
+
+		const explicitItemSavings = receiptData.items.reduce(
+			(sum, item) => sum + (item.discount || 0),
+			0
+		);
+
+		let finalTotal = 0;
+		let finalSubtotal = calculatedSubtotal;
+		let finalTotalSaved = 0;
+
+		if (
+			receiptData.total &&
+			receiptData.total > 0 &&
+			receiptData.total < calculatedSubtotal
+		) {
+			finalTotal = receiptData.total;
+			finalTotalSaved = calculatedSubtotal - finalTotal;
+		} else {
+			finalTotal = calculatedSubtotal - explicitItemSavings;
+			finalTotalSaved = explicitItemSavings;
+		}
+
+		// Build discounts array
+		let finalDiscounts = receiptData.discounts || [];
+		if (finalTotalSaved > 0) {
+			const existingSavings = finalDiscounts.reduce(
+				(sum: number, d: any) => sum + (d.amount || 0),
+				0
+			);
+			if (Math.abs(finalTotalSaved - existingSavings) > 1.0) {
+				const diff = finalTotalSaved - existingSavings;
+				if (diff > 0) {
+					finalDiscounts.push({
+						description: "Descuentos Varios / Generales",
+						amount: parseFloat(diff.toFixed(2)),
+					});
+				}
+			}
+		}
+
+		const newReceipt = {
+			user_id: userId,
+			supermarket: receiptData.supermarket,
+			datetime: receiptData.datetime,
+			total: finalTotal,
+			subtotal: finalSubtotal,
+			items: receiptData.items, // Store as JSON for now
+			image_url: imageUrl,
+			discounts: finalDiscounts,
+			total_saved: finalTotalSaved,
+		};
+
+		const { data, error } = await supabase
+			.from("receipts")
+			.insert(newReceipt)
+			.select()
+			.single();
+
+		if (error) {
+			throw error;
+		}
+
+		return data as Receipt;
+	} catch (error) {
+		logger.error(`Database error (fast save): ${error}`);
+		throw new Error(
+			`Failed to save receipt: ${
+				error instanceof Error ? error.message : "Unknown error"
+			}`
+		);
+	}
+}
+
+/**
+ * Background processing: Create receipt_items from receipt data
+ * This runs after the receipt is saved for fast response
+ */
+export async function processReceiptItemsInBackground(
+	receiptId: string,
+	items: ReceiptItem[]
+): Promise<void> {
+	try {
+		// Use batch lookup for products
+		const productMap = await getOrCreateProductsBatch(items);
+
+		// Create receipt_items
+		const receiptItems = items
+			.map((item) => {
+				const key = `${item.product}|${item.brand || ""}`;
+				const productId = productMap.get(key);
+
+				if (!productId) {
+					logger.warn(
+						`Product not found for item: ${item.product} (brand: ${item.brand})`
+					);
+					return null;
+				}
+
+				return {
+					receipt_id: receiptId,
+					product_id: productId,
+					quantity: item.quantity,
+					price: item.quantity ? item.price / item.quantity : 0, // Unit price
+					total: item.price,
+					discount: item.discount || 0,
+					promotion: item.promotion || null,
+				};
+			})
+			.filter((item) => item !== null) as Array<{
+			receipt_id: string;
+			product_id: string;
+			quantity: number;
+			price: number;
+			total: number;
+			discount: number;
+			promotion: string | null;
+		}>;
+
+		if (receiptItems.length > 0) {
+			const { error: itemsError } = await supabase
+				.from("receipt_items")
+				.insert(receiptItems);
+
+			if (itemsError) {
+				logger.error(`Error saving receipt items in background: ${itemsError}`);
+				// Don't throw - this is background processing
+			} else {
+				logger.info(
+					`Background processing complete: ${receiptItems.length} receipt_items created for receipt ${receiptId}`
+				);
+			}
+		}
+	} catch (error) {
+		logger.error(`Error in background receipt items processing: ${error}`);
+		// Don't throw - this is background processing
 	}
 }

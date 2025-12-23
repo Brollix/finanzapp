@@ -14,10 +14,11 @@ export interface User {
 export interface AuthContextType {
 	user: User | null;
 	loading: boolean;
-	signIn: (credentials: AuthCredentials) => Promise<void>;
+	signIn: (credentials: AuthCredentials, rememberMe?: boolean) => Promise<void>;
 	signUp: (credentials: AuthCredentials) => Promise<void>;
 	signOut: () => Promise<void>;
 	getCurrentUser: () => Promise<User | null>;
 	resetPassword: (email: string) => Promise<void>;
 	updateProfile: (profile: Partial<User>) => Promise<void>;
+	resendConfirmationEmail: (email: string) => Promise<void>;
 }

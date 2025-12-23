@@ -1,13 +1,10 @@
-name: Deploy Backend to EC2
+name: Deploy Backend to EC2 (Legacy)
+
+# This workflow is kept for manual deployments
+# CI/CD is now handled by backend-ci.yml
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'backend/aws-api/**'
-      - '.github/workflows/deploy-backend.yml'
-  workflow_dispatch:  # Permite ejecutar manualmente
+  workflow_dispatch:  # Solo permite ejecutar manualmente
 
 jobs:
   deploy:
