@@ -7,11 +7,11 @@ import {
 	TouchableOpacity,
 	TouchableWithoutFeedback,
 } from "react-native";
-import { styles } from "../../styles/index.styles";
-import { theme } from "../../styles/theme";
+import { theme } from "@/styles/theme";
+import { core } from "@/styles/core.styles";
 
-import { ReceiptItem } from "../../types/receipt.types";
-import { formatCurrency } from "../../utils/formatCurrency";
+import { ReceiptItem } from "@/types/receipt.types";
+import { formatCurrency } from "@/utils/formatCurrency";
 
 interface ProductDetailsModalProps {
 	visible: boolean;
@@ -37,7 +37,7 @@ export const ProductDetailsModal = ({
 			onRequestClose={onClose}
 		>
 			<TouchableWithoutFeedback onPress={onClose}>
-				<View style={localStyles.backdrop}>
+				<View style={core.modalBackdropCentered}>
 					<TouchableWithoutFeedback>
 						<View
 							style={[
@@ -92,12 +92,6 @@ export const ProductDetailsModal = ({
 };
 
 const localStyles = StyleSheet.create({
-	backdrop: {
-		flex: 1,
-		backgroundColor: theme.colors.backdrop,
-		justifyContent: "center",
-		alignItems: "center",
-	},
 	modalContainer: {
 		backgroundColor: theme.colors.backgroundVariant,
 		borderRadius: theme.borderRadius.xl,

@@ -1,10 +1,10 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { AnimatedCard } from "../ui/AnimatedCard";
-import { theme } from "../../styles/theme";
-import { Statistics } from "../../types/receipt.types";
-import { formatCurrency } from "../../utils/formatCurrency";
+import { AnimatedCard } from "@/components/ui/AnimatedCard";
+import { theme } from "@/styles/theme";
+import { Statistics } from "@/types/receipt.types";
+import { formatCurrency } from "@/utils/formatCurrency";
 
 interface StatsGridProps {
 	statistics: Statistics;

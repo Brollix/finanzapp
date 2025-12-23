@@ -94,7 +94,6 @@ export default function AuthCallback() {
 					router.replace("/login");
 				}
 			} catch (error) {
-				console.error("Error handling auth callback:", error);
 				router.replace("/login");
 			}
 		};

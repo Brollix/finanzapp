@@ -1,9 +1,9 @@
 import React from "react";
 import { View, Text, StyleSheet, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { theme } from "../../styles/theme";
-import { core } from "../../styles/core.styles";
-import { formatCurrency } from "../../utils/formatCurrency";
+import { theme } from "@/styles/theme";
+import { core } from "@/styles/core.styles";
+import { formatCurrency } from "@/utils/formatCurrency";
 
 interface SavingsSummaryCardProps {
 	totalSaved: number;

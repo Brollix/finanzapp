@@ -31,6 +31,7 @@ export const theme = {
 		// Estados
 		disabled: "rgba(255, 255, 255, 0.38)",
 		backdrop: "rgba(0, 0, 0, 0.5)",
+		backdropDark: "rgba(0, 0, 0, 0.85)",
 
 		// Medallas/Trofeos
 		gold: "#FFD700",

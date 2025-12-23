@@ -10,4 +10,3 @@ Structure: {supermarket, datetime "DD/MM/YYYY HH:MM:SS", total, items: [{product
 Rules: Group duplicates. Title Case products. Extract brands if clear. Link discounts to items. Exclude totals/taxes. is_weight=true for kg/peso items.
 
 Return JSON only.`;
-

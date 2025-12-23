@@ -2,27 +2,28 @@ import { useEffect, useState, useCallback } from "react";
 import {
 	View,
 	Text,
-	Alert,
 	FlatList,
 	RefreshControl,
 	StyleSheet,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useFocusEffect } from "expo-router";
-import { DeleteConfirmationModal } from "../../src/components/modals/DeleteConfirmationModal";
-import { TicketActionModal } from "../../src/components/modals/TicketActionModal";
-import { supabase } from "../../src/lib/supabase";
-import { useAuth } from "../../src/features/auth/context/AuthContext";
+import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
+import { TicketActionModal } from "@/components/modals/TicketActionModal";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/features/auth/context/AuthContext";
 
-import { core } from "../../src/styles/core.styles";
-import { theme } from "../../src/styles/theme";
+import { core } from "@/styles/core.styles";
+import { theme } from "@/styles/theme";
 
-import { useReceipts } from "../../src/context/ReceiptContext";
-import { Receipt } from "../../src/types/receipt.types";
-import { TicketListItem } from "../../src/components/dashboard/TicketListItem";
-import { LoadingModal } from "../../src/components/modals/LoadingModal";
+import { useReceipts } from "@/context/ReceiptContext";
+import { Receipt } from "@/types/receipt.types";
+import { TicketListItem } from "@/components/dashboard/TicketListItem";
+import { LoadingModal } from "@/components/modals/LoadingModal";
+import { useAlert } from "@/context/AlertContext";
 
 export default function TicketsScreen() {
+	const { showAlert } = useAlert();
 	const router = useRouter();
 	const { user } = useAuth();
 	const [deleteModalVisible, setDeleteModalVisible] = useState(false);
@@ -73,27 +74,19 @@ export default function TicketsScreen() {
 		if (!selectedReceiptId) return;
 
 		try {
-			console.log("Attempting to delete receipt:", selectedReceiptId);
 			const { error, data } = await supabase
 				.from("receipts")
 				.delete()
 				.eq("id", selectedReceiptId)
 				.select();
 
-			console.log("Delete result:", { error, data });
-
 			if (error) throw error;
-
-			if (!data || data.length === 0) {
-				console.warn("No rows deleted. Possible RLS issue or ID mismatch.");
-			}
 
 			removeReceipt(selectedReceiptId);
 			setDeleteModalVisible(false);
 			setSelectedReceiptId(null);
 		} catch (error) {
-			console.error("Error deleting receipt:", error);
-			Alert.alert("Error", "No se pudo eliminar el ticket");
+			showAlert("Error", "No se pudo eliminar el ticket", undefined, "error");
 		}
 	};
 

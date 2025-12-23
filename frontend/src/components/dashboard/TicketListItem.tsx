@@ -1,12 +1,12 @@
 import React from "react";
 import { Text } from "react-native";
 import { useRouter } from "expo-router";
-import { AnimatedCard } from "../ui/AnimatedCard";
-import { Receipt } from "../../types/receipt.types";
-import { theme } from "../../styles/theme";
-import { core } from "../../styles/core.styles";
-import { formatCurrency } from "../../utils/formatCurrency";
-import { formatReceiptDateTime } from "../../utils/dateUtils";
+import { AnimatedCard } from "@/components/ui/AnimatedCard";
+import { Receipt } from "@/types/receipt.types";
+import { theme } from "@/styles/theme";
+import { core } from "@/styles/core.styles";
+import { formatCurrency } from "@/utils/formatCurrency";
+import { formatReceiptDateTime } from "@/utils/dateUtils";
 
 interface TicketListItemProps {
 	item: Receipt;

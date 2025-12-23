@@ -32,7 +32,7 @@ export const calculateStatistics = (receipts: Receipt[]): Statistics => {
 		Object.keys(supermarketCounts).length > 0
 			? Object.entries(supermarketCounts).reduce((a, b) =>
 					a[1] > b[1] ? a : b
-			  )[0]
+				)[0]
 			: "-";
 
 	// Calculate product stats

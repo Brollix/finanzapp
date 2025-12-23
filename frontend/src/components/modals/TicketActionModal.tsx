@@ -1,7 +1,7 @@
 import React from "react";
 import { Modal, View, Text, Pressable, StyleSheet } from "react-native";
 import { theme } from "@/styles/theme";
-import { styles as globalStyles } from "@/styles/index.styles";
+import { core } from "@/styles/core.styles";
 import { Button } from "../ui/Button";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -25,9 +25,9 @@ export const TicketActionModal: React.FC<TicketActionModalProps> = ({
 			animationType="fade"
 			onRequestClose={onClose}
 		>
-			<Pressable style={styles.backdrop} onPress={onClose}>
+			<Pressable style={core.modalBackdropCentered} onPress={onClose}>
 				<View
-					style={[globalStyles.centeredModalContent, styles.container]}
+					style={core.modalContentCentered}
 					onStartShouldSetResponder={() => true}
 				>
 					<Text style={styles.title}>Opciones del Ticket</Text>
@@ -63,20 +63,6 @@ export const TicketActionModal: React.FC<TicketActionModalProps> = ({
 };
 
 const styles = StyleSheet.create({
-	backdrop: {
-		flex: 1,
-		backgroundColor: theme.colors.backdrop,
-		justifyContent: "center",
-		alignItems: "center",
-	},
-	container: {
-		width: "90%",
-		maxWidth: 400,
-		alignItems: "center",
-		backgroundColor: theme.colors.backgroundVariant,
-		padding: theme.spacing.xl,
-		borderRadius: theme.borderRadius.xl,
-	},
 	title: {
 		fontSize: theme.font.size.h3,
 		fontFamily: theme.font.family.bold,

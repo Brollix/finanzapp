@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, Alert, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Input } from "../ui/Input";
-import { Button } from "../ui/Button";
-import { theme } from "../../styles/theme";
-import { ReceiptItem } from "../../types/receipt.types";
+import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
+import { theme } from "@/styles/theme";
+import { ReceiptItem } from "@/types/receipt.types";
+import { useAlert } from "@/context/AlertContext";
 
 interface ManualItemFormProps {
 	visible: boolean;
@@ -19,6 +20,7 @@ export const ManualItemForm: React.FC<ManualItemFormProps> = ({
 	onSave,
 	onCancel,
 }) => {
+	const { showAlert } = useAlert();
 	const [product, setProduct] = useState(item?.product || "");
 	const [brand, setBrand] = useState(item?.brand || "");
 	const [quantity, setQuantity] = useState(item?.quantity?.toString() || "");
@@ -50,15 +52,15 @@ export const ManualItemForm: React.FC<ManualItemFormProps> = ({
 
 	const handleSave = () => {
 		if (!product.trim()) {
-			Alert.alert("Error", "El nombre del producto es requerido");
+			showAlert("Error", "El nombre del producto es requerido", undefined, "error");
 			return;
 		}
 		if (!quantity || parseFloat(quantity) <= 0) {
-			Alert.alert("Error", "La cantidad debe ser mayor a 0");
+			showAlert("Error", "La cantidad debe ser mayor a 0", undefined, "error");
 			return;
 		}
 		if (!price || parseFloat(price) <= 0) {
-			Alert.alert("Error", "El precio debe ser mayor a 0");
+			showAlert("Error", "El precio debe ser mayor a 0", undefined, "error");
 			return;
 		}
 

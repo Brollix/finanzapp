@@ -14,6 +14,8 @@ const envSchema = z
 		SUPABASE_URL: z.string().url(),
 		SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
 		SUPABASE_ANON_KEY: z.string().min(1).optional(),
+		CORS_ALLOWED_ORIGINS: z.string().optional(),
+		SENTRY_DSN: z.string().url().optional(),
 	})
 	.refine((data) => data.SUPABASE_SERVICE_ROLE_KEY || data.SUPABASE_ANON_KEY, {
 		message:

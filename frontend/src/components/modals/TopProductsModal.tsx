@@ -8,8 +8,8 @@ import {
 	FlatList,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { theme } from "../../styles/theme";
-import { core } from "../../styles/core.styles";
+import { theme } from "@/styles/theme";
+import { core } from "@/styles/core.styles";
 
 interface TopProduct {
 	name: string;
@@ -50,8 +50,8 @@ export const TopProductsModal = ({
 						index === 0
 							? theme.colors.gold
 							: index === 1
-							? theme.colors.silver
-							: theme.colors.bronze
+								? theme.colors.silver
+								: theme.colors.bronze
 					}
 				/>
 			)}

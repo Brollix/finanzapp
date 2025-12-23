@@ -79,7 +79,9 @@ async function testTimingAnalysis() {
 		const textractStart = Date.now();
 		const ocrText = await extractTextFromImage(imageBuffer);
 		const textractMs = Date.now() - textractStart;
-		console.log(`✓ Textract completed in ${textractMs}ms (${(textractMs / 1000).toFixed(2)}s)`);
+		console.log(
+			`✓ Textract completed in ${textractMs}ms (${(textractMs / 1000).toFixed(2)}s)`
+		);
 		console.log(`✓ Extracted ${ocrText.length} characters\n`);
 
 		// Step 2: Bedrock AI Processing
@@ -95,11 +97,17 @@ async function testTimingAnalysis() {
 		const sonnetMs = skippedSonnet ? 0 : bedrockMs - haikuMs;
 
 		console.log(`✓ Haiku: ${haikuMs}ms (${(haikuMs / 1000).toFixed(2)}s)`);
-		console.log(`✓ Sonnet: ${skippedSonnet ? "SKIPPED" : `${sonnetMs}ms (${(sonnetMs / 1000).toFixed(2)}s)`}`);
-		console.log(`✓ Total AI: ${bedrockMs}ms (${(bedrockMs / 1000).toFixed(2)}s)\n`);
+		console.log(
+			`✓ Sonnet: ${skippedSonnet ? "SKIPPED" : `${sonnetMs}ms (${(sonnetMs / 1000).toFixed(2)}s)`}`
+		);
+		console.log(
+			`✓ Total AI: ${bedrockMs}ms (${(bedrockMs / 1000).toFixed(2)}s)\n`
+		);
 
 		const totalMs = textractMs + bedrockMs;
-		console.log(`⏱️  TOTAL PROCESSING TIME: ${totalMs}ms (${(totalMs / 1000).toFixed(2)}s)\n`);
+		console.log(
+			`⏱️  TOTAL PROCESSING TIME: ${totalMs}ms (${(totalMs / 1000).toFixed(2)}s)\n`
+		);
 
 		// Calculate discount metrics
 		const itemsWithDiscounts = receiptData.items.filter(
@@ -114,7 +122,8 @@ async function testTimingAnalysis() {
 		const totalSavings = itemLevelDiscounts + unassignedDiscounts;
 
 		// Determine complexity
-		const hasUnassignedDiscounts = receiptData.discounts && receiptData.discounts.length > 0;
+		const hasUnassignedDiscounts =
+			receiptData.discounts && receiptData.discounts.length > 0;
 		const isComplex = receiptData.items.length > 10;
 		const hasWeirdChars = receiptData.items.some((item) =>
 			/[^a-zA-Z0-9\s\.\,\-áéíóúñÁÉÍÓÚÑüÜ]/.test(item.product)
@@ -204,7 +213,9 @@ async function testTimingAnalysis() {
 		console.log(`💸 Total savings: $${totalSavings.toFixed(2)}`);
 		console.log(`\n⚡ Performance:`);
 		console.log(`   - Complexity: ${complexity}`);
-		console.log(`   - Sonnet refinement: ${skippedSonnet ? "Skipped ✓" : "Applied"}`);
+		console.log(
+			`   - Sonnet refinement: ${skippedSonnet ? "Skipped ✓" : "Applied"}`
+		);
 		console.log(`   - Processing time: ${(totalMs / 1000).toFixed(2)}s`);
 
 		console.log("\n" + "=".repeat(80));
@@ -214,9 +225,15 @@ async function testTimingAnalysis() {
 
 		// Print timing breakdown
 		console.log("⏱️  Timing Breakdown:");
-		console.log(`   - Textract OCR:     ${textractMs}ms (${((textractMs / totalMs) * 100).toFixed(1)}%)`);
-		console.log(`   - Haiku Extract:    ${haikuMs}ms (${((haikuMs / totalMs) * 100).toFixed(1)}%)`);
-		console.log(`   - Sonnet Refine:    ${sonnetMs}ms (${((sonnetMs / totalMs) * 100).toFixed(1)}%)`);
+		console.log(
+			`   - Textract OCR:     ${textractMs}ms (${((textractMs / totalMs) * 100).toFixed(1)}%)`
+		);
+		console.log(
+			`   - Haiku Extract:    ${haikuMs}ms (${((haikuMs / totalMs) * 100).toFixed(1)}%)`
+		);
+		console.log(
+			`   - Sonnet Refine:    ${sonnetMs}ms (${((sonnetMs / totalMs) * 100).toFixed(1)}%)`
+		);
 		console.log(`   ${"─".repeat(50)}`);
 		console.log(`   - TOTAL:            ${totalMs}ms (100%)`);
 

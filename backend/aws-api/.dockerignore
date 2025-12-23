@@ -8,3 +8,9 @@ npm-debug.log
 README.md
 *.md
 test_output.json
+coverage/
+tests/
+*.test.ts
+.github/
+node_modules/.cache/
+*.tsbuildinfo

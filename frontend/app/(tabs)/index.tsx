@@ -9,19 +9,19 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useFocusEffect } from "expo-router";
-import { TopProductsModal } from "../../src/components/modals/TopProductsModal";
-import { receiptApi } from "../../src/services/receiptApi";
-import { Receipt } from "../../src/types/receipt.types";
-import { useAuth } from "../../src/features/auth/context/AuthContext";
-import { core } from "../../src/styles/core.styles";
-import { theme } from "../../src/styles/theme";
-import { calculateStatistics } from "../../src/utils/statistics";
-import { Statistics } from "../../src/types/receipt.types";
-import { StatsGrid } from "../../src/components/dashboard/StatsGrid";
-import { HighlightCard } from "../../src/components/dashboard/HighlightCard";
-import { SupermarketCard } from "../../src/components/dashboard/SupermarketCard";
-import { DashboardActionCard } from "../../src/components/dashboard/DashboardActionCard";
-import { SavingsSummaryCard } from "../../src/components/dashboard/SavingsSummaryCard";
+import { TopProductsModal } from "@/components/modals/TopProductsModal";
+import { receiptApi } from "@/services/receiptApi";
+import { Receipt } from "@/types/receipt.types";
+import { useAuth } from "@/features/auth/context/AuthContext";
+import { core } from "@/styles/core.styles";
+import { theme } from "@/styles/theme";
+import { calculateStatistics } from "@/utils/statistics";
+import { Statistics } from "@/types/receipt.types";
+import { StatsGrid } from "@/components/dashboard/StatsGrid";
+import { HighlightCard } from "@/components/dashboard/HighlightCard";
+import { SupermarketCard } from "@/components/dashboard/SupermarketCard";
+import { DashboardActionCard } from "@/components/dashboard/DashboardActionCard";
+import { SavingsSummaryCard } from "@/components/dashboard/SavingsSummaryCard";
 
 export default function HomeScreen() {
 	const router = useRouter();
@@ -50,7 +50,7 @@ export default function HomeScreen() {
 			setReceipts(data || []);
 			setStatistics(calculateStatistics(data || []));
 		} catch (error) {
-			console.error("Error fetching receipts:", error);
+			// Error fetching receipts
 		} finally {
 			setLoading(false);
 		}

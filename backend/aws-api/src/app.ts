@@ -51,13 +51,31 @@ app.use(
 	})
 );
 
-// Middleware
-app.use(
-	cors({
-		origin: true, // Allow all origins in development (Expo uses dynamic IPs)
-		credentials: true,
-	})
-);
+// CORS Configuration
+const corsOptions = {
+	credentials: true,
+	origin: (() => {
+		const allowedOrigins = process.env.CORS_ALLOWED_ORIGINS;
+		if (allowedOrigins) {
+			// Parse comma-separated list of allowed origins
+			const origins = allowedOrigins.split(",").map((o) => o.trim());
+			return (
+				origin: string | undefined,
+				callback: (err: Error | null, allow?: boolean) => void
+			) => {
+				if (!origin || origins.includes(origin)) {
+					callback(null, true);
+				} else {
+					callback(new Error("Not allowed by CORS"));
+				}
+			};
+		}
+		// Fallback: allow all origins (for development/Expo dynamic IPs)
+		return true;
+	})(),
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

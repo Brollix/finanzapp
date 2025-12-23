@@ -7,15 +7,16 @@ import {
 	Platform,
 	TouchableOpacity,
 	StyleSheet,
-	Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { core } from "../src/styles/core.styles";
 import { theme } from "../src/styles/theme";
 import { useAuth } from "../src/features/auth/context/AuthContext";
 import { Button } from "../src/components/ui/Button";
+import { useAlert } from "@/context/AlertContext";
 
 export default function EmailConfirmationScreen() {
+	const { showAlert } = useAlert();
 	const { resendConfirmationEmail } = useAuth();
 	const router = useRouter();
 	const params = useLocalSearchParams();
@@ -35,7 +36,7 @@ export default function EmailConfirmationScreen() {
 
 	const handleResend = async () => {
 		if (!email) {
-			Alert.alert("Error", "No se encontró el email");
+			showAlert("Error", "No se encontró el email", undefined, "error");
 			return;
 		}
 
@@ -47,12 +48,14 @@ export default function EmailConfirmationScreen() {
 		try {
 			await resendConfirmationEmail(email);
 			setCooldown(60); // 60 segundos de cooldown
-			Alert.alert(
+			showAlert(
 				"Email enviado",
-				"Se ha reenviado el email de confirmación. Por favor revisa tu bandeja de entrada."
+				"Se ha reenviado el email de confirmación. Por favor revisa tu bandeja de entrada.",
+				undefined,
+				"success"
 			);
 		} catch (error: any) {
-			Alert.alert("Error", error.message || "No se pudo reenviar el email");
+			showAlert("Error", error.message || "No se pudo reenviar el email", undefined, "error");
 		} finally {
 			setLoading(false);
 		}
@@ -90,8 +93,8 @@ export default function EmailConfirmationScreen() {
 							loading
 								? "Enviando..."
 								: cooldown > 0
-								? `Reenviar en ${cooldown}s`
-								: "Reenviar email"
+									? `Reenviar en ${cooldown}s`
+									: "Reenviar email"
 						}
 						onPress={handleResend}
 						disabled={loading || cooldown > 0}
@@ -166,5 +169,4 @@ const styles = StyleSheet.create({
 		marginTop: theme.spacing.md,
 	},
 });
-
 

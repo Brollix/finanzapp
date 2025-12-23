@@ -7,6 +7,11 @@ node_modules/
 
 # Build output
 dist/
+*.tsbuildinfo
+
+# Test coverage
+coverage/
+test-results/
 
 # Logs
 *.log

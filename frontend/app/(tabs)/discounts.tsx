@@ -44,7 +44,7 @@ export default function DiscountsScreen() {
 			const receipts = await receiptApi.getUserReceipts();
 			processReceipts(receipts);
 		} catch (error) {
-			console.error("Error fetching receipts:", error);
+			// Error fetching receipts
 		} finally {
 			setLoading(false);
 		}
@@ -76,7 +76,6 @@ export default function DiscountsScreen() {
 
 			// Validate date
 			if (isNaN(date.getTime())) {
-				console.warn("Invalid date for receipt:", r.id, r.datetime);
 				return;
 			}
 
@@ -224,7 +223,7 @@ export default function DiscountsScreen() {
 																: receipt.items?.reduce(
 																		(acc, i) => acc + (i.discount || 0),
 																		0
-																  ) || 0
+																	) || 0
 														)}
 													</Text>
 												</Pressable>

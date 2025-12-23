@@ -16,7 +16,6 @@ import * as Linking from "expo-linking";
 
 export default function RootLayout() {
 	const url = Linking.createURL("/auth/callback");
-	console.log("Deep Link URL:", url);
 
 	const [fontsLoaded] = useFonts({
 		"SpaceGrotesk-Regular": require("../src/assets/fonts/SpaceGrotesk-Regular.ttf"),

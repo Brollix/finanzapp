@@ -7,6 +7,9 @@
 ![AWS](https://img.shields.io/badge/AWS-Bedrock%20%2B%20Textract-orange?logo=amazon-aws)
 ![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-green?logo=supabase)
 
+[![Backend CI](https://github.com/USER/finanzapp/actions/workflows/backend-ci.yml/badge.svg)](https://github.com/USER/finanzapp/actions/workflows/backend-ci.yml)
+[![Frontend CI](https://github.com/USER/finanzapp/actions/workflows/frontend-ci.yml/badge.svg)](https://github.com/USER/finanzapp/actions/workflows/frontend-ci.yml)
+
 Aplicación móvil que automatiza el registro de gastos mediante escaneo inteligente de tickets. Utiliza **OCR** y **IA** para extraer y estructurar información de compras, facilitando el seguimiento financiero personal.
 
 ## 🎯 Características Principales
@@ -91,11 +94,32 @@ finanzapp/
 
 ## ⚙️ Configuración
 
-Copia `.env.example` en cada módulo y configura:
+### Backend
+
+Copia `.env.example` a `.env` en `backend/aws-api/` y configura:
 
 - **AWS**: Credenciales IAM (Bedrock + Textract)
-- **Supabase**: URL del proyecto y service role key
-- **Backend URL**: Para el cliente móvil (producción)
+  - `AWS_REGION`: Región de AWS (ej: `us-east-1`)
+  - `AWS_ACCESS_KEY_ID`: Access key ID
+  - `AWS_SECRET_ACCESS_KEY`: Secret access key
+  - `BEDROCK_MODEL_ID`: ID del modelo de Bedrock
+- **Supabase**:
+  - `SUPABASE_URL`: URL del proyecto
+  - `SUPABASE_SERVICE_ROLE_KEY` o `SUPABASE_ANON_KEY`: Una de las dos
+- **CORS** (Opcional): `CORS_ALLOWED_ORIGINS` - Lista separada por comas de orígenes permitidos
+- **Sentry** (Opcional): `SENTRY_DSN` - Para error tracking
+
+Ver [backend/aws-api/README.md](backend/aws-api/README.md) para más detalles.
+
+### Frontend
+
+Crea `.env` en `frontend/` con:
+
+- `EXPO_PUBLIC_BACKEND_URL`: URL del backend API
+- `EXPO_PUBLIC_SUPABASE_URL`: URL de Supabase
+- `EXPO_PUBLIC_SUPABASE_ANON_KEY`: Anon key de Supabase
+
+Ver [frontend/README.md](frontend/README.md) para más detalles.
 
 ## 📄 Licencia
 

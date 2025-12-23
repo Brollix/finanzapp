@@ -1,15 +1,17 @@
 import { useState, useRef, useEffect } from "react";
 import { CameraView, useCameraPermissions } from "expo-camera";
-import { Alert } from "react-native";
 import { useRouter } from "expo-router";
+import { useAlert } from "@/context/AlertContext";
 import {
 	useMediaLibraryPermissions,
 	launchImageLibraryAsync,
 	MediaTypeOptions,
 } from "expo-image-picker";
 import { receiptApi, ProcessingProgress } from "../services/receiptApi";
+import { parseReceiptError } from "../services/errorService";
 
 export const useReceiptScanner = () => {
+	const { showAlert } = useAlert();
 	const [permission, requestPermission] = useCameraPermissions();
 	const [mediaPermission, requestMediaPermission] =
 		useMediaLibraryPermissions();
@@ -32,8 +34,7 @@ export const useReceiptScanner = () => {
 					setCapturedImage(photo.uri);
 				}
 			} catch (error) {
-				console.error("Error capturing photo:", error);
-				Alert.alert("Error", "No se pudo capturar la foto");
+				showAlert("Error", "No se pudo capturar la foto", undefined, "error");
 			}
 		}
 	};
@@ -50,7 +51,7 @@ export const useReceiptScanner = () => {
 			if (!mediaPermission?.granted) {
 				const permissionResult = await requestMediaPermission();
 				if (!permissionResult.granted) {
-					Alert.alert(
+					showAlert(
 						"Permisos necesarios",
 						"Necesitamos acceso a tu galería para seleccionar imágenes de tickets."
 					);
@@ -69,8 +70,7 @@ export const useReceiptScanner = () => {
 				setCapturedImage(result.assets[0].uri);
 			}
 		} catch (error) {
-			console.error("Error picking image from gallery:", error);
-			Alert.alert("Error", "No se pudo seleccionar la imagen de la galería");
+			showAlert("Error", "No se pudo seleccionar la imagen de la galería", undefined, "error");
 		}
 	};
 
@@ -106,11 +106,11 @@ export const useReceiptScanner = () => {
 			if (jobId) {
 				let pollCount = 0;
 				const MAX_POLLS = 120; // Max 60 seconds (120 * 500ms)
-				
+
 				// Start polling immediately
 				pollingIntervalRef.current = setInterval(async () => {
 					pollCount++;
-					
+
 					// Safety: stop polling after max attempts
 					if (pollCount > MAX_POLLS) {
 						if (pollingIntervalRef.current) {
@@ -118,13 +118,15 @@ export const useReceiptScanner = () => {
 							pollingIntervalRef.current = null;
 						}
 						setLoading(false);
-						Alert.alert(
+						showAlert(
 							"Tiempo agotado",
-							"El procesamiento está tomando más tiempo del esperado. Por favor, intenta nuevamente."
+							"El procesamiento está tomando más tiempo del esperado. Por favor, intenta nuevamente.",
+							undefined,
+							"warning"
 						);
 						return;
 					}
-					
+
 					try {
 						const progressData = await receiptApi.getProcessingStatus(jobId!);
 						setProgress(progressData);
@@ -146,7 +148,9 @@ export const useReceiptScanner = () => {
 								if (progressData.receiptId) {
 									try {
 										const fullReceipt = await receiptApi.getUserReceipts();
-										const receipt = fullReceipt.find(r => r.id === progressData.receiptId);
+										const receipt = fullReceipt.find(
+											(r) => r.id === progressData.receiptId
+										);
 										if (receipt) {
 											router.push({
 												pathname: "/receipt-confirmation",
@@ -155,10 +159,10 @@ export const useReceiptScanner = () => {
 											return;
 										}
 									} catch (error) {
-										console.error("Error fetching receipt:", error);
+										// Error fetching receipt, fallback to original receiptData
 									}
 								}
-								
+
 								// Fallback to original receiptData
 								if (receiptData) {
 									router.push({
@@ -168,18 +172,16 @@ export const useReceiptScanner = () => {
 								}
 							} else {
 								// Handle error
-								Alert.alert(
+								showAlert(
 									"Error",
-									progressData.error || "Error procesando el ticket"
+									progressData.error || "Error procesando el ticket",
+									undefined,
+									"error"
 								);
 							}
 						}
 					} catch (error) {
-						console.error("Error polling progress:", error);
-						// Continue polling even if one request fails, but log consecutive failures
-						if (pollCount % 10 === 0) {
-							console.warn(`Failed to poll progress ${pollCount} times`);
-						}
+						// Continue polling even if one request fails
 					}
 				}, 500); // Poll every 500ms
 			} else {
@@ -198,77 +200,16 @@ export const useReceiptScanner = () => {
 				}
 			}
 		} catch (error) {
-			console.error("Error processing receipt:", error);
-			let errorMessage = "No se pudo procesar el ticket. Inténtalo de nuevo.";
-
-			if (error instanceof Error) {
-				console.error("Error message:", error.message);
-
-				if (error.message.includes("Receipt API error")) {
-					const statusMatch = error.message.match(/error (\d+):/);
-					const status = statusMatch ? statusMatch[1] : "unknown";
-
-					// Extract errorType from error message (format: "errorType: textract_error")
-					const errorTypeMatch = error.message.match(/errorType: (\w+)/);
-					const errorType = errorTypeMatch ? errorTypeMatch[1] : null;
-
-					if (status === "400") {
-						errorMessage =
-							"La imagen no es clara o el formato no es válido. Por favor, intenta tomar una foto mejor iluminada.";
-					} else if (status === "429") {
-						errorMessage =
-							"Has alcanzado el límite de escaneos por ahora. Por favor, intenta más tarde.";
-					} else if (status === "500") {
-						// Prioritize errorType detection over text matching
-						if (errorType === "textract_error") {
-							errorMessage =
-								"No pudimos leer el texto del ticket. Asegúrate de que esté bien iluminado y enfocado.";
-						} else if (errorType === "bedrock_error") {
-							errorMessage =
-								"La IA tuvo problemas para entender el ticket. Intenta tomar la foto desde otro ángulo.";
-						} else if (errorType === "database_error") {
-							errorMessage =
-								"No se pudo guardar el ticket. Por favor, intenta de nuevo en unos momentos.";
-						} else if (errorType === "unknown_error") {
-							errorMessage =
-								"Ocurrió un problema inesperado. Estamos trabajando en ello.";
-						} else {
-							// Fallback to text matching for backward compatibility
-							if (
-								error.message.includes("Textract") ||
-								error.message.includes("textract")
-							) {
-								errorMessage =
-									"No pudimos leer el texto del ticket. Asegúrate de que esté bien iluminado y enfocado.";
-							} else if (
-								error.message.includes("Bedrock") ||
-								error.message.includes("bedrock")
-							) {
-								errorMessage =
-									"La IA tuvo problemas para entender el ticket. Intenta tomar la foto desde otro ángulo.";
-							} else {
-								errorMessage =
-									"Ocurrió un problema en nuestros servidores. Estamos trabajando en ello.";
-							}
-						}
-					} else if (
-						status === "unknown" ||
-						error.message.includes("fetch") ||
-						error.message.includes("Network request failed")
-					) {
-						errorMessage =
-							"No se pudo conectar al servidor. Verifica tu conexión a internet.";
-					}
-				}
-			}
+			// Usar el servicio centralizado de errores
+			const parsedError = parseReceiptError(error);
 
 			setProgress({
 				status: "error",
 				progress: 0,
 				message: "Error",
-				error: errorMessage,
+				error: parsedError.message,
 			});
-			Alert.alert("Ups, algo salió mal", errorMessage);
+			showAlert(parsedError.title, parsedError.message, undefined, parsedError.type);
 		} finally {
 			// Don't set loading to false here if we're polling
 			// It will be set to false when polling completes

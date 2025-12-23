@@ -1,21 +1,20 @@
 import * as Sentry from "@sentry/node";
 import { nodeProfilingIntegration } from "@sentry/profiling-node";
+import logger from "../utils/logger.js";
 
 /**
  * Initialize Sentry for error tracking and performance monitoring
  */
 export function initSentry(): void {
 	if (!process.env.SENTRY_DSN) {
-		console.warn("Sentry DSN not configured, skipping Sentry initialization");
+		logger.warn("Sentry DSN not configured, skipping Sentry initialization");
 		return;
 	}
 
 	Sentry.init({
 		dsn: process.env.SENTRY_DSN,
 		environment: process.env.NODE_ENV || "development",
-		integrations: [
-			nodeProfilingIntegration(),
-		],
+		integrations: [nodeProfilingIntegration()],
 		// Performance Monitoring
 		tracesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1.0, // 10% in prod, 100% in dev
 		// Profiling
@@ -36,7 +35,10 @@ export function initSentry(): void {
 /**
  * Capture exception manually
  */
-export function captureException(error: Error, context?: Record<string, any>): void {
+export function captureException(
+	error: Error,
+	context?: Record<string, any>
+): void {
 	if (context) {
 		Sentry.setContext("additional", context);
 	}
@@ -46,7 +48,9 @@ export function captureException(error: Error, context?: Record<string, any>): v
 /**
  * Capture message
  */
-export function captureMessage(message: string, level: Sentry.SeverityLevel = "info"): void {
+export function captureMessage(
+	message: string,
+	level: Sentry.SeverityLevel = "info"
+): void {
 	Sentry.captureMessage(message, level);
 }
-

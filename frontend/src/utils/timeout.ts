@@ -19,8 +19,7 @@ export function withTimeout<T>(
 				() =>
 					reject(
 						new Error(
-							errorMessage ||
-								`Operation timed out after ${timeoutMs}ms`
+							errorMessage || `Operation timed out after ${timeoutMs}ms`
 						)
 					),
 				timeoutMs
@@ -28,4 +27,3 @@ export function withTimeout<T>(
 		),
 	]);
 }
-

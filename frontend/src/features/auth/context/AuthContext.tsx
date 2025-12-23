@@ -56,22 +56,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 							setUser(null);
 						}
 					} catch (error: any) {
-						// Manejar timeouts como advertencias, no errores críticos
-						if (error?.message?.includes("Timeout")) {
-							console.warn(
-								"Timeout al conectar con Supabase. Verifica tu conexión a internet."
-							);
-						} else {
-							console.error("Error al obtener la sesión:", error);
-						}
+						// Handle timeouts and errors silently
 						// Si el refresh token es inválido, forzamos el cierre de sesión para limpiar el almacenamiento
 						if (
 							error?.message?.includes("Invalid Refresh Token") ||
 							error?.message?.includes("Refresh Token Not Found")
 						) {
-							console.warn(
-								"Refresh token inválido detectado. Cerrando sesión para limpiar estado."
-							);
 							// Force clear everything
 							try {
 								await AsyncStorage.removeItem(
@@ -79,7 +69,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 								);
 								await supabase.auth.signOut();
 							} catch (cleanupError) {
-								console.warn("Error al limpiar sesión:", cleanupError);
+								// Error cleaning session, continue
 							}
 						}
 						setUser(null);
@@ -93,17 +83,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 					"Timeout general en inicialización de autenticación"
 				);
 			} catch (error: any) {
-				// Manejar timeouts como advertencias, no errores críticos
-				if (error?.message?.includes("Timeout")) {
-					console.warn(
-						"Timeout en inicialización de autenticación. Continuando con pantalla de login."
-					);
-				} else {
-					console.error(
-						"Error crítico en fetchSession (continuando con login):",
-						error.message
-					);
-				}
+				// Handle timeouts and errors silently, continue with login screen
 				// En caso de error crítico, continuar sin usuario para mostrar login
 				setUser(null);
 			} finally {
@@ -127,7 +107,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 					setUser(null);
 				}
 			} catch (error) {
-				console.error("Error en onAuthStateChange:", error);
 				setUser(null);
 			}
 		});

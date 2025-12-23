@@ -1,12 +1,13 @@
 import React, { useState } from "react";
-import { View, Text, Pressable, StyleSheet, Alert } from "react-native";
+import { View, Text, Pressable, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Input } from "../ui/Input";
-import { Button } from "../ui/Button";
-import { theme } from "../../styles/theme";
-import { core } from "../../styles/core.styles";
-import { supabase } from "../../lib/supabase";
-import { User } from "../../features/auth/types";
+import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
+import { theme } from "@/styles/theme";
+import { core } from "@/styles/core.styles";
+import { supabase } from "@/lib/supabase";
+import { User } from "@/features/auth/types";
+import { useAlert } from "@/context/AlertContext";
 
 interface ProfileHeaderProps {
 	user: User | null;
@@ -21,6 +22,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
 	avatarUrl,
 	onProfileUpdate,
 }) => {
+	const { showAlert } = useAlert();
 	const [isEditing, setIsEditing] = useState(false);
 	const [newUsername, setNewUsername] = useState(username);
 	const [loading, setLoading] = useState(false);
@@ -47,9 +49,9 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
 
 			onProfileUpdate(newUsername);
 			setIsEditing(false);
-			Alert.alert("Éxito", "Perfil actualizado");
+			showAlert("Éxito", "Perfil actualizado", undefined, "success");
 		} catch (error: any) {
-			Alert.alert("Error", error.message);
+			showAlert("Error", error.message, undefined, "error");
 		} finally {
 			setLoading(false);
 		}

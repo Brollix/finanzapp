@@ -112,7 +112,6 @@ export const apiClient = {
 
 			return json as T;
 		} catch (error) {
-			console.error(`Request failed for ${endpoint}:`, error);
 			throw error;
 		}
 	},

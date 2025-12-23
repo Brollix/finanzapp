@@ -301,19 +301,19 @@ sudo nginx -t
 
 ### Error 502 Bad Gateway
 
-Esto significa que Nginx no puede conectarse al contenedor de Next.js.
+Esto significa que Nginx no puede conectarse al contenedor de React.
 
-1. **Verificar que el contenedor esté en puerto 3000:**
+1. **Verificar que el contenedor esté en puerto 80:**
 
 ```bash
 docker ps | grep finanzapp-website
-# Debería mostrar: 0.0.0.0:3000->3000/tcp
+# Debería mostrar: 0.0.0.0:80->80/tcp
 ```
 
 2. **Verificar que el sitio responda localmente:**
 
 ```bash
-curl http://localhost:3000
+curl http://localhost:80
 ```
 
 3. **Revisar logs de Nginx:**
@@ -354,7 +354,7 @@ sudo nginx -t
 sudo tail -f /var/log/letsencrypt/letsencrypt.log
 ```
 
-### El sitio carga pero muestra error de Next.js
+### El sitio carga pero muestra error de React
 
 1. **Verificar logs del contenedor:**
 
@@ -365,7 +365,7 @@ docker logs finanzapp-website --tail 50
 2. **Verificar que el build se haya completado:**
 
 ```bash
-docker exec finanzapp-website ls -la /app/.next
+docker exec finanzapp-website ls -la /usr/share/nginx/html
 ```
 
 3. **Reconstruir el contenedor:**
@@ -427,7 +427,7 @@ Usuario → finanzapp.info (DNS) → EC2 (18.222.119.175)
                                     ↓
                     ┌───────────────┴───────────────┐
                     ↓                               ↓
-        Next.js (puerto 3000)              Backend API (puerto 8080)
+        React SPA (puerto 80)              Backend API (puerto 8080)
         finanzapp-website container        finanzapp-api container
 ```
 
@@ -446,5 +446,6 @@ Usuario → finanzapp.info (DNS) → EC2 (18.222.119.175)
 
 - [Nginx Documentation](https://nginx.org/en/docs/)
 - [Let's Encrypt Documentation](https://letsencrypt.org/docs/)
-- [Next.js Deployment](https://nextjs.org/docs/deployment)
+- [Vite Documentation](https://vitejs.dev/)
+- [React Documentation](https://react.dev/)
 - [Docker Documentation](https://docs.docker.com/)

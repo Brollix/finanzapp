@@ -13,7 +13,9 @@ export async function extractTextFromImage(
 			},
 		});
 
-		const response = await retryTextractCall(() => textractClient.send(command));
+		const response = await retryTextractCall(() =>
+			textractClient.send(command)
+		);
 
 		if (!response.Blocks) {
 			throw new Error("No text detected in image");

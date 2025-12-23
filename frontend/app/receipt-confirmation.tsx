@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, ScrollView, Alert } from "react-native";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -10,8 +10,10 @@ import { ReceiptData, Receipt } from "../src/types/receipt.types";
 import { receiptApi } from "../src/services/receiptApi";
 import { useAuth } from "../src/features/auth/context/AuthContext";
 import { useReceipts } from "../src/context/ReceiptContext";
+import { useAlert } from "@/context/AlertContext";
 
 export default function ReceiptConfirmationScreen() {
+	const { showAlert } = useAlert();
 	const router = useRouter();
 	const params = useLocalSearchParams();
 	const { user } = useAuth();
@@ -61,8 +63,7 @@ export default function ReceiptConfirmationScreen() {
 				router.replace("/(tabs)/tickets");
 			}
 		} catch (error) {
-			console.error("Error saving receipt:", error);
-			Alert.alert("Error", "No se pudo guardar el ticket.");
+			showAlert("Error", "No se pudo guardar el ticket.", undefined, "error");
 		} finally {
 			setLoading(false);
 		}
@@ -170,7 +171,7 @@ const styles = StyleSheet.create({
 		backgroundColor: theme.colors.backgroundVariant,
 		borderRadius: theme.borderRadius.lg,
 		padding: theme.spacing.lg,
-		shadowColor: "#000",
+		shadowColor: theme.colors.shadow,
 		shadowOffset: { width: 0, height: 2 },
 		shadowOpacity: 0.1,
 		shadowRadius: 4,
@@ -197,7 +198,7 @@ const styles = StyleSheet.create({
 		fontSize: theme.font.size.h3,
 		fontFamily: theme.font.family.bold,
 		color: theme.colors.text,
-		marginBottom: 4,
+		marginBottom: theme.spacing.xs,
 	},
 	date: {
 		fontSize: theme.font.size.sm,
@@ -223,7 +224,7 @@ const styles = StyleSheet.create({
 		flexDirection: "row",
 		justifyContent: "space-between",
 		alignItems: "center",
-		marginBottom: 8,
+		marginBottom: theme.spacing.sm,
 	},
 	itemQuantity: {
 		width: 40,

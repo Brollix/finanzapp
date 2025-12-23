@@ -96,4 +96,3 @@ export async function suggestCategory(productName: string): Promise<string> {
 		return "Otros"; // Default category on error
 	}
 }
-

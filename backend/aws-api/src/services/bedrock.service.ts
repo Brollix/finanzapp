@@ -290,8 +290,8 @@ function validateItemCompleteness(
 		linesWithPrices > 0
 			? (extractedCount / linesWithPrices) * 100
 			: extractedCount > 0
-			? 100
-			: 0;
+				? 100
+				: 0;
 	// If we have more items than estimated, consider it complete (better safe than sorry)
 	const isComplete =
 		extractedCount >= linesWithPrices * threshold ||
@@ -671,7 +671,7 @@ IMPORTANTE:
 - NO incluyas descuentos o promociones como items separados (solo como campos discount/promotion dentro de items)
 - Solo incluye productos reales que se compraron, no información adicional del ticket`
 				: sectionType === "section2"
-				? `TAREA CRÍTICA: Extraer TODOS los productos/items de esta sección de ticket.
+					? `TAREA CRÍTICA: Extraer TODOS los productos/items de esta sección de ticket.
 
 Esta es la SECCIÓN MEDIA de items de un ticket.
 
@@ -687,7 +687,7 @@ Formato de salida EXACTO:
 {"items": [{"product": "...", "quantity": X, "price": X, ...}], "discounts": [...]}
 
 IMPORTANTE: El array "items" debe contener TODOS los productos visibles en el texto, sin excepción.`
-				: `TAREA CRÍTICA: Extraer TODOS los productos/items de esta sección de ticket.
+					: `TAREA CRÍTICA: Extraer TODOS los productos/items de esta sección de ticket.
 
 Esta es la SEGUNDA MITAD de items y footer de un ticket.
 
@@ -1451,10 +1451,10 @@ export async function formatReceiptWithBedrockParallel(
 			section1Data.supermarket && section1Data.datetime
 				? section1Data
 				: section2Data.supermarket && section2Data.datetime
-				? section2Data
-				: section3Data.supermarket && section3Data.datetime
-				? section3Data
-				: section1Data; // Fallback to section1 even if incomplete
+					? section2Data
+					: section3Data.supermarket && section3Data.datetime
+						? section3Data
+						: section1Data; // Fallback to section1 even if incomplete
 
 		// Combine discounts from all sections
 		const allDiscounts = [

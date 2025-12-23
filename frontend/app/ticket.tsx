@@ -95,7 +95,7 @@ export default function TicketScreen() {
 		try {
 			receipt = JSON.parse(data as string);
 		} catch (e) {
-			console.error("Error parsing receipt data:", e);
+			// Error parsing receipt data
 		}
 	} else {
 		receipt = contextReceipt;

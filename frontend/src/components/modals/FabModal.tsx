@@ -1,9 +1,9 @@
 import React from "react";
 import { View, Text, Modal, Pressable, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Button } from "../ui/Button";
-import { core } from "../../styles/core.styles";
-import { theme } from "../../styles/theme";
+import { Button } from "@/components/ui/Button";
+import { core } from "@/styles/core.styles";
+import { theme } from "@/styles/theme";
 
 interface FabModalProps {
 	visible: boolean;

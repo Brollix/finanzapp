@@ -7,7 +7,6 @@ import {
 	Platform,
 	TouchableOpacity,
 	StyleSheet,
-	Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { core } from "../src/styles/core.styles";
@@ -15,8 +14,10 @@ import { theme } from "../src/styles/theme";
 import { useAuth } from "../src/features/auth/context/AuthContext";
 import { Input } from "../src/components/ui/Input";
 import { Button } from "../src/components/ui/Button";
+import { useAlert } from "@/context/AlertContext";
 
 function RegisterForm() {
+	const { showAlert } = useAlert();
 	const { signUp } = useAuth();
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
@@ -38,17 +39,17 @@ function RegisterForm() {
 
 	const handleRegister = async () => {
 		if (!email || !password || !confirmPassword) {
-			Alert.alert("Error", "Por favor completa todos los campos");
+			showAlert("Error", "Por favor completa todos los campos", undefined, "error");
 			return;
 		}
 
 		if (password !== confirmPassword) {
-			Alert.alert("Error", "Las contraseñas no coinciden");
+			showAlert("Error", "Las contraseñas no coinciden", undefined, "error");
 			return;
 		}
 
 		if (password.length < 6) {
-			Alert.alert("Error", "La contraseña debe tener al menos 6 caracteres");
+			showAlert("Error", "La contraseña debe tener al menos 6 caracteres", undefined, "error");
 			return;
 		}
 
@@ -67,8 +68,7 @@ function RegisterForm() {
 					params: { email },
 				});
 			} else {
-				console.error("Error al registrarse:", error);
-				Alert.alert("Error", error.message || "Error al crear la cuenta.");
+				showAlert("Error", error.message || "Error al crear la cuenta.", undefined, "error");
 			}
 		} finally {
 			setLoading(false);

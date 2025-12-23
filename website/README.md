@@ -1,6 +1,6 @@
 # FinanzApp Website
 
-Landing page para FinanzApp construida con Next.js 14, TypeScript y Tailwind CSS.
+Landing page para FinanzApp construida con React + Vite, TypeScript y Tailwind CSS.
 
 ## 🚀 Desarrollo Local
 
@@ -20,8 +20,8 @@ Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
 # Build de producción
 npm run build
 
-# Ejecutar build de producción
-npm start
+# Preview del build de producción
+npm run preview
 ```
 
 ## 🐳 Docker
@@ -31,14 +31,14 @@ npm start
 docker build -t finanzapp-website .
 
 # Ejecutar contenedor
-docker run -p 3000:3000 finanzapp-website
+docker run -p 80:80 finanzapp-website
 ```
 
 ## 📋 Scripts Disponibles
 
-- `npm run dev` - Inicia servidor de desarrollo
+- `npm run dev` - Inicia servidor de desarrollo (Vite)
 - `npm run build` - Construye la aplicación para producción
-- `npm start` - Ejecuta la aplicación en modo producción
+- `npm run preview` - Preview del build de producción
 - `npm run lint` - Ejecuta el linter
 - `npm run type-check` - Verifica tipos TypeScript
 
@@ -46,19 +46,22 @@ docker run -p 3000:3000 finanzapp-website
 
 ```
 website/
-├── app/              # Páginas y layouts (App Router)
-│   ├── layout.tsx    # Layout principal
-│   ├── page.tsx      # Página principal (landing)
-│   └── globals.css   # Estilos globales
-├── components/       # Componentes React
-│   ├── Hero.tsx      # Sección hero
-│   ├── Features.tsx  # Características
-│   ├── HowItWorks.tsx # Cómo funciona
-│   ├── Testimonials.tsx # Testimonios
-│   ├── FAQ.tsx       # Preguntas frecuentes
-│   └── Footer.tsx   # Footer
+├── src/              # Código fuente
+│   ├── components/   # Componentes React
+│   │   ├── Hero.tsx      # Sección hero
+│   │   ├── Features.tsx  # Características
+│   │   ├── HowItWorks.tsx # Cómo funciona
+│   │   ├── FAQ.tsx       # Preguntas frecuentes
+│   │   └── Footer.tsx   # Footer
+│   ├── App.tsx       # Componente principal
+│   ├── main.tsx      # Entry point
+│   └── index.css     # Estilos globales
 ├── public/           # Assets estáticos
+│   ├── fonts/        # Fuentes Space Grotesk
 │   └── logo_finanzapp.png
+├── index.html        # HTML principal
+├── vite.config.ts    # Configuración Vite
+├── tailwind.config.js # Configuración Tailwind
 └── Dockerfile        # Configuración Docker
 ```
 
@@ -78,5 +81,3 @@ Para instrucciones de deployment, ver [DEPLOYMENT.md](./DEPLOYMENT.md).
 
 - **Sitio en producción**: [https://finanzapp.info](https://finanzapp.info)
 - **Repositorio**: [GitHub](https://github.com)
-
-

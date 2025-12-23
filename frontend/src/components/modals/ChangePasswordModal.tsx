@@ -7,13 +7,14 @@ import {
 	KeyboardAvoidingView,
 	Platform,
 	StyleSheet,
-	Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Input } from "../ui/Input";
-import { Button } from "../ui/Button";
-import { theme } from "../../styles/theme";
-import { supabase } from "../../lib/supabase";
+import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
+import { theme } from "@/styles/theme";
+import { core } from "@/styles/core.styles";
+import { supabase } from "@/lib/supabase";
+import { useAlert } from "@/context/AlertContext";
 
 interface ChangePasswordModalProps {
 	visible: boolean;
@@ -24,6 +25,7 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
 	visible,
 	onClose,
 }) => {
+	const { showAlert } = useAlert();
 	const [loading, setLoading] = useState(false);
 	const [newPassword, setNewPassword] = useState("");
 	const [confirmPassword, setConfirmPassword] = useState("");
@@ -33,12 +35,12 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
 
 	const handlePasswordUpdate = async () => {
 		if (newPassword !== confirmPassword) {
-			Alert.alert("Error", "Las contraseñas no coinciden");
+			showAlert("Error", "Las contraseñas no coinciden", undefined, "error");
 			return;
 		}
 
 		if (newPassword.length < 6) {
-			Alert.alert("Error", "La contraseña debe tener al menos 6 caracteres");
+			showAlert("Error", "La contraseña debe tener al menos 6 caracteres", undefined, "error");
 			return;
 		}
 
@@ -50,10 +52,10 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
 
 			if (error) throw error;
 
-			Alert.alert("Éxito", "Contraseña actualizada correctamente");
+			showAlert("Éxito", "Contraseña actualizada correctamente", undefined, "success");
 			handleClose();
 		} catch (error: any) {
-			Alert.alert("Error", error.message);
+			showAlert("Error", error.message, undefined, "error");
 		} finally {
 			setLoading(false);
 		}
@@ -82,9 +84,9 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
 		>
 			<KeyboardAvoidingView
 				behavior={Platform.OS === "ios" ? "padding" : "height"}
-				style={styles.modalContainer}
+				style={core.modalBackdrop}
 			>
-				<View style={styles.modalContent}>
+				<View style={[core.modalContainer, styles.modalContent]}>
 					<View style={styles.modalHeader}>
 						<Text style={styles.modalTitle}>Cambiar Contraseña</Text>
 						<Pressable onPress={handleClose}>
@@ -174,16 +176,7 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
 };
 
 const styles = StyleSheet.create({
-	modalContainer: {
-		flex: 1,
-		justifyContent: "flex-end",
-		backgroundColor: theme.colors.backdrop,
-	},
 	modalContent: {
-		backgroundColor: theme.colors.background,
-		borderTopLeftRadius: theme.borderRadius.xl,
-		borderTopRightRadius: theme.borderRadius.xl,
-		padding: theme.spacing.xl,
 		paddingBottom: theme.spacing.xl * 2,
 	},
 	modalHeader: {

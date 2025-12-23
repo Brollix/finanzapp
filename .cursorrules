@@ -272,6 +272,45 @@ When adding new Bedrock functionality:
 
 ## Frontend Patterns
 
+### Styling Rules (CRITICAL)
+
+- **ALWAYS** use the `theme` object from `frontend/src/styles/theme.ts` for colors, fonts, spacing, and border radius.
+- **NEVER** use hardcoded colors (hex, rgb, names like "white", "black") directly in components.
+- If a color is missing in the theme, add it to `frontend/src/styles/theme.ts` first.
+- Use `theme.spacing` for margins and paddings (xs, sm, md, lg, xl).
+- Use `core.styles.ts` for reusable layout, typography, and component styles.
+- Avoid creating local `StyleSheet.create` if the styles can be composed from `core.styles.ts`.
+
+### Import Standards
+
+- **ALWAYS** use the `@/` alias for imports within `frontend/src/`.
+- **NEVER** use relative paths (`../../`) for imports within `frontend/src/`.
+- Example: `import { theme } from "@/styles/theme";` NOT `import { theme } from "../../styles/theme";`
+- External libraries (expo-router, react-native, etc.) use normal imports.
+
+### Error Handling
+
+- **ALWAYS** use the error service from `frontend/src/services/errorService.ts`.
+- Use `parseError()` for generic errors, `parseReceiptError()` for receipt-specific errors, `parseAuthError()` for authentication errors.
+- Display user-friendly error messages using the `useAlert()` hook.
+- Example:
+  ```typescript
+  const parsedError = parseReceiptError(error);
+  showAlert(
+  	parsedError.title,
+  	parsedError.message,
+  	undefined,
+  	parsedError.type
+  );
+  ```
+
+### Component Exports
+
+- **ALWAYS** export components through `index.ts` files.
+- All modals must be exported from `frontend/src/components/modals/index.ts`.
+- All UI components must be exported from `frontend/src/components/ui/index.ts`.
+- Import from index files: `import { Button, Input } from "@/components/ui";`
+
 ### Progress Tracking
 
 - Use `jobId` from `processReceipt` response for progress tracking.
@@ -288,6 +327,17 @@ When adding new Bedrock functionality:
 
 - Add React Error Boundaries for critical components.
 - Display user-friendly error messages.
+
+### Testing
+
+- **Framework**: Jest with React Native Testing Library.
+- **Location**: Tests in `__tests__/` directories next to components.
+- **Coverage Goal**: Minimum 50% for critical paths.
+- **Test Files**: Use `.test.tsx` or `.test.ts` suffix.
+- **Critical Components to Test**: AuthContext, ReceiptContext, Dashboard components, error service.
+- Run tests: `npm test` (from frontend directory).
+- Watch mode: `npm run test:watch`.
+- Coverage: `npm run test:coverage`.
 
 ## Code Quality
 

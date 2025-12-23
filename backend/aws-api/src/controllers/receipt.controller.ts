@@ -141,7 +141,10 @@ export const createManualReceipt = async (
 		// Validation with Zod
 		const validationResult = ReceiptDataSchema.safeParse(receiptData);
 		if (!validationResult.success) {
-			throw new ValidationError("Invalid receipt data", validationResult.error.issues);
+			throw new ValidationError(
+				"Invalid receipt data",
+				validationResult.error.issues
+			);
 		}
 
 		const validatedData = validationResult.data;
@@ -178,7 +181,10 @@ export const updateReceipt = async (
 		// Validation with Zod
 		const validationResult = ReceiptDataSchema.safeParse(receiptData);
 		if (!validationResult.success) {
-			throw new ValidationError("Invalid receipt data", validationResult.error.issues);
+			throw new ValidationError(
+				"Invalid receipt data",
+				validationResult.error.issues
+			);
 		}
 
 		const validatedData = validationResult.data;

@@ -76,9 +76,6 @@ export const authService = {
 	async getCurrentUser(): Promise<User | null> {
 		// Verificar configuración de Supabase antes de intentar llamadas
 		if (!isSupabaseConfigured) {
-			console.warn(
-				"Supabase no está configurado correctamente. No se puede obtener usuario."
-			);
 			return null;
 		}
 
@@ -95,7 +92,6 @@ export const authService = {
 			);
 
 			if (error || !user) {
-				console.log("No hay usuario autenticado:", error?.message);
 				return null;
 			}
 
@@ -114,10 +110,6 @@ export const authService = {
 				);
 
 				if (profileError) {
-					console.warn(
-						"Error al obtener perfil (continuando con usuario básico):",
-						profileError.message
-					);
 					// Return user without profile data if profile fetch fails
 					return {
 						id: user.id,
@@ -131,10 +123,6 @@ export const authService = {
 					...(profile || {}),
 				};
 			} catch (profileError: any) {
-				console.warn(
-					"Error al obtener perfil (continuando con usuario básico):",
-					profileError.message
-				);
 				// Return user without profile data if profile fetch fails
 				return {
 					id: user.id,
@@ -142,15 +130,7 @@ export const authService = {
 				};
 			}
 		} catch (error: any) {
-			// Cambiar a console.warn para que no se muestre como error crítico
-			// El timeout es esperado si hay problemas de conectividad
-			if (error.message?.includes("Timeout")) {
-				console.warn(
-					"Timeout al conectar con Supabase. Verifica tu conexión a internet y la configuración."
-				);
-			} else {
-				console.warn("Error al obtener usuario:", error.message);
-			}
+			// Timeout is expected if there are connectivity issues
 			return null;
 		}
 	},

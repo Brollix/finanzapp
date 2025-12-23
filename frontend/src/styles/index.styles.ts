@@ -82,7 +82,7 @@ export const styles = StyleSheet.create({
 		justifyContent: "center",
 		alignItems: "center",
 		elevation: 8,
-		shadowColor: "#000",
+		shadowColor: theme.colors.shadow,
 		shadowOffset: { width: 0, height: 4 },
 		shadowOpacity: 0.3,
 		shadowRadius: 4,
@@ -93,14 +93,14 @@ export const styles = StyleSheet.create({
 	},
 	fabModalBackdrop: {
 		flex: 1,
-		backgroundColor: "rgba(0, 0, 0, 0.6)",
+		backgroundColor: theme.colors.backdrop,
 		justifyContent: "flex-end",
 		alignItems: "center",
 	},
 	fabModalContainer: {
-		backgroundColor: theme.colors.surface,
+		backgroundColor: theme.colors.backgroundVariant,
 		width: "95%",
-		borderRadius: theme.borderRadius.lg,
+		borderRadius: theme.borderRadius.xl,
 		padding: theme.spacing.lg,
 		marginBottom: 100, // Above FAB
 		alignItems: "center",
@@ -109,14 +109,14 @@ export const styles = StyleSheet.create({
 	// Centered Modal
 	centeredModalBackdrop: {
 		flex: 1,
-		backgroundColor: "rgba(0,0,0,0.5)",
+		backgroundColor: theme.colors.backdrop,
 		justifyContent: "center",
 		alignItems: "center",
 	},
 	centeredModalContent: {
-		backgroundColor: theme.colors.surface,
-		borderRadius: 12,
-		padding: 20,
+		backgroundColor: theme.colors.backgroundVariant,
+		borderRadius: theme.borderRadius.xl,
+		padding: theme.spacing.xl,
 		maxWidth: "90%",
 	},
 	fabModalTitle: {
@@ -154,7 +154,7 @@ export const styles = StyleSheet.create({
 	},
 	flashButton: {
 		marginBottom: 20,
-		backgroundColor: "rgba(0,0,0,0.4)",
+		backgroundColor: theme.colors.backdrop,
 		padding: 15,
 		borderRadius: 50,
 	},
@@ -182,5 +182,69 @@ export const styles = StyleSheet.create({
 	inputFocused: {
 		borderColor: theme.colors.primary,
 		borderWidth: 2,
+	},
+
+	// Alert
+	alertContainer: {
+		width: "100%",
+		alignItems: "center",
+	},
+	alertTitle: {
+		fontSize: theme.font.size.lg,
+		fontFamily: theme.font.family.bold,
+		color: theme.colors.text,
+		marginBottom: theme.spacing.sm,
+		textAlign: "center",
+	},
+	alertMessage: {
+		fontSize: theme.font.size.md,
+		fontFamily: theme.font.family.regular,
+		color: theme.colors.textSecondary,
+		marginBottom: theme.spacing.lg,
+		textAlign: "center",
+		lineHeight: 22,
+	},
+	alertButtonRow: {
+		flexDirection: "row",
+		width: "100%",
+		justifyContent: "space-between",
+		gap: theme.spacing.sm,
+	},
+	alertButton: {
+		flex: 1,
+		paddingVertical: theme.spacing.md,
+		paddingHorizontal: theme.spacing.lg,
+		borderRadius: theme.borderRadius.md,
+		alignItems: "center",
+		justifyContent: "center",
+		minHeight: 44,
+	},
+	alertButtonDefault: {
+		// backgroundColor will be set dynamically based on type
+	},
+	alertButtonCancel: {
+		backgroundColor: theme.colors.backgroundVariant,
+		borderWidth: 1,
+		borderColor: theme.colors.border,
+	},
+	alertButtonDestructive: {
+		backgroundColor: theme.colors.error,
+	},
+	alertButtonText: {
+		fontSize: theme.font.size.md,
+		fontFamily: theme.font.family.bold,
+		textAlign: "center",
+	},
+	alertButtonDefaultText: {
+		color: theme.colors.onPrimary,
+	},
+	alertButtonCancelText: {
+		color: theme.colors.text,
+	},
+	alertButtonDestructiveText: {
+		color: theme.colors.onError,
+	},
+	alertButtonSpacing: {
+		marginRight: theme.spacing.sm,
 	},
 });

@@ -1,24 +1,25 @@
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "../../src/lib/supabase";
+import { supabase } from "@/lib/supabase";
 import {
 	View,
 	Text,
-	Alert,
 	StyleSheet,
 	ScrollView,
 	Pressable,
 	ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useAuth } from "../../src/features/auth/context/AuthContext";
+import { useAuth } from "@/features/auth/context/AuthContext";
 import { useRouter } from "expo-router";
-import { theme } from "../../src/styles/theme";
+import { theme } from "@/styles/theme";
 import { Ionicons } from "@expo/vector-icons";
-import { AnimatedCard } from "../../src/components/ui/AnimatedCard";
-import { ChangePasswordModal } from "../../src/components/modals/ChangePasswordModal";
-import { ProfileHeader } from "../../src/components/account/ProfileHeader";
+import { AnimatedCard } from "@/components/ui/AnimatedCard";
+import { ChangePasswordModal } from "@/components/modals/ChangePasswordModal";
+import { ProfileHeader } from "@/components/account/ProfileHeader";
+import { useAlert } from "@/context/AlertContext";
 
 export default function ProfileScreen() {
+	const { showAlert } = useAlert();
 	const router = useRouter();
 	const { user, signOut } = useAuth();
 	const [loading, setLoading] = useState(false);
@@ -47,7 +48,7 @@ export default function ProfileScreen() {
 				setAvatarUrl(data.avatar_url || "");
 			}
 		} catch (error: any) {
-			console.error("Error loading profile:", error.message);
+			// Error loading profile
 		}
 	}, [user]);
 
@@ -63,7 +64,7 @@ export default function ProfileScreen() {
 			await signOut();
 			router.replace("/login");
 		} catch (error: any) {
-			Alert.alert("Error", error.message);
+			showAlert("Error", error.message, undefined, "error");
 		} finally {
 			setLoading(false);
 		}

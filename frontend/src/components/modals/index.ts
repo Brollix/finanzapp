@@ -1,4 +1,9 @@
-export { ProductDetailsModal } from "./ProductDetailsModal";
+export { ChangePasswordModal } from "./ChangePasswordModal";
 export { DeleteConfirmationModal } from "./DeleteConfirmationModal";
-export { SuccessModal } from "./SuccessModal";
+export { FabModal } from "./FabModal";
 export { ForgotPasswordModal } from "./ForgotPasswordModal";
+export { LoadingModal } from "./LoadingModal";
+export { ProductDetailsModal } from "./ProductDetailsModal";
+export { SuccessModal } from "./SuccessModal";
+export { TicketActionModal } from "./TicketActionModal";
+export { TopProductsModal } from "./TopProductsModal";

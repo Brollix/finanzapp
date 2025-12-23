@@ -23,7 +23,7 @@ async function generateTestFixtures() {
 	const samplesDir = path.join(projectRoot, "samples");
 	const ticketFile = "ticket1.jpeg";
 	const ticketPath = path.join(samplesDir, ticketFile);
-	
+
 	const fixturesDir = path.join(__dirname, "../../tests/fixtures/ticket1");
 	const ocrTextPath = path.join(fixturesDir, "ocr-text.txt");
 	const receiptDataPath = path.join(fixturesDir, "receipt-data.json");
@@ -37,7 +37,9 @@ async function generateTestFixtures() {
 		// Step 1: Read image
 		console.log("Step 1: Loading image...");
 		const imageBuffer = await fs.readFile(ticketPath);
-		console.log(`✓ Image loaded (${(imageBuffer.length / 1024).toFixed(2)} KB)\n`);
+		console.log(
+			`✓ Image loaded (${(imageBuffer.length / 1024).toFixed(2)} KB)\n`
+		);
 
 		// Step 2: Extract text with Textract
 		console.log("Step 2: Extracting text with Textract...");
@@ -76,7 +78,9 @@ async function generateTestFixtures() {
 				has_total_saved: !!receiptData.total_saved,
 			},
 			model_info: {
-				bedrock_model: process.env.BEDROCK_MODEL_ID || "anthropic.claude-3-5-haiku-20241022-v1:0",
+				bedrock_model:
+					process.env.BEDROCK_MODEL_ID ||
+					"anthropic.claude-3-5-haiku-20241022-v1:0",
 				bedrock_sonnet_model: "global.anthropic.claude-sonnet-4-20250514-v1:0",
 			},
 		};
@@ -97,7 +101,7 @@ async function generateTestFixtures() {
 		console.log(`💰 Total: $${receiptData.total.toFixed(2)}`);
 		console.log(`📦 Items: ${receiptData.items.length}`);
 		console.log(`🎁 Discounts: ${receiptData.discounts?.length || 0}`);
-		
+
 		if (receiptData.subtotal) {
 			console.log(`📊 Subtotal: $${receiptData.subtotal.toFixed(2)}`);
 		}
@@ -109,7 +113,9 @@ async function generateTestFixtures() {
 		if (receiptData.discounts && receiptData.discounts.length > 0) {
 			console.log(`\n🎯 Discount Details:`);
 			receiptData.discounts.forEach((discount, index) => {
-				console.log(`   ${index + 1}. ${discount.description}: $${discount.amount.toFixed(2)}`);
+				console.log(
+					`   ${index + 1}. ${discount.description}: $${discount.amount.toFixed(2)}`
+				);
 			});
 		}
 
@@ -120,7 +126,9 @@ async function generateTestFixtures() {
 		if (itemsWithDiscounts.length > 0) {
 			console.log(`\n🛒 Items with Discounts: ${itemsWithDiscounts.length}`);
 			itemsWithDiscounts.slice(0, 5).forEach((item, index) => {
-				console.log(`   ${index + 1}. ${item.product}${item.brand ? ` (${item.brand})` : ''}: -$${(item.discount || 0).toFixed(2)}`);
+				console.log(
+					`   ${index + 1}. ${item.product}${item.brand ? ` (${item.brand})` : ""}: -$${(item.discount || 0).toFixed(2)}`
+				);
 			});
 			if (itemsWithDiscounts.length > 5) {
 				console.log(`   ... and ${itemsWithDiscounts.length - 5} more`);
@@ -134,7 +142,6 @@ async function generateTestFixtures() {
 		console.log(`   - OCR Text: ocr-text.txt`);
 		console.log(`   - Receipt Data: receipt-data.json`);
 		console.log(`   - Metadata: metadata.json\n`);
-
 	} catch (error) {
 		console.error(`\n❌ Error generating fixtures:`, error);
 		if (error instanceof Error) {
@@ -151,4 +158,3 @@ generateTestFixtures().catch((error) => {
 	console.error("Fatal error:", error);
 	process.exit(1);
 });
-

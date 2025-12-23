@@ -7,7 +7,6 @@ import {
 	Platform,
 	TouchableOpacity,
 	StyleSheet,
-	Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { core } from "../src/styles/core.styles";
@@ -16,8 +15,10 @@ import { useAuth } from "../src/features/auth/context/AuthContext";
 import { Input } from "../src/components/ui/Input";
 import { Button } from "../src/components/ui/Button";
 import { ForgotPasswordModal } from "../src/components/modals/ForgotPasswordModal";
+import { useAlert } from "@/context/AlertContext";
 
 function LoginForm() {
+	const { showAlert } = useAlert();
 	const { signIn, resendConfirmationEmail } = useAuth();
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
@@ -42,7 +43,7 @@ function LoginForm() {
 				error.message?.includes("Email not confirmed") ||
 				error.message?.includes("email_not_confirmed")
 			) {
-				Alert.alert(
+				showAlert(
 					"Email no verificado",
 					"Por favor confirma tu email antes de iniciar sesión. ¿Quieres reenviar el email de confirmación?",
 					[
@@ -55,23 +56,28 @@ function LoginForm() {
 							onPress: async () => {
 								try {
 									await resendConfirmationEmail(email);
-									Alert.alert(
+									showAlert(
 										"Éxito",
-										"Email reenviado. Revisa tu bandeja de entrada."
+										"Email reenviado. Revisa tu bandeja de entrada.",
+										undefined,
+										"success"
 									);
 								} catch (e: any) {
-									Alert.alert(
+									showAlert(
 										"Error",
-										e.message || "No se pudo reenviar el email"
+										e.message || "No se pudo reenviar el email",
+										undefined,
+										"error"
 									);
 								}
 							},
 						},
-					]
+					],
+					"warning"
 				);
 			} else if (error.message?.includes("Invalid login credentials")) {
 				// Solo logueamos el error si NO es credenciales inválidas
-				Alert.alert(
+				showAlert(
 					"Error de inicio de sesión",
 					"Email o contraseña incorrectos. ¿Quieres crear una cuenta nueva?",
 					[
@@ -83,13 +89,15 @@ function LoginForm() {
 							text: "Crear cuenta",
 							onPress: () => router.push("/register"),
 						},
-					]
+					],
+					"error"
 				);
 			} else {
-				console.error("Error al iniciar sesión:", error);
-				Alert.alert(
+				showAlert(
 					"Error de inicio de sesión",
-					error.message || "No pudimos iniciar sesión. Inténtalo de nuevo."
+					error.message || "No pudimos iniciar sesión. Inténtalo de nuevo.",
+					undefined,
+					"error"
 				);
 			}
 		} finally {

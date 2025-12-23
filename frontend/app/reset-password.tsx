@@ -6,7 +6,6 @@ import {
 	KeyboardAvoidingView,
 	Platform,
 	StyleSheet,
-	Alert,
 	ScrollView,
 	ActivityIndicator,
 } from "react-native";
@@ -17,8 +16,10 @@ import { Button } from "../src/components/ui/Button";
 import { theme } from "../src/styles/theme";
 import { core } from "../src/styles/core.styles";
 import { supabase } from "../src/lib/supabase";
+import { useAlert } from "@/context/AlertContext";
 
 export default function ResetPasswordScreen() {
+	const { showAlert } = useAlert();
 	const router = useRouter();
 	const [newPassword, setNewPassword] = useState("");
 	const [confirmPassword, setConfirmPassword] = useState("");
@@ -40,7 +41,7 @@ export default function ResetPasswordScreen() {
 					return;
 				}
 				// No session and no URL, redirect to login
-				Alert.alert(
+				showAlert(
 					"Enlace inválido",
 					"Este enlace de recuperación ha expirado o es inválido. Por favor solicita uno nuevo.",
 					[
@@ -48,7 +49,8 @@ export default function ResetPasswordScreen() {
 							text: "OK",
 							onPress: () => router.replace("/login"),
 						},
-					]
+					],
+					"error"
 				);
 				return;
 			}
@@ -74,7 +76,8 @@ export default function ResetPasswordScreen() {
 					for (const pair of pairs) {
 						const [key, value] = pair.split("=");
 						if (key === "access_token") accessToken = decodeURIComponent(value);
-						if (key === "refresh_token") refreshToken = decodeURIComponent(value);
+						if (key === "refresh_token")
+							refreshToken = decodeURIComponent(value);
 					}
 				}
 
@@ -115,8 +118,7 @@ export default function ResetPasswordScreen() {
 					}
 				}
 			} catch (error: any) {
-				console.error("Error handling password reset callback:", error);
-				Alert.alert(
+				showAlert(
 					"Enlace inválido",
 					"Este enlace de recuperación ha expirado o es inválido. Por favor solicita uno nuevo.",
 					[
@@ -124,7 +126,8 @@ export default function ResetPasswordScreen() {
 							text: "OK",
 							onPress: () => router.replace("/login"),
 						},
-					]
+					],
+					"error"
 				);
 			}
 		};
@@ -144,12 +147,12 @@ export default function ResetPasswordScreen() {
 
 	const handlePasswordUpdate = async () => {
 		if (newPassword !== confirmPassword) {
-			Alert.alert("Error", "Las contraseñas no coinciden");
+			showAlert("Error", "Las contraseñas no coinciden", undefined, "error");
 			return;
 		}
 
 		if (newPassword.length < 6) {
-			Alert.alert("Error", "La contraseña debe tener al menos 6 caracteres");
+			showAlert("Error", "La contraseña debe tener al menos 6 caracteres", undefined, "error");
 			return;
 		}
 
@@ -161,22 +164,18 @@ export default function ResetPasswordScreen() {
 
 			if (error) throw error;
 
-			Alert.alert(
-				"Éxito",
-				"Tu contraseña ha sido actualizada correctamente",
-				[
-					{
-						text: "OK",
-						onPress: () => router.replace("/login"),
-					},
-				]
-			);
+			showAlert("Éxito", "Tu contraseña ha sido actualizada correctamente", [
+				{
+					text: "OK",
+					onPress: () => router.replace("/login"),
+				},
+			], "success");
 		} catch (error: any) {
 			if (
 				error.message?.includes("expired") ||
 				error.message?.includes("invalid")
 			) {
-				Alert.alert(
+				showAlert(
 					"Enlace expirado",
 					"Este enlace de recuperación ha expirado. Por favor solicita uno nuevo.",
 					[
@@ -184,10 +183,16 @@ export default function ResetPasswordScreen() {
 							text: "OK",
 							onPress: () => router.replace("/login"),
 						},
-					]
+					],
+					"error"
 				);
 			} else {
-				Alert.alert("Error", error.message || "No se pudo actualizar la contraseña");
+				showAlert(
+					"Error",
+					error.message || "No se pudo actualizar la contraseña",
+					undefined,
+					"error"
+				);
 			}
 		} finally {
 			setLoading(false);
@@ -200,7 +205,8 @@ export default function ResetPasswordScreen() {
 		isNewPasswordFocused ||
 		isConfirmPasswordFocused;
 
-	const passwordsMatch = newPassword === confirmPassword && newPassword.length >= 6;
+	const passwordsMatch =
+		newPassword === confirmPassword && newPassword.length >= 6;
 
 	if (initializing) {
 		return (
@@ -356,4 +362,3 @@ const styles = StyleSheet.create({
 		marginTop: theme.spacing.lg,
 	},
 });
-

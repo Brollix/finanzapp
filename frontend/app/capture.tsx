@@ -122,13 +122,13 @@ export default function Capture() {
 	return (
 		<View style={core.flex1}>
 			{capturedImage ? (
-				<View style={[core.flex1, { backgroundColor: "#000" }]}>
+				<View style={[core.flex1, { backgroundColor: theme.colors.background }]}>
 					<Image
 						source={{ uri: capturedImage }}
 						style={core.flex1}
-						onError={(e) =>
-							console.error("Error loading image:", e.nativeEvent.error)
-						}
+						onError={() => {
+							// Error loading image
+						}}
 					/>
 					{loading ? (
 						<Animated.View
@@ -274,7 +274,7 @@ const styles = StyleSheet.create({
 		left: 0,
 		right: 0,
 		bottom: 0,
-		backgroundColor: "rgba(0,0,0,0.85)",
+		backgroundColor: theme.colors.backdropDark,
 		justifyContent: "center",
 		alignItems: "center",
 		zIndex: 10,

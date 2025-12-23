@@ -6,7 +6,8 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 COPY tsconfig.json ./
-COPY next.config.js ./
+COPY tsconfig.node.json ./
+COPY vite.config.ts ./
 COPY tailwind.config.js ./
 COPY postcss.config.js ./
 
@@ -14,43 +15,28 @@ COPY postcss.config.js ./
 RUN npm ci
 
 # Copy source code
-COPY app ./app
-COPY components ./components
+COPY index.html ./
+COPY src ./src
 COPY public ./public
 
-# Build Next.js
+# Build Vite
 RUN npm run build
 
-# Production stage
-FROM node:20-alpine
+# Production stage - use nginx to serve static files
+FROM nginx:alpine
 
-# Create a non-root user for security
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001
+# Copy built files from builder
+COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Copy standalone build from builder
-# Next.js standalone includes all dependencies
-COPY --from=builder --chown=nodejs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nodejs:nodejs /app/.next/static ./.next/static
-COPY --from=builder --chown=nodejs:nodejs /app/public ./public
-
-# Set working directory
-WORKDIR /app
-
-# Switch to non-root user
-USER nodejs
+# Copy nginx configuration
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Expose port
-EXPOSE 3000
-
-# Set environment to production
-ENV NODE_ENV=production
-ENV PORT=3000
+EXPOSE 80
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-    CMD node -e "require('http').get('http://localhost:3000', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
+    CMD wget --quiet --tries=1 --spider http://localhost/ || exit 1
 
-# Start the application (standalone mode)
-CMD ["node", "server.js"]
-
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]

@@ -13,7 +13,7 @@ NC='\033[0m' # No Color
 # Configuration
 IMAGE_NAME="finanzapp-website"
 CONTAINER_NAME="finanzapp-website"
-PORT=3000
+PORT=80
 
 # Step 1: Verificar espacio en disco
 echo -e "\n${YELLOW}📊 Verificando espacio en disco...${NC}"
@@ -67,7 +67,7 @@ echo -e "\n${YELLOW}🚀 Iniciando nuevo contenedor...${NC}"
 docker run -d \
     --name $CONTAINER_NAME \
     --restart unless-stopped \
-    -p $PORT:$PORT \
+    -p $PORT:80 \
     --log-driver json-file \
     --log-opt max-size=10m \
     --log-opt max-file=3 \

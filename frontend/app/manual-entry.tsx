@@ -4,7 +4,6 @@ import {
 	Text,
 	ScrollView,
 	TouchableOpacity,
-	Alert,
 	StyleSheet,
 	KeyboardAvoidingView,
 	Platform,
@@ -24,8 +23,10 @@ import { SuccessModal } from "../src/components/modals";
 import { ManualItemForm } from "../src/components/forms/ManualItemForm";
 import { formatCurrency } from "../src/utils/formatCurrency";
 import { useReceipts } from "../src/context/ReceiptContext";
+import { useAlert } from "@/context/AlertContext";
 
 export default function ManualEntryScreen() {
+	const { showAlert } = useAlert();
 	const router = useRouter();
 	const params = useLocalSearchParams();
 	const { addReceipt, updateReceipt } = useReceipts();
@@ -69,7 +70,7 @@ export default function ManualEntryScreen() {
 				setAllSupermarkets(supers);
 			}
 		} catch (error) {
-			console.error("Error loading supermarkets:", error);
+			// Error loading supermarkets
 		}
 	}, []);
 
@@ -87,7 +88,7 @@ export default function ManualEntryScreen() {
 				// so we keep the current date for the picker for now,
 				// but the display string is correct.
 			} catch (e) {
-				console.error("Error parsing receipt param:", e);
+				// Error parsing receipt param
 			}
 		}
 	}, [params.receipt, loadSupermarkets]);
@@ -154,7 +155,7 @@ export default function ManualEntryScreen() {
 	};
 
 	const handleDeleteItem = (index: number) => {
-		Alert.alert(
+		showAlert(
 			"Eliminar Item",
 			"¿Estás seguro de que deseas eliminar este item?",
 			[
@@ -167,7 +168,8 @@ export default function ManualEntryScreen() {
 						setItems(newItems);
 					},
 				},
-			]
+			],
+			"warning"
 		);
 	};
 
@@ -181,11 +183,11 @@ export default function ManualEntryScreen() {
 
 	const handleSaveReceipt = async () => {
 		if (!supermarket.trim()) {
-			Alert.alert("Error", "El nombre del supermercado es requerido");
+			showAlert("Error", "El nombre del supermercado es requerido", undefined, "error");
 			return;
 		}
 		if (items.length === 0) {
-			Alert.alert("Error", "Debes agregar al menos un item");
+			showAlert("Error", "Debes agregar al menos un item", undefined, "error");
 			return;
 		}
 
@@ -193,7 +195,7 @@ export default function ManualEntryScreen() {
 			setLoading(true);
 			const user = await authService.getCurrentUser();
 			if (!user) {
-				Alert.alert("Error", "Usuario no autenticado");
+				showAlert("Error", "Usuario no autenticado", undefined, "error");
 				return;
 			}
 
@@ -229,8 +231,7 @@ export default function ManualEntryScreen() {
 
 			setShowSuccessModal(true);
 		} catch (error) {
-			console.error("Error saving manual receipt:", error);
-			Alert.alert("Error", "No se pudo guardar el ticket. Inténtalo de nuevo.");
+			showAlert("Error", "No se pudo guardar el ticket. Inténtalo de nuevo.", undefined, "error");
 		} finally {
 			setLoading(false);
 		}
@@ -561,7 +562,7 @@ const styles = StyleSheet.create({
 	itemMeta: {
 		fontSize: theme.font.size.sm,
 		color: theme.colors.textSecondary,
-		marginTop: 4,
+		marginTop: theme.spacing.xs,
 	},
 	itemActions: {
 		flexDirection: "row",
@@ -632,7 +633,7 @@ const styles = StyleSheet.create({
 		borderColor: theme.colors.border,
 		zIndex: 1000,
 		elevation: 5,
-		shadowColor: "#000",
+		shadowColor: theme.colors.shadow,
 		shadowOffset: { width: 0, height: 2 },
 		shadowOpacity: 0.25,
 		shadowRadius: 3.84,

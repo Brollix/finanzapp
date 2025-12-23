@@ -4,7 +4,10 @@
 
 export class OCRProcessingError extends Error {
 	code = "OCR_FAILED";
-	constructor(message: string, public cause?: Error) {
+	constructor(
+		message: string,
+		public cause?: Error
+	) {
 		super(message);
 		this.name = "OCRProcessingError";
 		Error.captureStackTrace(this, this.constructor);
@@ -31,7 +34,10 @@ export class AuthenticationError extends Error {
 
 export class ValidationError extends Error {
 	code = "VALIDATION_ERROR";
-	constructor(message: string, public details?: any) {
+	constructor(
+		message: string,
+		public details?: any
+	) {
 		super(message);
 		this.name = "ValidationError";
 		Error.captureStackTrace(this, this.constructor);
@@ -40,7 +46,10 @@ export class ValidationError extends Error {
 
 export class DatabaseError extends Error {
 	code = "DATABASE_ERROR";
-	constructor(message: string, public cause?: Error) {
+	constructor(
+		message: string,
+		public cause?: Error
+	) {
 		super(message);
 		this.name = "DatabaseError";
 		Error.captureStackTrace(this, this.constructor);
@@ -49,7 +58,10 @@ export class DatabaseError extends Error {
 
 export class BedrockError extends Error {
 	code = "BEDROCK_ERROR";
-	constructor(message: string, public cause?: Error) {
+	constructor(
+		message: string,
+		public cause?: Error
+	) {
 		super(message);
 		this.name = "BedrockError";
 		Error.captureStackTrace(this, this.constructor);
@@ -58,7 +70,10 @@ export class BedrockError extends Error {
 
 export class TextractError extends Error {
 	code = "TEXTRACT_ERROR";
-	constructor(message: string, public cause?: Error) {
+	constructor(
+		message: string,
+		public cause?: Error
+	) {
 		super(message);
 		this.name = "TextractError";
 		Error.captureStackTrace(this, this.constructor);
@@ -77,4 +92,3 @@ export function isErrorWithCode(
 		typeof (error as any).code === "string"
 	);
 }
-

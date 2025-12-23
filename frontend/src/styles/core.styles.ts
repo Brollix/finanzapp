@@ -211,7 +211,7 @@ export const core = StyleSheet.create({
 		justifyContent: "center",
 		alignItems: "center",
 		elevation: 8,
-		shadowColor: "#000",
+		shadowColor: theme.colors.shadow,
 		shadowOffset: { width: 0, height: 2 },
 		shadowOpacity: 0.25,
 		shadowRadius: 3.84,
@@ -221,17 +221,33 @@ export const core = StyleSheet.create({
 		color: theme.colors.text,
 	},
 
-	// Modal
+	// Modal - Bottom Sheet (from bottom)
 	modalBackdrop: {
 		flex: 1,
 		justifyContent: "flex-end",
-		backgroundColor: "rgba(0,0,0,0.5)",
+		backgroundColor: theme.colors.backdrop,
 	},
 	modalContainer: {
-		backgroundColor: theme.colors.background,
+		backgroundColor: theme.colors.backgroundVariant,
 		padding: theme.spacing.lg,
-		borderTopLeftRadius: theme.borderRadius.lg,
-		borderTopRightRadius: theme.borderRadius.lg,
+		borderTopLeftRadius: theme.borderRadius.xl,
+		borderTopRightRadius: theme.borderRadius.xl,
+		alignItems: "center",
+	},
+
+	// Modal - Centered (confirmations, alerts)
+	modalBackdropCentered: {
+		flex: 1,
+		backgroundColor: theme.colors.backdrop,
+		justifyContent: "center",
+		alignItems: "center",
+	},
+	modalContentCentered: {
+		backgroundColor: theme.colors.backgroundVariant,
+		borderRadius: theme.borderRadius.xl,
+		padding: theme.spacing.xl,
+		width: "90%",
+		maxWidth: 400,
 		alignItems: "center",
 	},
 });

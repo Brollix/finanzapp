@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { View, Text, Pressable, StyleSheet, Platform } from "react-native";
 import { useRouter, usePathname, useSegments } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { theme } from "../../styles/theme";
-import { FabModal } from "../modals/FabModal";
+import { theme } from "@/styles/theme";
+import { FabModal } from "@/components/modals/FabModal";
 
 interface TabItem {
 	name: string;
@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
 		justifyContent: "space-around",
 		alignItems: "center",
 		elevation: 8,
-		shadowColor: "#000",
+		shadowColor: theme.colors.shadow,
 		shadowOffset: { width: 0, height: -2 },
 		shadowOpacity: 0.1,
 		shadowRadius: 4,
@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
 		fontSize: 11,
 		fontFamily: theme.font.family.regular,
 		color: theme.colors.textSecondary,
-		marginTop: 4,
+		marginTop: theme.spacing.xs,
 	},
 	tabLabelActive: {
 		color: theme.colors.primary,
@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
 		justifyContent: "center",
 		alignItems: "center",
 		elevation: 8,
-		shadowColor: "#000",
+		shadowColor: theme.colors.shadow,
 		shadowOffset: { width: 0, height: 4 },
 		shadowOpacity: 0.3,
 		shadowRadius: 8,

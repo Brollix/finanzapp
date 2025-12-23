@@ -33,7 +33,6 @@ export default function ProfileSetupScreen() {
 			});
 			router.replace("/");
 		} catch (error: any) {
-			console.error("Error al guardar perfil:", error);
 			if (error.message?.includes("unique constraint")) {
 				alert("Este nombre de usuario ya está en uso. Por favor elige otro.");
 			} else {

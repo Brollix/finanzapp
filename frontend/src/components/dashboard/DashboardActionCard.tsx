@@ -1,8 +1,8 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { AnimatedCard } from "../ui/AnimatedCard";
-import { theme } from "../../styles/theme";
+import { AnimatedCard } from "@/components/ui/AnimatedCard";
+import { theme } from "@/styles/theme";
 
 interface DashboardActionCardProps {
 	hasTickets: boolean;

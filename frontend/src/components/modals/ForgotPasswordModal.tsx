@@ -7,13 +7,14 @@ import {
 	KeyboardAvoidingView,
 	Platform,
 	StyleSheet,
-	Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Input } from "../ui/Input";
-import { Button } from "../ui/Button";
-import { theme } from "../../styles/theme";
-import { useAuth } from "../../features/auth/context/AuthContext";
+import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
+import { theme } from "@/styles/theme";
+import { core } from "@/styles/core.styles";
+import { useAuth } from "@/features/auth/context/AuthContext";
+import { useAlert } from "@/context/AlertContext";
 
 interface ForgotPasswordModalProps {
 	visible: boolean;
@@ -24,27 +25,28 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
 	visible,
 	onClose,
 }) => {
+	const { showAlert } = useAlert();
 	const [email, setEmail] = useState("");
 	const [loading, setLoading] = useState(false);
 	const { resetPassword } = useAuth();
 
 	const handleResetPassword = async () => {
 		if (!email.trim()) {
-			Alert.alert("Error", "Por favor ingresa tu correo electrónico");
+			showAlert("Error", "Por favor ingresa tu correo electrónico", undefined, "error");
 			return;
 		}
 
 		// Basic email validation
 		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 		if (!emailRegex.test(email)) {
-			Alert.alert("Error", "Por favor ingresa un correo electrónico válido");
+			showAlert("Error", "Por favor ingresa un correo electrónico válido", undefined, "error");
 			return;
 		}
 
 		try {
 			setLoading(true);
 			await resetPassword(email);
-			Alert.alert(
+			showAlert(
 				"Éxito",
 				"Revisa tu correo electrónico para restablecer tu contraseña",
 				[
@@ -55,12 +57,15 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
 							onClose();
 						},
 					},
-				]
+				],
+				"success"
 			);
 		} catch (error: any) {
-			Alert.alert(
+			showAlert(
 				"Error",
-				error.message || "No se pudo enviar el email de recuperación"
+				error.message || "No se pudo enviar el email de recuperación",
+				undefined,
+				"error"
 			);
 		} finally {
 			setLoading(false);
@@ -81,9 +86,9 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
 		>
 			<KeyboardAvoidingView
 				behavior={Platform.OS === "ios" ? "padding" : "height"}
-				style={styles.modalContainer}
+				style={core.modalBackdrop}
 			>
-				<View style={styles.modalContent}>
+				<View style={[core.modalContainer, styles.modalContent]}>
 					<View style={styles.modalHeader}>
 						<Text style={styles.modalTitle}>Recuperar Contraseña</Text>
 						<Pressable onPress={handleClose}>
@@ -135,16 +140,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
 };
 
 const styles = StyleSheet.create({
-	modalContainer: {
-		flex: 1,
-		justifyContent: "flex-end",
-		backgroundColor: theme.colors.backdrop,
-	},
 	modalContent: {
-		backgroundColor: theme.colors.background,
-		borderTopLeftRadius: theme.borderRadius.xl,
-		borderTopRightRadius: theme.borderRadius.xl,
-		padding: theme.spacing.xl,
 		paddingBottom: theme.spacing.xl * 2,
 	},
 	modalHeader: {
@@ -176,4 +172,3 @@ const styles = StyleSheet.create({
 		flex: 1,
 	},
 });
-

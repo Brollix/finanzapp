@@ -63,4 +63,3 @@ export function stringSimilarity(str1: string, str2: string): number {
 	const distance = levenshteinDistance(str1, str2);
 	return 1 - distance / maxLen;
 }
-

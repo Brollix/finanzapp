@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, Modal, ActivityIndicator, StyleSheet } from "react-native";
-import { theme } from "../../styles/theme";
+import { theme } from "@/styles/theme";
+import { core } from "@/styles/core.styles";
 
 interface LoadingModalProps {
 	visible: boolean;
@@ -13,7 +14,7 @@ export const LoadingModal: React.FC<LoadingModalProps> = ({
 }) => {
 	return (
 		<Modal transparent visible={visible} animationType="fade">
-			<View style={styles.loadingModalContainer}>
+			<View style={core.modalBackdropCentered}>
 				<ActivityIndicator size="large" color={theme.colors.primary} />
 				<Text style={styles.loadingModalText}>{text}</Text>
 			</View>
@@ -22,12 +23,6 @@ export const LoadingModal: React.FC<LoadingModalProps> = ({
 };
 
 const styles = StyleSheet.create({
-	loadingModalContainer: {
-		flex: 1,
-		justifyContent: "center",
-		alignItems: "center",
-		backgroundColor: theme.colors.backdrop,
-	},
 	loadingModalText: {
 		marginTop: theme.spacing.sm,
 		color: theme.colors.text,
