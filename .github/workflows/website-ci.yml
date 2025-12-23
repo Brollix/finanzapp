@@ -139,7 +139,7 @@ jobs:
           MAX_RETRIES=6
           RETRY_COUNT=0
           while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-            if ssh $SSH_USER@$SSH_HOST "curl -f http://localhost:3000 > /dev/null 2>&1"; then
+            if ssh $SSH_USER@$SSH_HOST "curl -f http://localhost:80 > /dev/null 2>&1"; then
               echo "✅ Website is healthy!"
               exit 0
             fi
