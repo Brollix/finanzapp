@@ -120,7 +120,8 @@ jobs:
             set -e
             echo "📥 Pulling latest changes..."
             cd ~/finanzapp
-            git pull origin main
+            git fetch origin main
+            git reset --hard origin/main
             echo "🚀 Deploying website..."
             cd website
             chmod +x deploy.sh
