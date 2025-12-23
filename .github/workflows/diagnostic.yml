@@ -49,6 +49,12 @@ jobs:
 
             echo -e "\n6️⃣  DISK SPACE:"
             df -h /
+
+            echo -e "\n7️⃣  CONTAINER LOGS (Last 50 lines):"
+            docker logs --tail 50 finanzapp-website
+
+            echo -e "\n8️⃣  HEALTHCHECK DETAILS:"
+            docker inspect --format "{{json .State.Health}}" finanzapp-website
             
             echo "========================================"
           ENDSSH
