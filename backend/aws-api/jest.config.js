@@ -3,6 +3,7 @@ module.exports = {
 	preset: "ts-jest/presets/default-esm",
 	testEnvironment: "node",
 	testMatch: ["**/*.test.ts"],
+	setupFiles: ["<rootDir>/tests/setup.ts"],
 	verbose: true,
 	forceExit: true,
 	clearMocks: true,
