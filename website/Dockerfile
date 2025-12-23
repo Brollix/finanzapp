@@ -25,6 +25,9 @@ RUN npm run build
 # Production stage - use nginx to serve static files
 FROM nginx:alpine
 
+# Install nodejs for runtime scripts/tests
+RUN apk add --no-cache nodejs
+
 # Copy built files from builder
 COPY --from=builder /app/dist /usr/share/nginx/html
 
