@@ -1,7 +1,7 @@
 import { InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
-import { bedrockClient } from "../config/aws.js";
-import logger from "../utils/logger.js";
-import { retryBedrockCall } from "../utils/retry.js";
+import { bedrockClient } from "../../config/aws.js";
+import logger from "../../utils/logger.js";
+import { retryBedrockCall } from "../../utils/retry.js";
 
 const TITAN_EMBEDDING_MODEL_ID = "amazon.titan-embed-text-v1";
 

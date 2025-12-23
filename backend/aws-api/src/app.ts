@@ -19,6 +19,7 @@ import {
 	ValidationError,
 	AuthenticationError,
 } from "./utils/errors.js";
+import { captureException } from "./config/sentry.js";
 
 // Validate environment variables
 validateEnv();

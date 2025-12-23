@@ -22,7 +22,7 @@ const ReceiptItemSchema = z.object({
 	brand: z.string().optional().nullable(),
 });
 
-const ReceiptDataSchema = z.object({
+export const ReceiptDataSchema = z.object({
 	supermarket: z.string(),
 	datetime: z.string(),
 	total: z.number().optional(), // Can be calculated

@@ -11,15 +11,8 @@ process.env.BEDROCK_MODEL_ID = "anthropic.claude-v2";
 // Mock p-retry to avoid ES module import issues
 jest.mock("p-retry", () => {
 	const mockRetry = jest.fn((fn) => fn());
-	mockRetry.FailedAttemptError = class FailedAttemptError extends Error {
-		constructor(error: Error) {
-			super(error.message);
-			this.name = "FailedAttemptError";
-		}
-	};
 	return {
 		__esModule: true,
 		default: mockRetry,
-		FailedAttemptError: mockRetry.FailedAttemptError,
 	};
 });

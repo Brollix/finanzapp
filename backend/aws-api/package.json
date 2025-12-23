@@ -1,6 +1,6 @@
 {
   "name": "finanzapp-aws-api",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "FinanzApp backend with AWS Textract, Bedrock, and Supabase",
   "main": "dist/index.js",
   "scripts": {
@@ -37,8 +37,9 @@
     "morgan": "^1.10.1",
     "multer": "^1.4.5-lts.1",
     "@sentry/node": "^8.48.0",
+    "@sentry/profiling-node": "^8.48.0",
     "sharp": "^0.33.5",
-    "p-retry": "^6.2.0",
+    "p-retry": "^4.6.0",
     "uuid": "^9.0.1",
     "winston": "^3.18.3",
     "zod": "^4.1.13"

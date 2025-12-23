@@ -1,4 +1,4 @@
-import pRetry, { FailedAttemptError } from "p-retry";
+import pRetry from "p-retry";
 import logger from "./logger.js";
 import { BedrockError, TextractError, DatabaseError } from "./errors.js";
 
@@ -7,7 +7,7 @@ export interface RetryOptions {
 	minTimeout?: number;
 	maxTimeout?: number;
 	factor?: number;
-	onFailedAttempt?: (error: FailedAttemptError) => void;
+	onFailedAttempt?: (error: Error & { attemptNumber: number }) => void;
 }
 
 const defaultOptions: RetryOptions = {
@@ -34,7 +34,7 @@ export async function retryBedrockCall<T>(
 	try {
 		return await pRetry(fn, opts);
 	} catch (error) {
-		if (error instanceof FailedAttemptError) {
+		if (error instanceof Error) {
 			throw new BedrockError(
 				`Bedrock call failed after ${opts.retries} retries: ${error.message}`,
 				error
@@ -61,7 +61,7 @@ export async function retryTextractCall<T>(
 	try {
 		return await pRetry(fn, opts);
 	} catch (error) {
-		if (error instanceof FailedAttemptError) {
+		if (error instanceof Error) {
 			throw new TextractError(
 				`Textract call failed after ${opts.retries} retries: ${error.message}`,
 				error
@@ -88,7 +88,7 @@ export async function retryDatabaseCall<T>(
 	try {
 		return await pRetry(fn, opts);
 	} catch (error) {
-		if (error instanceof FailedAttemptError) {
+		if (error instanceof Error) {
 			throw new DatabaseError(
 				`Database call failed after ${opts.retries} retries: ${error.message}`,
 				error
