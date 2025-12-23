@@ -5,7 +5,7 @@ function Hero() {
 				<div className="mb-8 flex justify-center">
 					<div className="w-30 h-30 flex items-center justify-center">
 						<img
-							src="/logo_finanzapp.png"
+							src="/logo_finanzapp.svg"
 							alt="FinanzApp Logo"
 							width={120}
 							height={120}
@@ -60,4 +60,3 @@ function Hero() {
 }
 
 export default Hero;
-
