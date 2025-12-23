@@ -79,3 +79,4 @@ Para instrucciones de deployment, ver [DEPLOYMENT.md](./DEPLOYMENT.md).
 - **Sitio en producción**: [https://finanzapp.info](https://finanzapp.info)
 - **Repositorio**: [GitHub](https://github.com)
 
+

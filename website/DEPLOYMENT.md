@@ -90,6 +90,14 @@ ssh aws
 
 ### Paso 2: Instalar Nginx
 
+Si encuentras errores de dependencias, primero arregla los paquetes rotos:
+
+```bash
+sudo apt --fix-broken install -y
+```
+
+Luego instala nginx:
+
 ```bash
 sudo apt update
 sudo apt install -y nginx
