@@ -1,0 +1,54 @@
+name: Server Diagnostic
+
+on:
+  workflow_dispatch:
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+          SSH_HOST: ${{ secrets.EC2_HOST }}
+          SSH_USER: ${{ secrets.EC2_USER }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H $SSH_HOST >> ~/.ssh/known_hosts
+
+      - name: Run Diagnostics
+        env:
+          SSH_HOST: ${{ secrets.EC2_HOST }}
+          SSH_USER: ${{ secrets.EC2_USER }}
+        run: |
+          ssh $SSH_USER@$SSH_HOST << 'ENDSSH'
+            echo "========================================"
+            echo "🔍 DIAGNOSTIC REPORT"
+            echo "========================================"
+            
+            echo -e "\n1️⃣  PUBLIC IP (From Server POV):"
+            curl -s https://checkip.amazonaws.com || curl -s ifconfig.me
+            
+            echo -e "\n\n2️⃣  PORTS LISTENING (80/443/8080):"
+            sudo netstat -tulpn | grep -E ':(80|443|8080)' || echo "❌ No services found on these ports!"
+            
+            echo -e "\n3️⃣  DOCKER CONTAINERS:"
+            docker ps --format "table {{.ID}}\t{{.Names}}\t{{.Status}}\t{{.Ports}}"
+            
+            echo -e "\n4️⃣  FIREWALL STATUS (UFW):"
+            if command -v ufw > /dev/null; then
+              sudo ufw status verbose
+            else
+              echo "✅ UFW not installed (likely using AWS SG only)"
+            fi
+            
+            echo -e "\n5️⃣  MEMORY STATUS:"
+            free -h
+
+            echo -e "\n6️⃣  DISK SPACE:"
+            df -h /
+            
+            echo "========================================"
+          ENDSSH
