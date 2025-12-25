@@ -13,7 +13,7 @@ NC='\033[0m' # No Color
 # Configuration
 IMAGE_NAME="finanzapp-website"
 CONTAINER_NAME="finanzapp-website"
-PORT=80
+PORT=3000
 
 # Step 1: Verificar espacio en disco
 echo -e "\n${YELLOW}📊 Verificando espacio en disco...${NC}"
