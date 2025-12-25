@@ -24,7 +24,7 @@ export function initSentry(): void {
 		// Filter out health checks from traces
 		beforeSend(event, hint) {
 			// Don't send events for health checks
-			if (event.request?.url?.includes("/health")) {
+			if (event.request?.url?.includes("/api/health")) {
 				return null;
 			}
 			return event;

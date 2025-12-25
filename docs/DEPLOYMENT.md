@@ -131,7 +131,7 @@ npm run dev
 In another terminal:
 
 ```bash
-curl http://localhost:8080/health
+curl http://localhost:8080/api/health
 ```
 
 Expected response:
@@ -292,7 +292,7 @@ docker restart finanzapp-api
 docker ps
 
 # Health check
-curl http://localhost:8080/health
+curl http://localhost:8080/api/health
 ```
 
 ### Verificar Deployment
@@ -300,19 +300,19 @@ curl http://localhost:8080/health
 #### Opción A: Verificar directamente en EC2 (SSH)
 
 ```bash
-curl http://localhost:8080/health
+curl http://localhost:8080/api/health
 ```
 
 #### Opción B: Verificar desde IP pública
 
 ```bash
-curl http://18.222.119.175:8080/health
+curl http://18.222.119.175:8080/api/health
 ```
 
 #### Opción C: Verificar desde CloudFront (producción)
 
 ```bash
-curl https://d245522eugz5ge.cloudfront.net/health
+curl https://d245522eugz5ge.cloudfront.net/api/health
 ```
 
 Todas deben responder:
@@ -447,5 +447,6 @@ O en: https://expo.dev
 - Review Docker logs: `docker logs -f finanzapp-api`
 - Verify environment variables are set correctly
 - Check health endpoints for service status
+
 
 

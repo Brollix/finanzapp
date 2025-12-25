@@ -17,51 +17,60 @@ Authorization: Bearer <supabase_access_token>
 
 ### Health Checks
 
-#### GET /health
+#### GET /api/health
+
 Basic health check endpoint.
 
 **Response:**
+
 ```json
 {
-  "status": "healthy",
-  "timestamp": "2024-01-01T00:00:00.000Z",
-  "service": "finanzapp-aws-api"
+	"status": "healthy",
+	"timestamp": "2024-01-01T00:00:00.000Z",
+	"service": "finanzapp-aws-api"
 }
 ```
 
-#### GET /health/live
+#### GET /api/health/live
+
 Liveness probe - checks if the application is running.
 
 **Response:**
+
 ```json
 {
-  "status": "alive"
+	"status": "alive"
 }
 ```
 
-#### GET /health/ready
+#### GET /api/health/ready
+
 Readiness probe - checks if the application can serve requests (database connectivity).
 
 **Response:**
+
 ```json
 {
-  "status": "ready",
-  "checks": {
-    "database": "ok"
-  }
+	"status": "ready",
+	"checks": {
+		"database": "ok"
+	}
 }
 ```
 
 ### Receipt Processing
 
 #### POST /api/receipt/process
+
 Process a receipt image using OCR and AI.
 
 **Request:**
+
 - Content-Type: `multipart/form-data`
 - Body: Form data with `image` field (file)
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -81,9 +90,11 @@ Process a receipt image using OCR and AI.
 **Rate Limit:** 10 requests per hour per IP
 
 #### GET /api/receipt/process/:jobId/status
+
 Get processing status for a job.
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -98,38 +109,41 @@ Get processing status for a job.
 ```
 
 #### POST /api/receipt/manual
+
 Create a receipt manually without image processing.
 
 **Request:**
+
 ```json
 {
-  "receiptData": {
-    "supermarket": "Carrefour",
-    "datetime": "01/01/2024 10:00:00",
-    "total": 1000.5,
-    "items": [
-      {
-        "product": "Leche",
-        "quantity": 1,
-        "price": 100,
-        "brand": "La Serenísima",
-        "discount": 10,
-        "promotion": "2x1",
-        "is_weight": false
-      }
-    ],
-    "discounts": [
-      {
-        "description": "Descuento especial",
-        "amount": 50
-      }
-    ],
-    "total_saved": 60
-  }
+	"receiptData": {
+		"supermarket": "Carrefour",
+		"datetime": "01/01/2024 10:00:00",
+		"total": 1000.5,
+		"items": [
+			{
+				"product": "Leche",
+				"quantity": 1,
+				"price": 100,
+				"brand": "La Serenísima",
+				"discount": 10,
+				"promotion": "2x1",
+				"is_weight": false
+			}
+		],
+		"discounts": [
+			{
+				"description": "Descuento especial",
+				"amount": 50
+			}
+		],
+		"total_saved": 60
+	}
 }
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -141,6 +155,7 @@ Create a receipt manually without image processing.
 ```
 
 #### PUT /api/receipt/:id
+
 Update an existing receipt.
 
 **Request:** Same as POST /api/receipt/manual
@@ -148,17 +163,21 @@ Update an existing receipt.
 **Response:** Updated receipt object
 
 #### GET /api/receipt/:id
+
 Get a receipt by ID.
 
 **Response:** Receipt object
 
 #### GET /api/receipt/user/me
+
 Get all receipts for the authenticated user.
 
 **Query Parameters:**
+
 - `limit` (optional): Maximum number of receipts to return (default: 50)
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -173,9 +192,9 @@ All errors follow this format:
 
 ```json
 {
-  "error": "ERROR_CODE",
-  "message": "Human-readable error message",
-  "details": {} // Optional, for validation errors
+	"error": "ERROR_CODE",
+	"message": "Human-readable error message",
+	"details": {} // Optional, for validation errors
 }
 ```
 
@@ -195,7 +214,7 @@ All errors follow this format:
 - Receipt processing: 10 requests per hour per IP
 
 Rate limit headers are included in responses:
+
 - `RateLimit-Limit`: Maximum requests allowed
 - `RateLimit-Remaining`: Remaining requests
 - `RateLimit-Reset`: Time when the limit resets
-

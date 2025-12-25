@@ -114,9 +114,9 @@ Ver [docs/API.md](../../docs/API.md) para documentación completa de la API.
 
 ### Health Checks
 
-- `GET /health` - Health check básico
-- `GET /health/live` - Liveness probe
-- `GET /health/ready` - Readiness probe (verifica conexión a Supabase)
+- `GET /api/health` - Health check básico
+- `GET /api/health/live` - Liveness probe
+- `GET /api/health/ready` - Readiness probe (verifica conexión a Supabase)
 
 ### Receipt Processing
 
@@ -129,7 +129,7 @@ Ver [docs/API.md](../../docs/API.md) para documentación completa de la API.
 ## 🔒 Seguridad
 
 - **Autenticación**: Bearer token (Supabase JWT)
-- **Rate Limiting**: 
+- **Rate Limiting**:
   - General: 100 requests / 15 minutos
   - Receipt processing: 10 requests / hora
 - **CORS**: Configurable via `CORS_ALLOWED_ORIGINS`
@@ -159,4 +159,3 @@ Ver [DEPLOYMENT.md](./DEPLOYMENT.md) para guía completa de deployment en AWS EC
 ## 📝 License
 
 MIT
-

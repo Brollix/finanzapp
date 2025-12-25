@@ -103,7 +103,15 @@ export const apiClient = {
 				return {} as T;
 			}
 
-			const json = await response.json();
+			const text = await response.text();
+			let json;
+			try {
+				json = JSON.parse(text);
+			} catch (e) {
+				console.error("JSON Parse Error for URL:", url);
+				console.error("Response Text:", text);
+				throw new Error("Invalid JSON response from server");
+			}
 
 			// Unpack generic backend response structure { success: true, data: ... }
 			if (json && typeof json === "object" && "data" in json) {

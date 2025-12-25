@@ -81,7 +81,7 @@ sleep 5
 MAX_RETRIES=12  # 60 segundos total
 RETRY_COUNT=0
 while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-    if curl -f http://localhost:$PORT/health > /dev/null 2>&1; then
+    if curl -f http://localhost:$PORT/api/health > /dev/null 2>&1; then
         echo -e "${GREEN}✅ Health check exitoso!${NC}"
         break
     fi

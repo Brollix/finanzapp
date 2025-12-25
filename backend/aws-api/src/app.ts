@@ -83,7 +83,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(apiLimiter);
 
 // Health check endpoints
-app.get("/health", (req: Request, res: Response) => {
+app.get("/api/health", (req: Request, res: Response) => {
 	res.status(200).json({
 		status: "healthy",
 		timestamp: new Date().toISOString(),
@@ -92,12 +92,12 @@ app.get("/health", (req: Request, res: Response) => {
 });
 
 // Liveness probe - simple check if app is running
-app.get("/health/live", (req: Request, res: Response) => {
+app.get("/api/health/live", (req: Request, res: Response) => {
 	res.status(200).json({ status: "alive" });
 });
 
 // Readiness probe - check if app can serve requests (AWS + Supabase connectivity)
-app.get("/health/ready", async (req: Request, res: Response) => {
+app.get("/api/health/ready", async (req: Request, res: Response) => {
 	try {
 		// Check Supabase connection
 		const { supabase } = await import("./config/supabase.js");
