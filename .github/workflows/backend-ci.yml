@@ -3,14 +3,14 @@ name: Backend CI
 on:
   pull_request:
     paths:
-      - 'backend/aws-api/**'
-      - '.github/workflows/backend-ci.yml'
+      - "backend/aws-api/**"
+      - ".github/workflows/backend-ci.yml"
   push:
     branches:
       - main
     paths:
-      - 'backend/aws-api/**'
-      - '.github/workflows/backend-ci.yml'
+      - "backend/aws-api/**"
+      - ".github/workflows/backend-ci.yml"
 
 jobs:
   test:
@@ -135,6 +135,11 @@ jobs:
             echo "📥 Pulling latest changes..."
             cd ~/finanzapp
             git pull origin main
+
+            echo "🔧 Updating Nginx config..."
+            sudo cp backend/aws-api/nginx/finanzapp.conf /etc/nginx/conf.d/finanzapp.conf
+            sudo nginx -t && sudo systemctl reload nginx
+
             echo "🚀 Deploying backend..."
             cd backend/aws-api
             chmod +x deploy.sh
@@ -161,4 +166,3 @@ jobs:
           done
           echo "❌ API health check failed"
           exit 1
-
