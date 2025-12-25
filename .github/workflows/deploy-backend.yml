@@ -4,13 +4,13 @@ name: Deploy Backend to EC2 (Legacy)
 # CI/CD is now handled by backend-ci.yml
 
 on:
-  workflow_dispatch:  # Solo permite ejecutar manualmente
+  workflow_dispatch: # Solo permite ejecutar manualmente
 
 jobs:
   deploy:
     name: Deploy to EC2
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -38,6 +38,10 @@ jobs:
             cd ~/finanzapp
             git pull origin main
             
+            echo "🔧 Updating Nginx config..."
+            sudo cp backend/aws-api/nginx/finanzapp.conf /etc/nginx/conf.d/finanzapp.conf
+            sudo nginx -t && sudo systemctl reload nginx
+            
             echo "🚀 Deploying backend..."
             cd backend/aws-api
             chmod +x deploy.sh
@@ -52,10 +56,10 @@ jobs:
         run: |
           echo "🏥 Checking API health..."
           sleep 10
-          
+
           MAX_RETRIES=6
           RETRY_COUNT=0
-          
+
           while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
             if curl -f $API_URL/health; then
               echo "✅ API is healthy!"
@@ -65,7 +69,7 @@ jobs:
             echo "Retry $RETRY_COUNT/$MAX_RETRIES..."
             sleep 10
           done
-          
+
           echo "❌ API health check failed"
           exit 1
 
@@ -98,7 +102,7 @@ jobs:
             echo "Limpiando networks..."
             docker network prune -f
             
-            # 6. Limpiar volumes no usados (cuidado!)
+            # 6. Limpiar volumes no usados
             echo "Limpiando volumes huérfanos..."
             docker volume prune -f
             
