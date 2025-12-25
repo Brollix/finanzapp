@@ -42,7 +42,11 @@ export const ReceiptProvider = ({ children }: { children: ReactNode }) => {
 				setReceipts(data || []);
 				setLoaded(true);
 			} catch (err) {
-				setError("No se pudieron cargar los tickets");
+				const errorMessage =
+					err instanceof Error
+						? err.message
+						: "No se pudieron cargar los tickets";
+				setError(errorMessage);
 			} finally {
 				setLoading(false);
 			}

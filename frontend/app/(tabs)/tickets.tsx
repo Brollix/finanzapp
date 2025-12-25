@@ -1,11 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import {
-	View,
-	Text,
-	FlatList,
-	RefreshControl,
-	StyleSheet,
-} from "react-native";
+import { View, Text, FlatList, RefreshControl, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useFocusEffect } from "expo-router";
 import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
@@ -31,13 +25,25 @@ export default function TicketsScreen() {
 	const [selectedReceiptId, setSelectedReceiptId] = useState<string | null>(
 		null
 	);
-	const { receipts, loading, fetchReceipts, refreshReceipts, removeReceipt } =
-		useReceipts();
+	const {
+		receipts,
+		loading,
+		error,
+		fetchReceipts,
+		refreshReceipts,
+		removeReceipt,
+	} = useReceipts();
 	const [refreshing, setRefreshing] = useState(false);
 
 	useEffect(() => {
 		fetchReceipts();
 	}, [fetchReceipts]);
+
+	useEffect(() => {
+		if (error) {
+			showAlert("Error", error, undefined, "error");
+		}
+	}, [error]);
 
 	const onRefresh = async () => {
 		setRefreshing(true);

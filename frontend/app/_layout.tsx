@@ -11,6 +11,7 @@ SplashScreen.preventAutoHideAsync().catch(() => {});
 import { AuthProvider } from "../src/features/auth/context/AuthContext";
 import { OcrProvider } from "../src/context/OcrContext";
 import { ReceiptProvider } from "../src/context/ReceiptContext";
+import { AlertProvider } from "../src/context/AlertContext";
 
 import * as Linking from "expo-linking";
 
@@ -43,7 +44,9 @@ export default function RootLayout() {
 		<AuthProvider>
 			<ReceiptProvider>
 				<OcrProvider>
-					<Stack screenOptions={{ headerShown: false }} />
+					<AlertProvider>
+						<Stack screenOptions={{ headerShown: false }} />
+					</AlertProvider>
 				</OcrProvider>
 			</ReceiptProvider>
 		</AuthProvider>
