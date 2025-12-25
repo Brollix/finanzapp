@@ -33,27 +33,18 @@ export const TicketListItem: React.FC<TicketListItemProps> = ({
 			<Text style={core.text}>{item.supermarket}</Text>
 			<Text style={core.h4}>{formatReceiptDateTime(item.datetime)}</Text>
 			<Text style={core.h2}>${formatCurrency(item.total)}</Text>
-			{(() => {
-				const effectiveSaved =
-					(item.total_saved || 0) > 0
-						? item.total_saved || 0
-						: item.items?.reduce((acc, i) => acc + (i.discount || 0), 0) || 0;
-
-				if (effectiveSaved <= 0) return null;
-
-				return (
-					<Text
-						style={{
-							color: theme.colors.success,
-							fontSize: theme.font.size.sm,
-							fontWeight: "bold",
-							marginTop: 4,
-						}}
-					>
-						Ahorrado: ${formatCurrency(effectiveSaved)}
-					</Text>
-				);
-			})()}
+			{item.total_saved && item.total_saved > 0 && (
+				<Text
+					style={{
+						color: theme.colors.success,
+						fontSize: theme.font.size.sm,
+						fontWeight: "bold",
+						marginTop: 4,
+					}}
+				>
+					Ahorrado: ${formatCurrency(item.total_saved)}
+				</Text>
+			)}
 		</AnimatedCard>
 	);
 };

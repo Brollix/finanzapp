@@ -3,6 +3,7 @@ export interface ReceiptItem {
 	brand?: string; // Brand name (optional)
 	quantity: number;
 	price: number;
+	unit_price?: number; // Price per unit or per kg (optional for backwards compatibility)
 	is_weight?: boolean; // True if item is sold by weight (kg, g)
 	product_id?: string; // ID from products table
 	discount?: number; // Discount amount for this item

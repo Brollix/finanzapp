@@ -29,7 +29,10 @@ export const receiptApi = {
 	 * @param userId Current authenticated user ID
 	 */
 	async getUserReceipts(): Promise<Receipt[]> {
-		return apiClient.get<Receipt[]>("/api/receipt/user/me");
+		const response = await apiClient.get<{ data: Receipt[]; count: number }>("/api/receipt/user/me");
+		// Backend returns { success: true, data: [...], count: N }
+		// apiClient returns full response when additional fields present
+		return Array.isArray(response) ? response : response.data;
 	},
 
 	/**
@@ -38,15 +41,28 @@ export const receiptApi = {
 	 * @returns Receipt data and optional jobId for progress tracking
 	 */
 	async processReceipt(imageUri: string): Promise<ProcessReceiptResponse> {
+		console.log("[ReceiptAPI] Processing receipt with URI:", imageUri);
+		
 		const form = new FormData();
 		// Append the image; the backend expects field name "image"
-		form.append("image", {
+		const imageData = {
 			uri: imageUri,
 			name: "ticket.jpg", // Force filename to ticket.jpg for AWS compatibility
 			type: "image/jpeg", // Force mime type to image/jpeg
-		} as any);
-
-		return apiClient.post<ProcessReceiptResponse>("/api/receipt/process", form);
+		} as any;
+		
+		console.log("[ReceiptAPI] Image data to append:", imageData);
+		form.append("image", imageData);
+		
+		console.log("[ReceiptAPI] FormData created, sending request...");
+		try {
+			const response = await apiClient.post<ProcessReceiptResponse>("/api/receipt/process", form);
+			console.log("[ReceiptAPI] Response received:", response);
+			return response;
+		} catch (error) {
+			console.error("[ReceiptAPI] Error in processReceipt:", error);
+			throw error;
+		}
 	},
 
 	/**
@@ -54,11 +70,11 @@ export const receiptApi = {
 	 * @param jobId Job ID returned from processReceipt
 	 */
 	async getProcessingStatus(jobId: string): Promise<ProcessingProgress> {
-		const response = await apiClient.get<{
-			success: boolean;
-			data: ProcessingProgress;
-		}>(`/api/receipt/process/${jobId}/status`);
-		return response.data;
+		const response = await apiClient.get<ProcessingProgress>(
+			`/api/receipt/process/${jobId}/status`
+		);
+		// apiClient already unpacks the data property, so response is ProcessingProgress
+		return response;
 	},
 
 	/**

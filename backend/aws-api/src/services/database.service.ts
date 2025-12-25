@@ -219,33 +219,25 @@ export async function saveReceipt(
 		let finalSubtotal = calculatedSubtotal;
 		let finalTotalSaved = 0;
 
-		// Logic to determine final total and savings
-		if (
-			receiptData.total &&
-			receiptData.total > 0 &&
-			receiptData.total < calculatedSubtotal
-		) {
-			// Case 1: AI Total is valid and less than subtotal -> Trust AI Total (Net)
-			// This implies there are general discounts or unlinked item discounts
+		// Priority: Trust the OCR-detected total if it exists and is positive
+		if (receiptData.total && receiptData.total > 0) {
+			// Use the OCR total as the final total
 			finalTotal = receiptData.total;
-			finalTotalSaved = calculatedSubtotal - finalTotal;
+			
+			// Calculate total saved as the difference between subtotal and total
+			finalTotalSaved = Math.max(0, calculatedSubtotal - finalTotal);
+			
 			logger.info(
-				`Using AI Total (${finalTotal}) which is less than Subtotal (${calculatedSubtotal}). Inferred Savings: ${finalTotalSaved.toFixed(
-					2
-				)}`
+				`Using OCR Total: ${finalTotal}, Subtotal: ${calculatedSubtotal}, Savings: ${finalTotalSaved.toFixed(2)}`
 			);
 		} else {
-			// Case 2: AI Total is missing, zero, or greater/equal to subtotal
-			// Fallback to standard calculation
+			// Fallback: No valid OCR total, calculate from items
 			finalTotal = calculatedSubtotal - explicitItemSavings;
 			finalTotalSaved = explicitItemSavings;
-
-			// Warn if AI total was provided but significantly different (and not lower)
-			if (receiptData.total && Math.abs(receiptData.total - finalTotal) > 1.0) {
-				logger.warn(
-					`AI Total (${receiptData.total}) mismatch with calculated (${finalTotal}). Using calculated.`
-				);
-			}
+			
+			logger.warn(
+				`OCR Total missing or invalid, calculated from items: ${finalTotal}, Savings: ${finalTotalSaved.toFixed(2)}`
+			);
 		}
 
 		// Build discounts array
@@ -315,7 +307,13 @@ export async function saveReceipt(
 			}
 		}
 
-		return data as Receipt;
+		const receipt = data as Receipt;
+		// Ensure all items have unit_price for backwards compatibility
+		if (receipt && receipt.items) {
+			receipt.items = ensureUnitPrice(receipt.items);
+		}
+
+		return receipt;
 	} catch (error) {
 		logger.error(`Database error: ${error}`);
 		throw new Error(
@@ -480,7 +478,13 @@ export async function updateReceipt(
 			}
 		}
 
-		return data as Receipt;
+		const receipt = data as Receipt;
+		// Ensure all items have unit_price for backwards compatibility
+		if (receipt && receipt.items) {
+			receipt.items = ensureUnitPrice(receipt.items);
+		}
+
+		return receipt;
 	} catch (error) {
 		logger.error(`Database error: ${error}`);
 		throw new Error(
@@ -509,7 +513,13 @@ export async function getReceiptById(
 			throw error;
 		}
 
-		return data as Receipt;
+		const receipt = data as Receipt;
+		// Ensure all items have unit_price for backwards compatibility
+		if (receipt && receipt.items) {
+			receipt.items = ensureUnitPrice(receipt.items);
+		}
+
+		return receipt;
 	} catch (error) {
 		logger.error(`Database error: ${error}`);
 		throw new Error(
@@ -518,6 +528,20 @@ export async function getReceiptById(
 			}`
 		);
 	}
+}
+
+/**
+ * Ensure all items have unit_price field
+ * For backwards compatibility with old receipts
+ */
+function ensureUnitPrice(items: ReceiptItem[]): ReceiptItem[] {
+	return items.map((item) => {
+		// If unit_price is missing or 0, calculate it
+		if (!item.unit_price || item.unit_price === 0) {
+			item.unit_price = item.quantity > 0 ? item.price / item.quantity : 0;
+		}
+		return item;
+	});
 }
 
 export async function getReceiptsByUserId(
@@ -536,7 +560,12 @@ export async function getReceiptsByUserId(
 			throw error;
 		}
 
-		return (data as Receipt[]) || [];
+		// Ensure all items have unit_price for backwards compatibility
+		const receipts = (data as Receipt[]) || [];
+		return receipts.map((receipt) => ({
+			...receipt,
+			items: ensureUnitPrice(receipt.items),
+		}));
 	} catch (error) {
 		logger.error(`Database error: ${error}`);
 		throw new Error(
@@ -557,12 +586,13 @@ export async function saveReceiptFast(
 	imageUrl?: string
 ): Promise<Receipt> {
 	try {
-		// Calculate totals
+		// Calculate subtotal from items (sum of all item prices)
 		const calculatedSubtotal = receiptData.items.reduce(
 			(sum, item) => sum + (item.price || 0),
 			0
 		);
 
+		// Calculate explicit item-level savings
 		const explicitItemSavings = receiptData.items.reduce(
 			(sum, item) => sum + (item.discount || 0),
 			0
@@ -572,16 +602,25 @@ export async function saveReceiptFast(
 		let finalSubtotal = calculatedSubtotal;
 		let finalTotalSaved = 0;
 
-		if (
-			receiptData.total &&
-			receiptData.total > 0 &&
-			receiptData.total < calculatedSubtotal
-		) {
+		// Priority: Trust the OCR-detected total if it exists and is positive
+		if (receiptData.total && receiptData.total > 0) {
+			// Use the OCR total as the final total
 			finalTotal = receiptData.total;
-			finalTotalSaved = calculatedSubtotal - finalTotal;
+			
+			// Calculate total saved as the difference between subtotal and total
+			finalTotalSaved = Math.max(0, calculatedSubtotal - finalTotal);
+			
+			logger.info(
+				`Using OCR Total: ${finalTotal}, Subtotal: ${calculatedSubtotal}, Savings: ${finalTotalSaved.toFixed(2)}`
+			);
 		} else {
+			// Fallback: No valid OCR total, calculate from items
 			finalTotal = calculatedSubtotal - explicitItemSavings;
 			finalTotalSaved = explicitItemSavings;
+			
+			logger.warn(
+				`OCR Total missing or invalid, calculated from items: ${finalTotal}, Savings: ${finalTotalSaved.toFixed(2)}`
+			);
 		}
 
 		// Build discounts array
@@ -624,7 +663,13 @@ export async function saveReceiptFast(
 			throw error;
 		}
 
-		return data as Receipt;
+		const receipt = data as Receipt;
+		// Ensure all items have unit_price for backwards compatibility
+		if (receipt && receipt.items) {
+			receipt.items = ensureUnitPrice(receipt.items);
+		}
+
+		return receipt;
 	} catch (error) {
 		logger.error(`Database error (fast save): ${error}`);
 		throw new Error(

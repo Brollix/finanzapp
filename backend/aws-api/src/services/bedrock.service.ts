@@ -93,23 +93,31 @@ export async function formatReceiptWithBedrock(
 			);
 		}
 
-		// Post-process numbers (Argentine format -> Float)
-		const receiptData: ReceiptData = {
-			supermarket: rawData.supermarket,
-			datetime: rawData.datetime,
-			total: parseArgentineNumber(rawData.total),
-			items: rawData.items.map((item: any) => ({
+	// Post-process numbers (Argentine format -> Float)
+	const receiptData: ReceiptData = {
+		supermarket: rawData.supermarket,
+		datetime: rawData.datetime,
+		total: parseArgentineNumber(rawData.total),
+		items: rawData.items.map((item: any) => {
+			const quantity = parseArgentineNumber(item.quantity);
+			const price = parseArgentineNumber(item.price);
+			const discount = item.discount ? parseArgentineNumber(item.discount) : 0;
+			const unit_price = quantity > 0 ? price / quantity : 0;
+			
+			return {
 				...item,
-				quantity: parseArgentineNumber(item.quantity),
-				price: parseArgentineNumber(item.price),
-				discount: item.discount ? parseArgentineNumber(item.discount) : 0,
-			})),
-			// Pass discounts to Sonnet if needed, or handle them there
-			discounts: rawData.discounts?.map((d: any) => ({
-				description: d.description,
-				amount: Math.abs(parseArgentineNumber(d.amount)),
-			})),
-		};
+				quantity,
+				price,
+				unit_price,
+				discount,
+			};
+		}),
+		// Pass discounts to Sonnet if needed, or handle them there
+		discounts: rawData.discounts?.map((d: any) => ({
+			description: d.description,
+			amount: Math.abs(parseArgentineNumber(d.amount)),
+		})),
+	};
 
 		// Validate the structure
 		if (
@@ -489,12 +497,20 @@ IMPORTANTE: Es MEJOR incluir un item duplicado que perder un item real. Si hay d
 			}
 		}
 
-		const reconciledItems = (rawData.items || []).map((item: any) => ({
+	const reconciledItems = (rawData.items || []).map((item: any) => {
+		const quantity = parseArgentineNumber(item.quantity);
+		const price = parseArgentineNumber(item.price);
+		const discount = item.discount ? parseArgentineNumber(item.discount) : 0;
+		const unit_price = quantity > 0 ? price / quantity : 0;
+		
+		return {
 			...item,
-			quantity: parseArgentineNumber(item.quantity),
-			price: parseArgentineNumber(item.price),
-			discount: item.discount ? parseArgentineNumber(item.discount) : 0,
-		}));
+			quantity,
+			price,
+			unit_price,
+			discount,
+		};
+	});
 
 		// Deduplicate reconciled items against already extracted items
 		const uniqueReconciledItems = reconciledItems.filter(
@@ -821,12 +837,20 @@ IMPORTANTE: El array "items" debe contener TODOS los productos visibles en el te
 				supermarket: rawData.supermarket || "",
 				datetime: rawData.datetime || "",
 				total: parseArgentineNumber(rawData.total || 0),
-				items: (rawData.items || []).map((item: any) => ({
-					...item,
-					quantity: parseArgentineNumber(item.quantity),
-					price: parseArgentineNumber(item.price),
-					discount: item.discount ? parseArgentineNumber(item.discount) : 0,
-				})),
+				items: (rawData.items || []).map((item: any) => {
+					const quantity = parseArgentineNumber(item.quantity);
+					const price = parseArgentineNumber(item.price);
+					const discount = item.discount ? parseArgentineNumber(item.discount) : 0;
+					const unit_price = quantity > 0 ? price / quantity : 0;
+					
+					return {
+						...item,
+						quantity,
+						price,
+						unit_price,
+						discount,
+					};
+				}),
 				discounts: (rawData.discounts || []).map((d: any) => ({
 					description: d.description,
 					amount: Math.abs(parseArgentineNumber(d.amount)),
@@ -844,12 +868,20 @@ IMPORTANTE: El array "items" debe contener TODOS los productos visibles en el te
 			return result;
 		} else {
 			return {
-				items: (rawData.items || []).map((item: any) => ({
-					...item,
-					quantity: parseArgentineNumber(item.quantity),
-					price: parseArgentineNumber(item.price),
-					discount: item.discount ? parseArgentineNumber(item.discount) : 0,
-				})),
+				items: (rawData.items || []).map((item: any) => {
+					const quantity = parseArgentineNumber(item.quantity);
+					const price = parseArgentineNumber(item.price);
+					const discount = item.discount ? parseArgentineNumber(item.discount) : 0;
+					const unit_price = quantity > 0 ? price / quantity : 0;
+					
+					return {
+						...item,
+						quantity,
+						price,
+						unit_price,
+						discount,
+					};
+				}),
 				discounts: (rawData.discounts || []).map((d: any) => ({
 					description: d.description,
 					amount: Math.abs(parseArgentineNumber(d.amount)),

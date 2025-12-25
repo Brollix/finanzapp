@@ -3,6 +3,7 @@ export interface ReceiptItem {
 	brand?: string; // marca (opcional)
 	quantity: number;
 	price: number;
+	unit_price?: number; // precio por unidad o por kg (opcional para compatibilidad con datos antiguos)
 	is_weight?: boolean;
 	discount?: number;
 	promotion?: string;

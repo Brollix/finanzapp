@@ -16,6 +16,7 @@ const ReceiptItemSchema = z.object({
 	product: z.string(),
 	quantity: z.number(),
 	price: z.number(),
+	unit_price: z.number().optional(),
 	discount: z.number().optional(),
 	promotion: z.string().optional().nullable(),
 	is_weight: z.boolean().optional(),

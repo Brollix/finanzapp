@@ -50,7 +50,26 @@ export default function HomeScreen() {
 			setReceipts(data || []);
 			setStatistics(calculateStatistics(data || []));
 		} catch (error) {
-			// Error fetching receipts
+			// Handle rate limiting gracefully
+			const errorMessage = error instanceof Error ? error.message : String(error);
+			if (errorMessage.includes("429") || (error as any)?.isRateLimit) {
+				console.warn("[HomeScreen] Rate limited, using cached data if available");
+				// Don't update state, keep existing data
+				// The user will see the last loaded data
+			} else {
+				console.error("[HomeScreen] Error fetching receipts:", error);
+				// For other errors, reset to empty state
+				setReceipts([]);
+				setStatistics({
+					totalTickets: 0,
+					totalSpent: 0,
+					averageTicket: 0,
+					totalItems: 0,
+					mostFrequentSupermarket: "-",
+					mostBoughtProduct: null,
+					topProducts: [],
+				});
+			}
 		} finally {
 			setLoading(false);
 		}
@@ -102,15 +121,7 @@ export default function HomeScreen() {
 								const storeSavings: Record<string, number> = {};
 
 								receipts.forEach((r) => {
-									let effectiveSaved = r.total_saved || 0;
-
-									// If total_saved is missing or 0, try to calculate from items
-									if (effectiveSaved <= 0 && r.items) {
-										effectiveSaved = r.items.reduce(
-											(acc, item) => acc + (item.discount || 0),
-											0
-										);
-									}
+									const effectiveSaved = r.total_saved || 0;
 
 									if (effectiveSaved > 0) {
 										totalSaved += effectiveSaved;

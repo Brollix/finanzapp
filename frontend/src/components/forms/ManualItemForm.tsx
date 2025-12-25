@@ -64,11 +64,16 @@ export const ManualItemForm: React.FC<ManualItemFormProps> = ({
 			return;
 		}
 
+		const quantityNum = parseFloat(quantity);
+		const priceNum = parseFloat(price);
+		const unit_price = quantityNum > 0 ? priceNum / quantityNum : 0;
+
 		onSave({
 			product: product.trim(),
 			brand: brand.trim() || undefined,
-			quantity: parseFloat(quantity),
-			price: parseFloat(price),
+			quantity: quantityNum,
+			price: priceNum,
+			unit_price: unit_price,
 			is_weight: isWeight,
 			discount: discount ? parseFloat(discount) : undefined,
 			promotion: promotion.trim() || undefined,

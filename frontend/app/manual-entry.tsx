@@ -173,14 +173,6 @@ export default function ManualEntryScreen() {
 		);
 	};
 
-	const calculateTotal = () => {
-		return items.reduce((sum, item) => sum + item.price, 0);
-	};
-
-	const calculateSavings = () => {
-		return items.reduce((sum, item) => sum + (item.discount || 0), 0);
-	};
-
 	const handleSaveReceipt = async () => {
 		if (!supermarket.trim()) {
 			showAlert("Error", "El nombre del supermercado es requerido", undefined, "error");
@@ -199,23 +191,13 @@ export default function ManualEntryScreen() {
 				return;
 			}
 
-			const totalSaved = calculateSavings();
-
-			// Generate discounts array from items with discounts
-			const itemDiscounts = items
-				.filter((item) => item.discount && item.discount > 0)
-				.map((item) => ({
-					description: `Descuento en ${item.product}`,
-					amount: item.discount || 0,
-				}));
-
 			const receiptData: ReceiptData = {
 				supermarket: supermarket.trim(),
 				datetime,
-				total: calculateTotal(),
+				total: 0, // Backend will calculate this
 				items,
-				total_saved: totalSaved,
-				discounts: itemDiscounts,
+				total_saved: 0, // Backend will calculate this
+				discounts: [], // Backend will generate this from items
 			};
 
 			// Check if we're editing (receiptId exists) or creating new
@@ -422,12 +404,12 @@ export default function ManualEntryScreen() {
 						)}
 					</View>
 
-					<View style={styles.totalSection}>
-						<Text style={styles.totalLabel}>TOTAL</Text>
-						<Text style={styles.totalValue}>
-							${formatCurrency(calculateTotal())}
-						</Text>
-					</View>
+				<View style={styles.totalSection}>
+					<Text style={styles.totalLabel}>TOTAL</Text>
+					<Text style={styles.totalValue}>
+						${formatCurrency(items.reduce((sum, item) => sum + item.price, 0))}
+					</Text>
+				</View>
 				</ScrollView>
 
 				<View style={styles.footer}>

@@ -101,13 +101,6 @@ export default function TicketScreen() {
 		receipt = contextReceipt;
 	}
 
-	// Calculate total saved from items if not present in receipt
-	const calculatedTotalSaved = receipt
-		? (receipt.total_saved || 0) > 0
-			? receipt.total_saved
-			: receipt.items.reduce((acc, item) => acc + (item.discount || 0), 0)
-		: 0;
-
 	if (!data && status === "loading") {
 		return (
 			<View style={core.centeredContent}>
@@ -198,24 +191,24 @@ export default function TicketScreen() {
 				);
 			})()}
 
-			<View style={styles.totalBar}>
-				<View style={styles.totalRow}>
-					<View>
-						<Text style={styles.totalLabel}>TOTAL</Text>
-						<Text style={styles.itemCount}>{receipt.items.length} items</Text>
-					</View>
-					<Text style={styles.totalValue}>
-						${formatCurrency(receipt.total)}
+		<View style={styles.totalBar}>
+			<View style={styles.totalRow}>
+				<View>
+					<Text style={styles.totalLabel}>TOTAL</Text>
+					<Text style={styles.itemCount}>{receipt.items.length} items</Text>
+				</View>
+				<Text style={styles.totalValue}>
+					${formatCurrency(receipt.total)}
+				</Text>
+			</View>
+			{receipt.total_saved && receipt.total_saved > 0 && (
+				<View style={styles.savedContainer}>
+					<Text style={styles.savedText}>
+						(Ahorraste: ${formatCurrency(receipt.total_saved)})
 					</Text>
 				</View>
-				{(calculatedTotalSaved || 0) > 0 && (
-					<View style={styles.savedContainer}>
-						<Text style={styles.savedText}>
-							(Ahorraste: ${formatCurrency(calculatedTotalSaved || 0)})
-						</Text>
-					</View>
-				)}
-			</View>
+			)}
+		</View>
 
 			<ProductDetailsModal
 				visible={modalVisible}

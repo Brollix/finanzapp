@@ -59,15 +59,7 @@ export default function DiscountsScreen() {
 		let total = 0;
 
 		receipts.forEach((r) => {
-			let effectiveSaved = r.total_saved || 0;
-
-			// If total_saved is missing or 0, try to calculate from items
-			if (effectiveSaved <= 0 && r.items) {
-				effectiveSaved = r.items.reduce(
-					(acc, item) => acc + (item.discount || 0),
-					0
-				);
-			}
+			const effectiveSaved = r.total_saved || 0;
 
 			if (effectiveSaved <= 0) return;
 

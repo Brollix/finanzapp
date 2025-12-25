@@ -26,8 +26,9 @@ export const ProductDetailsModal = ({
 }: ProductDetailsModalProps) => {
 	if (!item) return null;
 
-	const unitPrice = item.price / item.quantity;
 	const isWeight = !Number.isInteger(item.quantity);
+	// Use unit_price from backend, fallback to calculation for old data
+	const unitPrice = item.unit_price || (item.quantity > 0 ? item.price / item.quantity : 0);
 
 	return (
 		<Modal
