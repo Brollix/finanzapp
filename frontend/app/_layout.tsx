@@ -12,6 +12,7 @@ import { AuthProvider } from "../src/features/auth/context/AuthContext";
 import { OcrProvider } from "../src/context/OcrContext";
 import { ReceiptProvider } from "../src/context/ReceiptContext";
 import { AlertProvider } from "../src/context/AlertContext";
+import { NotificationBanner } from "../src/components/NotificationBanner";
 
 import * as Linking from "expo-linking";
 
@@ -46,6 +47,8 @@ export default function RootLayout() {
 				<OcrProvider>
 					<AlertProvider>
 						<Stack screenOptions={{ headerShown: false }} />
+						{/* Global notification banner */}
+						<NotificationBanner />
 					</AlertProvider>
 				</OcrProvider>
 			</ReceiptProvider>

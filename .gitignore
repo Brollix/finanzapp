@@ -88,6 +88,7 @@ frontend/.env.production
 
 # Private Documentation
 API_ENDPOINTS.md
+AWS_BEDROCK_USAGE.md
 
 ################
 # 7. Test & Sample Files

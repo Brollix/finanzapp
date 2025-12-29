@@ -2,9 +2,16 @@ import { Router } from "express";
 import { upload } from "../middleware/upload.js";
 import { scanLimiter } from "../middleware/rateLimit.js";
 import { authenticate } from "../middleware/auth.js";
+import {
+	validateFileUpload,
+	sanitizeInput,
+} from "../middleware/validation.middleware.js";
 import * as receiptController from "../controllers/receipt.controller.js";
 
 const router = Router();
+
+// Apply input sanitization to all routes
+router.use(sanitizeInput);
 
 // POST /api/receipt/process - Process a receipt image
 router.post(
@@ -12,6 +19,7 @@ router.post(
 	authenticate,
 	scanLimiter,
 	upload.single("image"),
+	validateFileUpload, // Validate uploaded file
 	receiptController.processReceipt
 );
 

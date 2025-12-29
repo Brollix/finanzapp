@@ -1,0 +1,80 @@
+2025-12-29 09:08:14 [37mdebug[39m: [37mAWS Configuration:[39m
+{
+  "service": "finanzapp-api",
+  "environment": "development",
+  "version": "1.4.4"
+}
+2025-12-29 09:08:14 [37mdebug[39m: [37mRegion: us-east-1[39m
+{
+  "service": "finanzapp-api",
+  "environment": "development",
+  "version": "1.4.4"
+}
+2025-12-29 09:08:14 [37mdebug[39m: [37mAccess Key ID: AKIAVUGXZ6...[39m
+{
+  "service": "finanzapp-api",
+  "environment": "development",
+  "version": "1.4.4"
+}
+2025-12-29 09:08:14 [37mdebug[39m: [37mSecret Key: SET (hidden)[39m
+{
+  "service": "finanzapp-api",
+  "environment": "development",
+  "version": "1.4.4"
+}
+
+================================================================================
+📊 TOKEN USAGE ANALYSIS - TICKET PROCESSING
+================================================================================
+
+📄 Processing ticket: ticket1.jpeg
+📦 Image size: 110.23 KB
+
+🔍 Step 1: Extracting text with AWS Textract...
+✅ Textract completed in 3236ms
+📝 OCR Text length: 2818 characters
+📝 OCR Text lines: 124
+
+🤖 Step 2: Formatting with AWS Bedrock...
+✅ Bedrock completed in 13737ms
+
+================================================================================
+📊 TOKEN USAGE RESULTS
+================================================================================
+
+🤖 Model: anthropic.claude-3-haiku-20240307-v1:0
+📥 Input Tokens: 1.700
+📤 Output Tokens: 1.951
+📊 Total Tokens: 3.651
+
+================================================================================
+💰 COST BREAKDOWN
+================================================================================
+
+📥 Input Cost: USD 0.000425 (1.700 tokens × $0.25/M)
+📤 Output Cost: USD 0.002439 (1.951 tokens × $1.25/M)
+💵 Total Cost: USD 0.002864
+
+================================================================================
+📈 COST PROJECTIONS
+================================================================================
+
+📊 Cost per ticket: USD 0.002864
+📊 Cost per 10 tickets: USD 0.02864
+📊 Cost per 100 tickets: USD 0.2864
+📊 Cost per 1,000 tickets: USD 2.86
+📊 Cost per 10,000 tickets: USD 28.64
+
+================================================================================
+📄 RECEIPT DATA SUMMARY
+================================================================================
+
+🏪 Supermarket: Disco Salguero
+📅 Date/Time: 21/11/2025 09:49:49
+🛒 Items extracted: 24
+💰 Total: $122428.58
+🎫 Discounts: 5
+
+================================================================================
+
+✅ Analysis complete!
