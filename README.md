@@ -7,8 +7,9 @@
 ![AWS](https://img.shields.io/badge/AWS-Bedrock%20%2B%20Textract-orange?logo=amazon-aws)
 ![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-green?logo=supabase)
 
-[![Backend CI](https://github.com/USER/finanzapp/actions/workflows/backend-ci.yml/badge.svg)](https://github.com/USER/finanzapp/actions/workflows/backend-ci.yml)
-[![Frontend CI](https://github.com/USER/finanzapp/actions/workflows/frontend-ci.yml/badge.svg)](https://github.com/USER/finanzapp/actions/workflows/frontend-ci.yml)
+[![Backend CI](https://github.com/Brollix/finanzapp/actions/workflows/backend-ci.yml/badge.svg)](https://github.com/Brollix/finanzapp/actions/workflows/backend-ci.yml)
+[![Frontend CI](https://github.com/Brollix/finanzapp/actions/workflows/frontend-ci.yml/badge.svg)](https://github.com/Brollix/finanzapp/actions/workflows/frontend-ci.yml)
+[![Website CI](https://github.com/Brollix/finanzapp/actions/workflows/website-ci.yml/badge.svg)](https://github.com/Brollix/finanzapp/actions/workflows/website-ci.yml)
 
 Aplicación móvil que automatiza el registro de gastos mediante escaneo inteligente de tickets. Utiliza **OCR** y **IA** para extraer y estructurar información de compras, facilitando el seguimiento financiero personal.
 
@@ -30,11 +31,11 @@ Ver [documentación técnica completa](docs/) para detalles de implementación.
 
 - **Frontend**: React Native + Expo (TypeScript)
 - **Backend**: Node.js + Express + TypeScript
-- **Website**: Next.js 14 + TypeScript + Tailwind CSS
-- **Base de datos**: Supabase (PostgreSQL)
-- **IA**: AWS Bedrock (Claude 3 Haiku)
+- **Website**: Vite + React + TypeScript + Tailwind CSS
+- **Database**: Supabase (PostgreSQL)
+- **AI**: AWS Bedrock (Claude 3 Haiku)
 - **OCR**: AWS Textract
-- **Deployment**: AWS EC2 + CloudFront, EAS Build, Nginx
+- **Deployment**: AWS EC2 + CloudFront + Docker + Nginx
 
 ## 🚀 Quick Start
 
@@ -79,9 +80,8 @@ finanzapp/
 │       │   ├── services/  # Textract, Bedrock, DB
 │       │   └── routes/
 │       └── Dockerfile
-├── website/          # Landing page (Next.js)
-│   ├── app/          # Páginas y layouts
-│   ├── components/   # Componentes React
+├── website/          # Landing page (Vite + React)
+│   ├── src/          # Componentes y páginas
 │   └── Dockerfile
 └── docs/             # Documentación técnica
 ```
