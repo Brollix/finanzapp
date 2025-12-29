@@ -4,6 +4,8 @@ import logger from "../utils/logger.js";
 export interface ProcessingProgress {
 	status:
 		| "extracting_text"
+		| "checking_cache"
+		| "optimizing_image"
 		| "processing_ai"
 		| "saving"
 		| "completed"

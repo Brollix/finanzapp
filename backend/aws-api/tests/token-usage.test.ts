@@ -3,8 +3,8 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 // Mock p-retry to avoid ES module import issues
-jest.mock("p-retry", () =&gt; {
-	const mockRetry = jest.fn((fn) =&gt; fn());
+jest.mock("p-retry", () => {
+	const mockRetry = jest.fn((fn) => fn());
 	return {
 		__esModule: true,
 		default: mockRetry,
@@ -14,35 +14,32 @@ jest.mock("p-retry", () =&gt; {
 import { extractTextFromImage } from "../src/services/textract.service.js";
 import { formatReceiptWithBedrock } from "../src/services/bedrock.service.js";
 
-const __filename = fileURLToPath(import.meta.url);
+const __filename = path.resolve(process.cwd(), "tests/token-usage.test.ts");
 const __dirname = path.dirname(__filename);
 
 /**
  * Token Usage Test
- * 
+ *
  * This test processes a real ticket and captures token usage information
  * from AWS Bedrock to help estimate costs.
- * 
+ *
  * Run with: npm test -- token-usage.test.ts
  */
-describe("Token Usage Analysis", () =&gt; {
+describe("Token Usage Analysis", () => {
 	const samplesDir = path.join(__dirname, "../../../samples");
 	const ticketFile = "ticket1.jpeg";
 	const ticketPath = path.join(samplesDir, ticketFile);
 
-	beforeAll(() =&gt; {
+	beforeAll(() => {
 		// Skip if AWS credentials are not configured
-		if (
-			!process.env.AWS_ACCESS_KEY_ID ||
-			!process.env.AWS_SECRET_ACCESS_KEY
-		) {
+		if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
 			console.warn(
 				"⚠️  AWS credentials not configured. Skipping token usage test."
 			);
 		}
 	});
 
-	it("should measure token usage for ticket processing", async () =&gt; {
+	it("should measure token usage for ticket processing", async () => {
 		console.log("\n" + "=".repeat(80));
 		console.log("📊 TOKEN USAGE ANALYSIS - TICKET PROCESSING");
 		console.log("=".repeat(80) + "\n");
@@ -50,49 +47,60 @@ describe("Token Usage Analysis", () =&gt; {
 		// Read image
 		const imageBuffer = await fs.readFile(ticketPath);
 		console.log(`📄 Processing ticket: ${ticketFile}`);
-		console.log(`📦 Image size: ${(imageBuffer.length / 1024).toFixed(2)} KB\n`);
+		console.log(
+			`📦 Image size: ${(imageBuffer.length / 1024).toFixed(2)} KB\n`
+		);
 
 		// Step 1: Extract text with Textract
 		console.log("🔍 Step 1: Extracting text with AWS Textract...");
 		const textractStart = Date.now();
 		const ocrText = await extractTextFromImage(imageBuffer);
 		const textractTime = Date.now() - textractStart;
-		
+
 		console.log(`✅ Textract completed in ${textractTime}ms`);
 		console.log(`📝 OCR Text length: ${ocrText.length} characters`);
-		console.log(`📝 OCR Text lines: ${ocrText.split('\n').length}\n`);
+		console.log(`📝 OCR Text lines: ${ocrText.split("\n").length}\n`);
 
 		// Step 2: Format with Bedrock
 		console.log("🤖 Step 2: Formatting with AWS Bedrock...");
 		const bedrockStart = Date.now();
-		
+
 		// Intercept the Bedrock response to capture token usage
-		const originalSend = (await import("@aws-sdk/client-bedrock-runtime")).BedrockRuntimeClient.prototype.send;
+		const originalSend = (await import("@aws-sdk/client-bedrock-runtime"))
+			.BedrockRuntimeClient.prototype.send;
 		let inputTokens = 0;
 		let outputTokens = 0;
 		let modelId = "";
-		
-		(await import("@aws-sdk/client-bedrock-runtime")).BedrockRuntimeClient.prototype.send = async function(command: any) {
-			const response = await originalSend.call(this, command);
-			
-			if (response.body) {
-				const responseBody = JSON.parse(new TextDecoder().decode(response.body));
-				
+
+		(
+			await import("@aws-sdk/client-bedrock-runtime")
+		).BedrockRuntimeClient.prototype.send = async function (
+			command: any,
+			...args: any[]
+		) {
+			// @ts-ignore - bypassing strict type checks for test mock
+			const response = (await originalSend.call(this, command, ...args)) as any;
+
+			if (response && response.body) {
+				const responseBody = JSON.parse(
+					new TextDecoder().decode(response.body)
+				);
+
 				// Capture token usage from response
 				if (responseBody.usage) {
 					inputTokens += responseBody.usage.input_tokens || 0;
 					outputTokens += responseBody.usage.output_tokens || 0;
 				}
-				
+
 				// Capture model ID from command
 				if (command.input?.modelId) {
 					modelId = command.input.modelId;
 				}
 			}
-			
+
 			return response;
-		};
-		
+		} as any;
+
 		const receiptData = await formatReceiptWithBedrock(ocrText);
 		const bedrockTime = Date.now() - bedrockStart;
 
@@ -105,13 +113,15 @@ describe("Token Usage Analysis", () =&gt; {
 		console.log(`\n🤖 Model: ${modelId}`);
 		console.log(`📥 Input Tokens: ${inputTokens.toLocaleString()}`);
 		console.log(`📤 Output Tokens: ${outputTokens.toLocaleString()}`);
-		console.log(`📊 Total Tokens: ${(inputTokens + outputTokens).toLocaleString()}\n`);
+		console.log(
+			`📊 Total Tokens: ${(inputTokens + outputTokens).toLocaleString()}\n`
+		);
 
 		// Calculate costs
 		const HAIKU_INPUT_COST = 0.25 / 1_000_000; // $0.25 per million
 		const HAIKU_OUTPUT_COST = 1.25 / 1_000_000; // $1.25 per million
-		const SONNET_INPUT_COST = 3.00 / 1_000_000; // $3.00 per million
-		const SONNET_OUTPUT_COST = 15.00 / 1_000_000; // $15.00 per million
+		const SONNET_INPUT_COST = 3.0 / 1_000_000; // $3.00 per million
+		const SONNET_OUTPUT_COST = 15.0 / 1_000_000; // $15.00 per million
 
 		const isHaiku = modelId.includes("haiku");
 		const inputCostPerToken = isHaiku ? HAIKU_INPUT_COST : SONNET_INPUT_COST;
@@ -124,8 +134,12 @@ describe("Token Usage Analysis", () =&gt; {
 		console.log("=".repeat(80));
 		console.log("💰 COST BREAKDOWN");
 		console.log("=".repeat(80));
-		console.log(`\n📥 Input Cost: USD ${inputCost.toFixed(6)} (${inputTokens.toLocaleString()} tokens × $${(inputCostPerToken * 1_000_000).toFixed(2)}/M)`);
-		console.log(`📤 Output Cost: USD ${outputCost.toFixed(6)} (${outputTokens.toLocaleString()} tokens × $${(outputCostPerToken * 1_000_000).toFixed(2)}/M)`);
+		console.log(
+			`\n📥 Input Cost: USD ${inputCost.toFixed(6)} (${inputTokens.toLocaleString()} tokens × $${(inputCostPerToken * 1_000_000).toFixed(2)}/M)`
+		);
+		console.log(
+			`📤 Output Cost: USD ${outputCost.toFixed(6)} (${outputTokens.toLocaleString()} tokens × $${(outputCostPerToken * 1_000_000).toFixed(2)}/M)`
+		);
 		console.log(`💵 Total Cost: USD ${totalCost.toFixed(6)}\n`);
 
 		// Projections
@@ -134,8 +148,12 @@ describe("Token Usage Analysis", () =&gt; {
 		console.log("=".repeat(80));
 		console.log(`\n📊 Cost per ticket: USD ${totalCost.toFixed(6)}`);
 		console.log(`📊 Cost per 100 tickets: USD ${(totalCost * 100).toFixed(4)}`);
-		console.log(`📊 Cost per 1,000 tickets: USD ${(totalCost * 1000).toFixed(2)}`);
-		console.log(`📊 Cost per 10,000 tickets: USD ${(totalCost * 10000).toFixed(2)}\n`);
+		console.log(
+			`📊 Cost per 1,000 tickets: USD ${(totalCost * 1000).toFixed(2)}`
+		);
+		console.log(
+			`📊 Cost per 10,000 tickets: USD ${(totalCost * 10000).toFixed(2)}\n`
+		);
 
 		// Receipt data summary
 		console.log("=".repeat(80));
@@ -145,7 +163,7 @@ describe("Token Usage Analysis", () =&gt; {
 		console.log(`📅 Date/Time: ${receiptData.datetime}`);
 		console.log(`🛒 Items extracted: ${receiptData.items.length}`);
 		console.log(`💰 Total: $${receiptData.total.toFixed(2)}`);
-		if (receiptData.discounts &amp;&amp; receiptData.discounts.length &gt; 0) {
+		if (receiptData.discounts && receiptData.discounts.length > 0) {
 			console.log(`🎫 Discounts: ${receiptData.discounts.length}`);
 		}
 		console.log("\n" + "=".repeat(80) + "\n");
