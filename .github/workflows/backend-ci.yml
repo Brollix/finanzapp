@@ -147,6 +147,20 @@ jobs:
             echo "✅ Deployment completed!"
           ENDSSH
 
+      - name: Deploy Website
+        env:
+          SSH_HOST: ${{ secrets.EC2_HOST }}
+          SSH_USER: ${{ secrets.EC2_USER }}
+        run: |
+          ssh $SSH_USER@$SSH_HOST << 'ENDSSH'
+            set -e
+            echo "🌐 Deploying website..."
+            cd ~/finanzapp/website
+            chmod +x deploy.sh
+            ./deploy.sh
+            echo "✅ Website deployment completed!"
+          ENDSSH
+
       - name: Health Check
         env:
           API_URL: ${{ secrets.EC2_API_URL }}
@@ -155,14 +169,35 @@ jobs:
           sleep 10
           MAX_RETRIES=6
           RETRY_COUNT=0
+
+          # Check API health
           while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
             if curl -f $API_URL/api/health; then
               echo "✅ API is healthy!"
+              break
+            fi
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+            echo "Retry $RETRY_COUNT/$MAX_RETRIES..."
+            sleep 10
+          done
+
+          if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
+            echo "❌ API health check failed"
+            exit 1
+          fi
+
+          # Check website health
+          echo "🏥 Checking website health..."
+          RETRY_COUNT=0
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            if curl -f $API_URL/ > /dev/null 2>&1; then
+              echo "✅ Website is healthy!"
               exit 0
             fi
             RETRY_COUNT=$((RETRY_COUNT + 1))
             echo "Retry $RETRY_COUNT/$MAX_RETRIES..."
             sleep 10
           done
-          echo "❌ API health check failed"
+
+          echo "❌ Website health check failed"
           exit 1
