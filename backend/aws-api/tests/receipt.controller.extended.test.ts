@@ -1,13 +1,5 @@
-import { Request, Response } from "express";
-import { AuthenticatedRequest } from "../src/middleware/auth.js";
-import {
-	processReceipt,
-	getProcessingStatus,
-	createManualReceipt,
-	getReceiptById,
-	getUserReceipts,
-} from "../src/controllers/receipt.controller.js";
-import { progressTracker } from "../src/services/progress-tracker.service.js";
+// Mock logger using manual mock
+jest.mock("../src/utils/logger.js");
 
 // Mock services
 jest.mock("../src/services/receipt-optimized.service.js", () => ({
@@ -36,14 +28,16 @@ jest.mock("../src/services/progress-tracker.service.js", () => ({
 	},
 }));
 
-jest.mock("../src/utils/logger.js", () => ({
-	default: {
-		info: jest.fn(),
-		error: jest.fn(),
-		warn: jest.fn(),
-		debug: jest.fn(),
-	},
-}));
+import { Request, Response } from "express";
+import { AuthenticatedRequest } from "../src/middleware/auth.js";
+import {
+	processReceipt,
+	getProcessingStatus,
+	createManualReceipt,
+	getReceiptById,
+	getUserReceipts,
+} from "../src/controllers/receipt.controller.js";
+import { progressTracker } from "../src/services/progress-tracker.service.js";
 
 describe("Receipt Controller - Additional Tests", () => {
 	let mockReq: Partial<AuthenticatedRequest>;

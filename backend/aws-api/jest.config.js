@@ -5,7 +5,6 @@ module.exports = {
 	testMatch: ["**/*.test.ts", "!**/integration/**"],
 	setupFiles: ["<rootDir>/tests/setup.ts"],
 	verbose: true,
-	forceExit: true,
 	clearMocks: true,
 	resetMocks: true,
 	restoreMocks: true,

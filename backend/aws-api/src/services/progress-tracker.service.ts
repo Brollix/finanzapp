@@ -19,18 +19,38 @@ export interface ProcessingProgress {
 const processingJobs = new Map<string, ProcessingProgress>();
 
 // Clean up old jobs (older than 5 minutes)
-setInterval(() => {
-	const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
-	for (const [jobId, progress] of processingJobs.entries()) {
-		if (progress.status === "completed" || progress.status === "error") {
-			// Keep completed/error jobs for a bit longer for debugging
-			const jobTimestamp = parseInt(jobId.split("-")[0] || "0");
-			if (jobTimestamp && jobTimestamp < fiveMinutesAgo) {
-				processingJobs.delete(jobId);
+// Store interval reference so it can be cleared
+let cleanupInterval: NodeJS.Timeout | null = null;
+
+// Only start cleanup interval in non-test environments
+if (process.env.NODE_ENV !== "test") {
+	cleanupInterval = setInterval(() => {
+		const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
+		for (const [jobId, progress] of processingJobs.entries()) {
+			if (progress.status === "completed" || progress.status === "error") {
+				// Keep completed/error jobs for a bit longer for debugging
+				const jobTimestamp = parseInt(jobId.split("-")[0] || "0");
+				if (jobTimestamp && jobTimestamp < fiveMinutesAgo) {
+					processingJobs.delete(jobId);
+				}
 			}
 		}
+	}, 60000); // Run cleanup every minute
+
+	// Allow Node.js to exit even if this interval is active
+	cleanupInterval.unref();
+}
+
+/**
+ * Cleanup function to clear the interval
+ * Useful for testing and graceful shutdown
+ */
+export const cleanup = (): void => {
+	if (cleanupInterval) {
+		clearInterval(cleanupInterval);
+		cleanupInterval = null;
 	}
-}, 60000); // Run cleanup every minute
+};
 
 export const progressTracker = {
 	/**
