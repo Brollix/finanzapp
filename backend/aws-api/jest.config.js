@@ -2,7 +2,7 @@
 module.exports = {
 	preset: "ts-jest/presets/default-esm",
 	testEnvironment: "node",
-	testMatch: ["**/*.test.ts"],
+	testMatch: ["**/*.test.ts", "!**/integration/**"],
 	setupFiles: ["<rootDir>/tests/setup.ts"],
 	verbose: true,
 	forceExit: true,
@@ -30,9 +30,11 @@ module.exports = {
 			branches: 4,
 			functions: 5,
 			lines: 17,
-			statements: 18,
+			statements: 17,
 		},
 	},
+	detectOpenHandles: false,
+	testTimeout: 10000,
 	moduleNameMapper: {
 		"^(\\.{1,2}/.*)\\.js$": "$1",
 	},

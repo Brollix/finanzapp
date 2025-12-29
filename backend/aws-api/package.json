@@ -14,7 +14,7 @@
     "format:check": "prettier --check \"src/**/*.{ts,json}\"",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
+    "test:coverage": "jest --coverage --detectOpenHandles",
     "test:optimization": "npm run build && node dist/scripts/test_optimization.js",
     "test:timing": "npm run build && node dist/scripts/test_timing_analysis.js",
     "benchmark": "npm run build && node dist/src/scripts/benchmark.js"

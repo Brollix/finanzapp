@@ -23,6 +23,10 @@ describe("Database Service - Batch Operations", () => {
 		jest.clearAllMocks();
 	});
 
+	afterAll(() => {
+		jest.restoreAllMocks();
+	});
+
 	describe("getOrCreateProductsBatch logic", () => {
 		it("should handle empty items array", () => {
 			const items: ReceiptItem[] = [];
@@ -97,4 +101,3 @@ describe("Database Service - Batch Operations", () => {
 		});
 	});
 });
-
