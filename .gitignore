@@ -86,9 +86,15 @@ frontend/.env.production
 # Python cache files
 *.pyc
 
-# Private Documentation
-API_ENDPOINTS.md
-AWS_BEDROCK_USAGE.md
+# Private Documentation (personal notes, prompts, internal analysis)
+docs/API_ENDPOINTS.md
+docs/AWS_BEDROCK_USAGE.md
+docs/BUSINESS_STRATEGY_PROMPT.md
+docs/IMPROVEMENT_PROMPT.md
+docs/ANALISIS_INCONSISTENCIAS.md
+docs/TROUBLESHOOTING-RECEIPT-PROCESSING.md
+docs/IMPROVEMENTS_SUMMARY.md
+docs/ARCHITECTURE_IMPROVEMENTS.md
 
 ################
 # 7. Test & Sample Files
