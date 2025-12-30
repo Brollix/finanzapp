@@ -5,10 +5,11 @@ WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
-COPY tsconfig.json ./
 
 # Install dependencies
 RUN npm ci
+
+COPY tsconfig.json ./
 
 # Copy source code
 COPY src ./src
@@ -24,7 +25,7 @@ WORKDIR /app
 
 # Create a non-root user for security
 RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001
+    adduser -S nodejs -u 1001 -G nodejs
 
 # Copy package files
 COPY package*.json ./
