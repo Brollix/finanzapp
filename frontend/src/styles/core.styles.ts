@@ -124,6 +124,10 @@ export const core = StyleSheet.create({
 		borderWidth: 1,
 		borderColor: theme.colors.primary,
 	},
+	buttonGhost: {
+		backgroundColor: "transparent",
+		elevation: 0,
+	},
 	buttonDanger: { backgroundColor: theme.colors.error },
 	buttonFullWidth: { width: "100%" },
 	buttonDisabled: { opacity: 0.6 },
@@ -137,6 +141,7 @@ export const core = StyleSheet.create({
 	buttonPrimaryText: { color: theme.colors.onPrimary },
 	buttonSecondaryText: { color: theme.colors.onSecondary },
 	buttonOutlineText: { color: theme.colors.primary },
+	buttonGhostText: { color: theme.colors.textSecondary },
 	buttonDangerText: { color: theme.colors.onError },
 
 	// Button icons

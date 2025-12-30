@@ -17,20 +17,12 @@ import { core } from "../src/styles/core.styles";
 import { theme } from "../src/styles/theme";
 import { useReceiptScanner } from "../src/hooks/useReceiptScanner";
 
-const LOADING_MESSAGES = [
-	"Analizando tu ticket con Inteligencia Artificial...",
-	"FinanzApp está procesando tu gasto con AWS Bedrock...",
-	"Extrayendo fecha, total y comercios...",
-	"Esto puede tardar unos segundos. ¡Ya casi está!",
-];
-
 export default function Capture() {
 	const {
 		permission,
 		requestPermission,
 		loading,
 		capturedImage,
-		progress,
 		cameraRef,
 		takePicture,
 		pickImageFromGallery,
@@ -42,7 +34,7 @@ export default function Capture() {
 	const fadeAnim = useRef(new Animated.Value(0)).current;
 
 	useEffect(() => {
-		if (loading && progress) {
+		if (loading) {
 			// Fade in animation when loading starts
 			Animated.timing(fadeAnim, {
 				toValue: 1,
@@ -53,7 +45,7 @@ export default function Capture() {
 		} else {
 			fadeAnim.setValue(0);
 		}
-	}, [loading, progress]);
+	}, [loading]);
 
 	if (!permission) {
 		// Camera permissions are still loading
@@ -122,7 +114,9 @@ export default function Capture() {
 	return (
 		<View style={core.flex1}>
 			{capturedImage ? (
-				<View style={[core.flex1, { backgroundColor: theme.colors.background }]}>
+				<View
+					style={[core.flex1, { backgroundColor: theme.colors.background }]}
+				>
 					<Image
 						source={{ uri: capturedImage }}
 						style={core.flex1}
@@ -136,42 +130,10 @@ export default function Capture() {
 						>
 							<View style={styles.loadingContent}>
 								<ActivityIndicator size="large" color={theme.colors.primary} />
-								<Text style={styles.loadingTitle}>Procesando Ticket</Text>
+								<Text style={styles.loadingTitle}>Iniciando...</Text>
 								<Text style={styles.loadingMessage}>
-									{progress?.message || "Procesando..."}
+									Procesando tu ticket en segundo plano
 								</Text>
-								{progress && (
-									<View style={{ marginTop: theme.spacing.md, width: "100%" }}>
-										<View
-											style={{
-												width: "100%",
-												height: 6,
-												backgroundColor: theme.colors.surface,
-												borderRadius: 3,
-												overflow: "hidden",
-											}}
-										>
-											<Animated.View
-												style={{
-													height: "100%",
-													width: `${progress.progress}%`,
-													backgroundColor: theme.colors.primary,
-													borderRadius: 3,
-												}}
-											/>
-										</View>
-										<Text
-											style={{
-												marginTop: theme.spacing.xs,
-												fontSize: 12,
-												color: theme.colors.textSecondary,
-												textAlign: "center",
-											}}
-										>
-											{progress.progress}%
-										</Text>
-									</View>
-								)}
 							</View>
 						</Animated.View>
 					) : (

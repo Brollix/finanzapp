@@ -13,7 +13,7 @@ import { theme } from "@/styles/theme";
 
 interface ButtonProps extends TouchableOpacityProps {
 	title?: string;
-	variant?: "primary" | "secondary" | "outline" | "danger";
+	variant?: "primary" | "secondary" | "outline" | "danger" | "ghost";
 	fullWidth?: boolean;
 	style?: ViewStyle;
 	textStyle?: TextStyle;
@@ -56,6 +56,11 @@ export const Button: React.FC<ButtonProps> = ({
 			buttonStyles.push(styles.uiButtonOutline);
 			textStyles.push(styles.uiButtonOutlineText);
 			iconColor = theme.colors.primary;
+			break;
+		case "ghost":
+			buttonStyles.push(styles.uiButtonGhost);
+			textStyles.push(styles.uiButtonGhostText);
+			iconColor = theme.colors.textSecondary;
 			break;
 		case "danger":
 			buttonStyles.push(styles.uiButtonDanger);

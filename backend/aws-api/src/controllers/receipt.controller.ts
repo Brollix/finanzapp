@@ -47,6 +47,16 @@ export const processReceipt = async (
 			throw new ValidationError("No image file provided");
 		}
 
+		// LOGGING DEBUG
+		logger.info(`[Controller] Req Body Keys: ${Object.keys(req.body)}`);
+		logger.info(
+			`[Controller] Req Body Preview: '${req.body.preview}' (${typeof req.body.preview})`
+		);
+		logger.info(`[Controller] Req Query Keys: ${Object.keys(req.query)}`);
+		logger.info(
+			`[Controller] Req Query Preview: '${req.query.preview}' (${typeof req.query.preview})`
+		);
+
 		// Get user ID from authenticated request
 		const userId = req.user!.id;
 		logger.info(`User ID: ${userId}`);
@@ -55,6 +65,14 @@ export const processReceipt = async (
 		jobId = progressTracker.createJob();
 
 		// Process receipt with progress tracking
+		// Check HEADER or QUERY first to avoid body ordering issues
+		const isPreview =
+			req.query.preview === "true" ||
+			req.body.preview === "true" ||
+			req.body.preview === true;
+
+		logger.info(`[Controller] isPreview calculated: ${isPreview}`);
+
 		const savedReceipt = await receiptServiceOptimized.processReceiptFromImage(
 			userId,
 			req.file.buffer,
@@ -63,7 +81,8 @@ export const processReceipt = async (
 				mimetype: req.file.mimetype,
 				originalname: req.file.originalname,
 			},
-			jobId
+			jobId,
+			{ preview: isPreview }
 		);
 
 		res.status(200).json({

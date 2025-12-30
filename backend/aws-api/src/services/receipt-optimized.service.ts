@@ -27,7 +27,8 @@ export const receiptServiceOptimized = {
 		userId: string,
 		imageBuffer: Buffer,
 		fileDetails?: { size: number; mimetype: string; originalname: string },
-		jobId?: string
+		jobId?: string,
+		options: { preview?: boolean } = {}
 	): Promise<Receipt> {
 		const startTime = Date.now();
 
@@ -59,7 +60,14 @@ export const receiptServiceOptimized = {
 			});
 
 			// Save cached result for this user
-			const savedReceipt = await saveReceiptFast(userId, cachedResult);
+			const savedReceipt = await saveReceiptFast(
+				userId,
+				cachedResult,
+				undefined,
+				{
+					dryRun: options.preview,
+				}
+			);
 
 			if (jobId) {
 				progressTracker.completeJob(jobId, savedReceipt.id);
@@ -168,10 +176,14 @@ export const receiptServiceOptimized = {
 			});
 		}
 
-		// Step 3: Save receipt fast (with items as JSON, no product processing)
-		logger.info("Step 3: Saving receipt (fast mode)...");
+		// Step 3: Save receipt fast (mostly calculation if preview)
+		logger.info("Step 3: Saving receipt (fast mode)...", {
+			preview: options.preview,
+		});
 		const dbStart = Date.now();
-		const savedReceipt = await saveReceiptFast(userId, receiptData);
+		const savedReceipt = await saveReceiptFast(userId, receiptData, undefined, {
+			dryRun: options.preview,
+		});
 
 		logPerformance("database_save", Date.now() - dbStart, {
 			receipt_id: savedReceipt.id,
@@ -192,16 +204,21 @@ export const receiptServiceOptimized = {
 		}
 
 		// Step 5: Process products in background (non-blocking)
-		logger.info("Step 5: Starting background processing of products...");
-		processReceiptItemsInBackground(savedReceipt.id, receiptData.items).catch(
-			(error) => {
-				logger.error("Background processing failed (non-critical)", {
-					error: error instanceof Error ? error.message : String(error),
-					receipt_id: savedReceipt.id,
-				});
-				// Don't throw - receipt is already saved
-			}
-		);
+		// Step 5: Process products in background (non-blocking) - SKIP IF PREVIEW
+		if (!options.preview) {
+			logger.info("Step 5: Starting background processing of products...");
+			processReceiptItemsInBackground(savedReceipt.id, receiptData.items).catch(
+				(error) => {
+					logger.error("Background processing failed (non-critical)", {
+						error: error instanceof Error ? error.message : String(error),
+						receipt_id: savedReceipt.id,
+					});
+					// Don't throw - receipt is already saved
+				}
+			);
+		} else {
+			logger.info("Step 5: Skipping background processing (preview mode)");
+		}
 
 		const totalTime = Date.now() - startTime;
 

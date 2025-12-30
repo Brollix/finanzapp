@@ -6,6 +6,7 @@ interface BackgroundJob {
 	imageUri: string;
 	status: "pending" | "processing" | "completed" | "failed";
 	receiptId?: string;
+	backendJobId?: string;
 	error?: string;
 	startedAt: number;
 }
@@ -73,13 +74,17 @@ class BackgroundProcessingService {
 			try {
 				job.status = "processing";
 
-				// Process receipt
-				const response = await receiptApi.processReceipt(job.imageUri);
+				// Process receipt - Default to preview mode for user confirmation
+				const response = await receiptApi.processReceipt(job.imageUri, {
+					preview: true,
+				});
 
 				// If we have jobId from backend, poll for status
 				if (response.jobId) {
 					// Backend will handle async processing
+					// Store backend Job ID for polling
 					// We'll poll in pollJob method
+					job.backendJobId = response.jobId;
 					continue;
 				}
 
@@ -106,9 +111,6 @@ class BackgroundProcessingService {
 		notificationId: string,
 		onComplete?: (receiptId: string) => void
 	) {
-		const job = this.jobs.get(jobId);
-		if (!job) return;
-
 		let attempts = 0;
 		const maxAttempts = 60; // 60 seconds max
 		const pollInterval = 2000; // 2 seconds
@@ -118,8 +120,11 @@ class BackgroundProcessingService {
 
 			if (attempts > maxAttempts) {
 				// Timeout
-				job.status = "failed";
-				job.error = "Processing timeout";
+				const job = this.jobs.get(jobId);
+				if (job) {
+					job.status = "failed";
+					job.error = "Processing timeout";
+				}
 
 				notificationService.remove(notificationId);
 				notificationService.error(
@@ -131,6 +136,32 @@ class BackgroundProcessingService {
 
 			const currentJob = this.jobs.get(jobId);
 			if (!currentJob) return;
+
+			// If we have a backendJobId and still processing, check status with API
+			if (currentJob.status === "processing" && currentJob.backendJobId) {
+				try {
+					const backendStatus = await receiptApi.getProcessingStatus(
+						currentJob.backendJobId
+					);
+					console.log(
+						`[BackgroundProcessing] Polling backend job ${currentJob.backendJobId}:`,
+						backendStatus.status
+					);
+
+					if (backendStatus.status === "completed" && backendStatus.receiptId) {
+						currentJob.status = "completed";
+						currentJob.receiptId = backendStatus.receiptId;
+					} else if (backendStatus.status === "error") {
+						currentJob.status = "failed";
+						currentJob.error =
+							backendStatus.error || "Error en el procesamiento del backend";
+					}
+					// If extracting_text or processing_ai, just continue polling
+				} catch (err) {
+					console.warn("[BackgroundProcessing] Error polling backend:", err);
+					// Don't fail immediately on network error, just retry
+				}
+			}
 
 			// Check if completed
 			if (currentJob.status === "completed" && currentJob.receiptId) {

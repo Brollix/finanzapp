@@ -6,6 +6,7 @@ export const theme = {
 		success: "rgb(40, 200, 100)",
 		warning: "rgb(200, 140, 40)",
 		error: "rgb(240, 39, 76)",
+		info: "rgb(59, 130, 246)",
 
 		// Superficies
 		surface: "rgb(32, 172, 86)",

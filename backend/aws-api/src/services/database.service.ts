@@ -223,10 +223,10 @@ export async function saveReceipt(
 		if (receiptData.total && receiptData.total > 0) {
 			// Use the OCR total as the final total
 			finalTotal = receiptData.total;
-			
+
 			// Calculate total saved as the difference between subtotal and total
 			finalTotalSaved = Math.max(0, calculatedSubtotal - finalTotal);
-			
+
 			logger.info(
 				`Using OCR Total: ${finalTotal}, Subtotal: ${calculatedSubtotal}, Savings: ${finalTotalSaved.toFixed(2)}`
 			);
@@ -234,7 +234,7 @@ export async function saveReceipt(
 			// Fallback: No valid OCR total, calculate from items
 			finalTotal = calculatedSubtotal - explicitItemSavings;
 			finalTotalSaved = explicitItemSavings;
-			
+
 			logger.warn(
 				`OCR Total missing or invalid, calculated from items: ${finalTotal}, Savings: ${finalTotalSaved.toFixed(2)}`
 			);
@@ -583,7 +583,8 @@ export async function getReceiptsByUserId(
 export async function saveReceiptFast(
 	userId: string,
 	receiptData: ReceiptData,
-	imageUrl?: string
+	imageUrl?: string,
+	options: { dryRun?: boolean } = {}
 ): Promise<Receipt> {
 	try {
 		// Calculate subtotal from items (sum of all item prices)
@@ -606,10 +607,10 @@ export async function saveReceiptFast(
 		if (receiptData.total && receiptData.total > 0) {
 			// Use the OCR total as the final total
 			finalTotal = receiptData.total;
-			
+
 			// Calculate total saved as the difference between subtotal and total
 			finalTotalSaved = Math.max(0, calculatedSubtotal - finalTotal);
-			
+
 			logger.info(
 				`Using OCR Total: ${finalTotal}, Subtotal: ${calculatedSubtotal}, Savings: ${finalTotalSaved.toFixed(2)}`
 			);
@@ -617,7 +618,7 @@ export async function saveReceiptFast(
 			// Fallback: No valid OCR total, calculate from items
 			finalTotal = calculatedSubtotal - explicitItemSavings;
 			finalTotalSaved = explicitItemSavings;
-			
+
 			logger.warn(
 				`OCR Total missing or invalid, calculated from items: ${finalTotal}, Savings: ${finalTotalSaved.toFixed(2)}`
 			);
@@ -652,6 +653,30 @@ export async function saveReceiptFast(
 			discounts: finalDiscounts,
 			total_saved: finalTotalSaved,
 		};
+
+		if (options.dryRun) {
+			logger.info("Dry run enabled: skipping database insert", {
+				user_id: userId,
+				supermarket: receiptData.supermarket,
+				total: finalTotal,
+			});
+
+			// Return receipt object without saving
+			const now = new Date().toISOString();
+			return {
+				id: `preview_${Date.now()}`, // Temporary ID for preview
+				user_id: userId,
+				supermarket: receiptData.supermarket,
+				datetime: receiptData.datetime,
+				total: finalTotal,
+				subtotal: finalSubtotal,
+				items: receiptData.items,
+				image_url: imageUrl,
+				discounts: finalDiscounts,
+				total_saved: finalTotalSaved,
+				created_at: now,
+			};
+		}
 
 		const { data, error } = await supabase
 			.from("receipts")

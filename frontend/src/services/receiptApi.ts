@@ -29,7 +29,9 @@ export const receiptApi = {
 	 * @param userId Current authenticated user ID
 	 */
 	async getUserReceipts(): Promise<Receipt[]> {
-		const response = await apiClient.get<{ data: Receipt[]; count: number }>("/api/receipt/user/me");
+		const response = await apiClient.get<{ data: Receipt[]; count: number }>(
+			"/api/receipt/user/me"
+		);
 		// Backend returns { success: true, data: [...], count: N }
 		// apiClient returns full response when additional fields present
 		return Array.isArray(response) ? response : response.data;
@@ -40,9 +42,12 @@ export const receiptApi = {
 	 * @param imageUri Local URI of the captured photo (e.g., expo file URI)
 	 * @returns Receipt data and optional jobId for progress tracking
 	 */
-	async processReceipt(imageUri: string): Promise<ProcessReceiptResponse> {
+	async processReceipt(
+		imageUri: string,
+		options: { preview?: boolean } = { preview: true }
+	): Promise<ProcessReceiptResponse> {
 		console.log("[ReceiptAPI] Processing receipt with URI:", imageUri);
-		
+
 		const form = new FormData();
 		// Append the image; the backend expects field name "image"
 		const imageData = {
@@ -50,13 +55,18 @@ export const receiptApi = {
 			name: "ticket.jpg", // Force filename to ticket.jpg for AWS compatibility
 			type: "image/jpeg", // Force mime type to image/jpeg
 		} as any;
-		
+
 		console.log("[ReceiptAPI] Image data to append:", imageData);
-		form.append("image", imageData);
-		
+
 		console.log("[ReceiptAPI] FormData created, sending request...");
+
+		// Use query param on URL for preview flag availability before body parsing
+		const url = options.preview
+			? "/api/receipt/process?preview=true"
+			: "/api/receipt/process";
+
 		try {
-			const response = await apiClient.post<ProcessReceiptResponse>("/api/receipt/process", form);
+			const response = await apiClient.post<ProcessReceiptResponse>(url, form);
 			console.log("[ReceiptAPI] Response received:", response);
 			return response;
 		} catch (error) {

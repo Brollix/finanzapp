@@ -47,8 +47,12 @@ export default function ReceiptConfirmationScreen() {
 			// Based on the flow, if it has an ID, we assume it's saved.
 			// If it doesn't have an ID, we must save it.
 
-			if ((receiptData as Receipt).id) {
-				// Already saved, just go home
+			const isPreview =
+				(receiptData as Receipt).id &&
+				(receiptData as Receipt).id.startsWith("preview_");
+
+			if ((receiptData as Receipt).id && !isPreview) {
+				// Already saved (and not a preview), just go home
 				// Ideally we should add it to context if it's not there, but since it was processed
 				// it might not be in the list yet if we didn't refresh.
 				// So let's add it to be safe.
@@ -56,7 +60,8 @@ export default function ReceiptConfirmationScreen() {
 				router.dismissAll();
 				router.replace("/(tabs)/tickets");
 			} else {
-				// Not saved yet (manual creation flow or if process didn't save)
+				// Not saved yet (manual creation flow or preview)
+				// If it's a preview, we need to create it for real now
 				const created = await receiptApi.createManualReceipt(receiptData);
 				addReceipt(created);
 				router.dismissAll();
@@ -75,6 +80,12 @@ export default function ReceiptConfirmationScreen() {
 			pathname: "/manual-entry",
 			params: { receipt: JSON.stringify(receiptData) },
 		});
+	};
+
+	const handleCancel = () => {
+		// If canceling a preview, we just go back/home
+		router.dismissAll();
+		router.replace("/(tabs)/tickets");
 	};
 
 	return (
@@ -141,12 +152,20 @@ export default function ReceiptConfirmationScreen() {
 					onPress={handleEdit}
 					style={styles.editButton}
 				/>
-				<Button
-					title="Confirmar y Guardar"
-					onPress={handleConfirm}
-					loading={loading}
-					style={styles.confirmButton}
-				/>
+				<View style={styles.actionRow}>
+					<Button
+						title="Cancelar"
+						variant="ghost"
+						onPress={handleCancel}
+						style={styles.cancelButton}
+					/>
+					<Button
+						title="Confirmar"
+						onPress={handleConfirm}
+						loading={loading}
+						style={styles.confirmButton}
+					/>
+				</View>
 			</View>
 		</SafeAreaView>
 	);
@@ -282,7 +301,17 @@ const styles = StyleSheet.create({
 	editButton: {
 		marginBottom: 0,
 	},
+	actionRow: {
+		flexDirection: "row",
+		gap: theme.spacing.md,
+		width: "100%",
+	},
+	cancelButton: {
+		flex: 1,
+		marginBottom: 0,
+	},
 	confirmButton: {
+		flex: 2,
 		marginBottom: 0,
 	},
 });
