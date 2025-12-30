@@ -1,18 +1,28 @@
-// Set env vars before any other imports
-process.env.PORT = "8080";
-process.env.NODE_ENV = "test";
-process.env.SUPABASE_URL = "https://mock.supabase.co";
-process.env.SUPABASE_SERVICE_ROLE_KEY = "mock-service-key";
-process.env.AWS_REGION = "us-east-1";
-process.env.AWS_ACCESS_KEY_ID = "mock-key";
-process.env.AWS_SECRET_ACCESS_KEY = "mock-secret";
-process.env.BEDROCK_MODEL_ID = "anthropic.claude-v2";
+import dotenv from "dotenv";
+
+// Load environment variables from .env file if it exists
+dotenv.config();
+
+// Set env vars before any other imports, but use existing values if present
+process.env.PORT = process.env.PORT || "8080";
+process.env.NODE_ENV = process.env.NODE_ENV || "test";
+process.env.SUPABASE_URL =
+	process.env.SUPABASE_URL || "https://mock.supabase.co";
+process.env.SUPABASE_SERVICE_ROLE_KEY =
+	process.env.SUPABASE_SERVICE_ROLE_KEY || "mock-service-key";
+process.env.AWS_REGION = process.env.AWS_REGION || "us-east-1";
+process.env.AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID || "mock-key";
+process.env.AWS_SECRET_ACCESS_KEY =
+	process.env.AWS_SECRET_ACCESS_KEY || "mock-secret";
+process.env.BEDROCK_MODEL_ID =
+	process.env.BEDROCK_MODEL_ID || "anthropic.claude-v2";
 
 // Mock p-retry to avoid ES module import issues
+// We use a plain function instead of jest.fn() because resetMocks: true in jest.config.js
+// would clear the implementation of a jest.fn(), causing it to return undefined.
 jest.mock("p-retry", () => {
-	const mockRetry = jest.fn((fn) => fn());
 	return {
 		__esModule: true,
-		default: mockRetry,
+		default: async (fn: any) => fn(),
 	};
 });

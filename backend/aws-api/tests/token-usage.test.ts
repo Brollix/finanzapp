@@ -1,21 +1,14 @@
 import fs from "fs/promises";
 import path from "path";
-import { fileURLToPath } from "url";
+import { BedrockRuntimeClient } from "@aws-sdk/client-bedrock-runtime";
 
-// Mock p-retry to avoid ES module import issues
-jest.mock("p-retry", () => {
-	const mockRetry = jest.fn((fn) => fn());
-	return {
-		__esModule: true,
-		default: mockRetry,
-	};
-});
+// Note: p-retry is mocked in tests/setup.ts
 
 import { extractTextFromImage } from "../src/services/textract.service.js";
 import { formatReceiptWithBedrock } from "../src/services/bedrock.service.js";
 
-const __filename = path.resolve(process.cwd(), "tests/token-usage.test.ts");
-const __dirname = path.dirname(__filename);
+const testFilename = path.resolve(process.cwd(), "tests/token-usage.test.ts");
+const testDirname = path.dirname(testFilename);
 
 /**
  * Token Usage Test
@@ -26,16 +19,22 @@ const __dirname = path.dirname(__filename);
  * Run with: npm test -- token-usage.test.ts
  */
 describe("Token Usage Analysis", () => {
-	const samplesDir = path.join(__dirname, "../../../samples");
+	const samplesDir = path.join(testDirname, "../../../samples");
 	const ticketFile = "ticket1.jpeg";
 	const ticketPath = path.join(samplesDir, ticketFile);
+	const metadataPath = path.join(testDirname, "fixtures/ticket1/metadata.json");
 
 	beforeAll(() => {
-		// Skip if AWS credentials are not configured
-		if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
+		// Log credential status for debugging
+		if (
+			process.env.AWS_ACCESS_KEY_ID?.startsWith("mock") ||
+			!process.env.AWS_ACCESS_KEY_ID
+		) {
 			console.warn(
-				"⚠️  AWS credentials not configured. Skipping token usage test."
+				"⚠️  Running with MOCK or MISSING credentials. Expect failure if hitting real AWS."
 			);
+		} else {
+			console.log("✅ Running with REAL AWS credentials loaded from .env");
 		}
 	});
 
@@ -66,33 +65,43 @@ describe("Token Usage Analysis", () => {
 		const bedrockStart = Date.now();
 
 		// Intercept the Bedrock response to capture token usage
-		const originalSend = (await import("@aws-sdk/client-bedrock-runtime"))
-			.BedrockRuntimeClient.prototype.send;
+		// We use dynamic import for the client since it might be mocked/reset in other contexts,
+		// but here we just need to patch the prototype of the loaded class.
+
+		const originalSend = BedrockRuntimeClient.prototype.send;
+
 		let inputTokens = 0;
 		let outputTokens = 0;
 		let modelId = "";
 
-		(
-			await import("@aws-sdk/client-bedrock-runtime")
-		).BedrockRuntimeClient.prototype.send = async function (
+		// Patch send method to capture usage
+		BedrockRuntimeClient.prototype.send = async function (
 			command: any,
 			...args: any[]
 		) {
-			// @ts-ignore - bypassing strict type checks for test mock
+			// @ts-ignore
 			const response = (await originalSend.call(this, command, ...args)) as any;
 
 			if (response && response.body) {
-				const responseBody = JSON.parse(
-					new TextDecoder().decode(response.body)
-				);
+				// Clone body to avoid consuming the stream for the actual service
+				// Note: AWS SDK v3 streams are often one-time use.
+				// However, response.body here is usually a Uint8Array or similar in Node for Bedrock Runtime if not streaming.
+				// If it is a stream, this might break. Assuming standard InvokeModel (not stream).
+				try {
+					const textDecoder = new TextDecoder();
+					const bodyString = textDecoder.decode(response.body);
+					const responseBody = JSON.parse(bodyString);
 
-				// Capture token usage from response
-				if (responseBody.usage) {
-					inputTokens += responseBody.usage.input_tokens || 0;
-					outputTokens += responseBody.usage.output_tokens || 0;
+					if (responseBody.usage) {
+						inputTokens += responseBody.usage.input_tokens || 0;
+						outputTokens += responseBody.usage.output_tokens || 0;
+					}
+
+					// We don't modify response, just read it.
+				} catch (e) {
+					console.warn("Could not parse response body for token usage:", e);
 				}
 
-				// Capture model ID from command
 				if (command.input?.modelId) {
 					modelId = command.input.modelId;
 				}
@@ -104,13 +113,21 @@ describe("Token Usage Analysis", () => {
 		const receiptData = await formatReceiptWithBedrock(ocrText);
 		const bedrockTime = Date.now() - bedrockStart;
 
+		// Restore original send
+		BedrockRuntimeClient.prototype.send = originalSend;
+
 		console.log(`✅ Bedrock completed in ${bedrockTime}ms\n`);
+
+		const totalTime = textractTime + bedrockTime;
 
 		// Display results
 		console.log("=".repeat(80));
 		console.log("📊 TOKEN USAGE RESULTS");
 		console.log("=".repeat(80));
 		console.log(`\n🤖 Model: ${modelId}`);
+		console.log(`⏱️  Textract Time: ${textractTime}ms`);
+		console.log(`⏱️  Bedrock Time: ${bedrockTime}ms`);
+		console.log(`⏱️  Total Execution Time: ${totalTime}ms`);
 		console.log(`📥 Input Tokens: ${inputTokens.toLocaleString()}`);
 		console.log(`📤 Output Tokens: ${outputTokens.toLocaleString()}`);
 		console.log(
@@ -142,31 +159,21 @@ describe("Token Usage Analysis", () => {
 		);
 		console.log(`💵 Total Cost: USD ${totalCost.toFixed(6)}\n`);
 
-		// Projections
-		console.log("=".repeat(80));
-		console.log("📈 COST PROJECTIONS");
-		console.log("=".repeat(80));
-		console.log(`\n📊 Cost per ticket: USD ${totalCost.toFixed(6)}`);
-		console.log(`📊 Cost per 100 tickets: USD ${(totalCost * 100).toFixed(4)}`);
-		console.log(
-			`📊 Cost per 1,000 tickets: USD ${(totalCost * 1000).toFixed(2)}`
-		);
-		console.log(
-			`📊 Cost per 10,000 tickets: USD ${(totalCost * 10000).toFixed(2)}\n`
-		);
+		// Update Metadata JSON
+		try {
+			console.log(`💾 Updating metadata at: ${metadataPath}`);
+			const metadataContent = await fs.readFile(metadataPath, "utf-8");
+			const metadata = JSON.parse(metadataContent);
 
-		// Receipt data summary
-		console.log("=".repeat(80));
-		console.log("📄 RECEIPT DATA SUMMARY");
-		console.log("=".repeat(80));
-		console.log(`\n🏪 Supermarket: ${receiptData.supermarket}`);
-		console.log(`📅 Date/Time: ${receiptData.datetime}`);
-		console.log(`🛒 Items extracted: ${receiptData.items.length}`);
-		console.log(`💰 Total: $${receiptData.total.toFixed(2)}`);
-		if (receiptData.discounts && receiptData.discounts.length > 0) {
-			console.log(`🎫 Discounts: ${receiptData.discounts.length}`);
+			// Add execution time
+			metadata.execution_time_ms = totalTime;
+
+			// Write back
+			await fs.writeFile(metadataPath, JSON.stringify(metadata, null, 2));
+			console.log("✅ Metadata updated with execution time.");
+		} catch (error) {
+			console.error("⚠️ Failed to update metadata.json:", error);
 		}
-		console.log("\n" + "=".repeat(80) + "\n");
 
 		// Assertions
 		expect(receiptData).toBeDefined();
