@@ -39,6 +39,15 @@ describe("Token Usage Analysis", () => {
 	});
 
 	it("should measure token usage for ticket processing", async () => {
+		// Check for mock credentials and skip if detected
+		if (
+			process.env.AWS_ACCESS_KEY_ID?.startsWith("mock") ||
+			!process.env.AWS_ACCESS_KEY_ID
+		) {
+			console.warn("⚠️  Skipping token usage test: Mock credentials detected.");
+			return;
+		}
+
 		console.log("\n" + "=".repeat(80));
 		console.log("📊 TOKEN USAGE ANALYSIS - TICKET PROCESSING");
 		console.log("=".repeat(80) + "\n");
