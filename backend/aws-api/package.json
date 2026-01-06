@@ -30,7 +30,7 @@
   "license": "MIT",
   "dependencies": {
     "@aws-sdk/client-bedrock-runtime": "^3.716.0",
-    "@aws-sdk/client-textract": "^3.716.0",
+    "@aws-sdk/client-textract": "^3.962.0",
     "@supabase/supabase-js": "^2.53.0",
     "compression": "^1.8.1",
     "cors": "^2.8.5",
