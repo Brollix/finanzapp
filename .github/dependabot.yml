@@ -4,35 +4,52 @@ updates:
   - package-ecosystem: "npm"
     directory: "/backend/aws-api"
     schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 5
+      interval: "daily"
+    open-pull-requests-limit: 10
     reviewers:
       - "agusb"
     labels:
       - "dependencies"
       - "backend"
 
-  # Frontend dependencies
+  # Frontend dependencies (Expo)
   - package-ecosystem: "npm"
     directory: "/frontend"
     schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 5
+      interval: "daily"
+    open-pull-requests-limit: 10
     reviewers:
       - "agusb"
     labels:
       - "dependencies"
       - "frontend"
+    # Ignore core Expo packages to manage them via 'npx expo install'
+    ignore:
+      - dependency-name: "expo"
+      - dependency-name: "expo-*"
+      - dependency-name: "react-native"
+      - dependency-name: "react-native-*"
+
+  # Website dependencies
+  - package-ecosystem: "npm"
+    directory: "/website"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "agusb"
+    labels:
+      - "dependencies"
+      - "website"
 
   # GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 3
+      interval: "daily"
+    open-pull-requests-limit: 5
     reviewers:
       - "agusb"
     labels:
       - "dependencies"
       - "github-actions"
-
