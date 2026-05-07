@@ -80,7 +80,7 @@ async function generateTestFixtures() {
 			model_info: {
 				bedrock_model:
 					process.env.BEDROCK_MODEL_ID ||
-					"anthropic.claude-3-5-haiku-20241022-v1:0",
+					"us.anthropic.claude-3-5-haiku-20241022-v1:0",
 				bedrock_sonnet_model: "global.anthropic.claude-sonnet-4-20250514-v1:0",
 			},
 		};

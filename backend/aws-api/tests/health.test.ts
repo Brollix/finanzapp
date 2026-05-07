@@ -9,7 +9,7 @@ jest.mock("../src/utils/validateEnv.js", () => ({
 		AWS_REGION: "us-east-1",
 		AWS_ACCESS_KEY_ID: "mock-key",
 		AWS_SECRET_ACCESS_KEY: "mock-secret",
-		BEDROCK_MODEL_ID: "anthropic.claude-v2",
+		BEDROCK_MODEL_ID: "us.anthropic.claude-3-5-haiku-20241022-v1:0",
 		SUPABASE_URL: "https://mock.supabase.co",
 		SUPABASE_ANON_KEY: "mock-anon-key",
 		SUPABASE_SERVICE_ROLE_KEY: "mock-service-key",

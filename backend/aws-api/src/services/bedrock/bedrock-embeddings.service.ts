@@ -51,7 +51,7 @@ export async function suggestCategory(productName: string): Promise<string> {
 		const command = new InvokeModelCommand({
 			modelId:
 				process.env.BEDROCK_MODEL_ID ||
-				"anthropic.claude-3-5-haiku-20241022-v1:0",
+				"us.anthropic.claude-3-5-haiku-20241022-v1:0",
 			contentType: "application/json",
 			accept: "application/json",
 			body: JSON.stringify({

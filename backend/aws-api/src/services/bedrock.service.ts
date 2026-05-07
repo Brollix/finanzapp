@@ -5,7 +5,7 @@ import logger from "../utils/logger.js";
 import { retryBedrockCall } from "../utils/retry.js";
 
 const BEDROCK_MODEL_ID =
-	process.env.BEDROCK_MODEL_ID || "anthropic.claude-3-5-haiku-20241022-v1:0";
+	process.env.BEDROCK_MODEL_ID || "us.anthropic.claude-3-5-haiku-20241022-v1:0";
 
 // Optimized compact system prompt for Haiku
 const HAIKU_SYSTEM_PROMPT = `Extract receipt data to JSON. Numbers: Argentine format "5.850,00"→5850.00.
@@ -21,6 +21,7 @@ export async function formatReceiptWithBedrock(
 ): Promise<ReceiptData> {
 	try {
 		logger.info("Haiku: Extracting data from OCR...");
+		console.log("ACTUAL BEDROCK MODEL ID IN USE:", BEDROCK_MODEL_ID);
 
 		// Prepare the request payload for Claude
 		// Note: performanceConfig.latency="optimized" only available in US East (Ohio) region

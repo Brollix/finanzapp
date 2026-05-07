@@ -15,7 +15,7 @@ process.env.AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID || "mock-key";
 process.env.AWS_SECRET_ACCESS_KEY =
 	process.env.AWS_SECRET_ACCESS_KEY || "mock-secret";
 process.env.BEDROCK_MODEL_ID =
-	process.env.BEDROCK_MODEL_ID || "anthropic.claude-v2";
+	process.env.BEDROCK_MODEL_ID || "us.anthropic.claude-3-5-haiku-20241022-v1:0";
 
 // Mock p-retry to avoid ES module import issues
 // We use a plain function instead of jest.fn() because resetMocks: true in jest.config.js
