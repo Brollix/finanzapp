@@ -180,10 +180,14 @@ jobs:
           MAX_RETRIES=6
           RETRY_COUNT=0
 
-          # Check API health
+          # Check API health (Bypass CloudFront/DNS for direct IP check)
+          CHECK_URL="http://$SSH_HOST/api/health"
+          echo "🌐 Testing direct connectivity to: $CHECK_URL"
+
           while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-            if curl -f $API_URL/api/health; then
-              echo "✅ API is healthy!"
+            echo "Attempt $((RETRY_COUNT + 1))/$MAX_RETRIES..."
+            if curl -v -f "$CHECK_URL"; then
+              echo "✅ API is healthy via Direct IP!"
               break
             fi
             RETRY_COUNT=$((RETRY_COUNT + 1))
