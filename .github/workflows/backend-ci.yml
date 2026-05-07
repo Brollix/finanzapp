@@ -117,29 +117,29 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Configure SSH
+      - name: Configure SSH & Network Debug
         env:
           SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
           SSH_HOST: ${{ secrets.EC2_HOST }}
-          SSH_USER: ${{ secrets.EC2_USER }}
         run: |
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          cat >>~/.ssh/config <<END
-          Host *
-            StrictHostKeyChecking no
-          END
-          if [ -n "$SSH_HOST" ]; then
-            ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts || true
-          fi
+          
+          echo "🌐 Diagnóstico de Red para $SSH_HOST..."
+          # Intentar ver si el puerto 22 responde físicamente
+          nc -zv -w 10 $SSH_HOST 22 || echo "❌ PORT 22 IS UNREACHABLE - Probable problema de Route Table o IGW en AWS"
+          
+          # Agregar a known_hosts
+          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts || true
 
       - name: Deploy to EC2
         env:
           SSH_HOST: ${{ secrets.EC2_HOST }}
           SSH_USER: ${{ secrets.EC2_USER }}
         run: |
-          ssh $SSH_USER@$SSH_HOST << 'ENDSSH'
+          # Usamos -vvv para ver el log detallado si falla
+          ssh -vvv -o ConnectTimeout=60 -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST << 'ENDSSH'
             set -e
             echo "📥 Pulling latest changes..."
             cd ~/finanzapp
