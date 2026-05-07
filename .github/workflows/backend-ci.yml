@@ -12,6 +12,9 @@ on:
       - "backend/aws-api/**"
       - ".github/workflows/backend-ci.yml"
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   test:
     name: Run Tests
@@ -123,7 +126,13 @@ jobs:
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H $SSH_HOST >> ~/.ssh/known_hosts
+          cat >>~/.ssh/config <<END
+          Host *
+            StrictHostKeyChecking no
+          END
+          if [ -n "$SSH_HOST" ]; then
+            ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts || true
+          fi
 
       - name: Deploy to EC2
         env:
