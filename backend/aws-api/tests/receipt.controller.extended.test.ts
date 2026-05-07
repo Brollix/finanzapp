@@ -50,7 +50,7 @@ describe("Receipt Controller - Additional Tests", () => {
 		statusMock = jest.fn().mockReturnValue({ json: jsonMock });
 
 		mockReq = {
-			user: { id: "test-user-id" },
+			user: { id: "test-user-id", token: "mock-token" },
 			params: {},
 			query: {},
 			body: {},

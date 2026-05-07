@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 import { createClient } from "@supabase/supabase-js";
+import logger from "../utils/logger.js";
 
 const supabaseUrl = process.env.SUPABASE_URL || "";
 const supabaseKey =
@@ -12,14 +13,25 @@ if (!supabaseUrl || !supabaseKey) {
 	);
 }
 
-import logger from "../utils/logger.js";
-
 const isServiceRole = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
 logger.info(
 	`Supabase Client Initialized. Using Service Role Key: ${isServiceRole}`
 );
 
+// Global Service Role client for background tasks
 export const supabase = createClient(supabaseUrl, supabaseKey);
+
+// Auth client generator for RLS operations
+export const createAuthClient = (token: string) => {
+	const anonKey = process.env.SUPABASE_ANON_KEY || supabaseKey;
+	return createClient(supabaseUrl, anonKey, {
+		global: {
+			headers: {
+				Authorization: `Bearer ${token}`
+			}
+		}
+	});
+};
 
 // Helper to check if Supabase is configured
 export const isSupabaseConfigured = () => supabase !== null;

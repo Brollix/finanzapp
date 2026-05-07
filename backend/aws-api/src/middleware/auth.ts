@@ -6,6 +6,7 @@ export interface AuthenticatedRequest extends Request {
 	user?: {
 		id: string;
 		email?: string;
+		token: string;
 	};
 }
 
@@ -43,6 +44,7 @@ export const authenticate = async (
 		req.user = {
 			id: user.id,
 			email: user.email,
+			token: token,
 		};
 
 		next();
