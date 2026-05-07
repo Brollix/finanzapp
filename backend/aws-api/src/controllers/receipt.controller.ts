@@ -82,7 +82,7 @@ export const processReceipt = async (
 				originalname: req.file.originalname,
 			},
 			jobId,
-			{ preview: isPreview }
+			{ preview: isPreview, token: req.user!.token }
 		);
 
 		res.status(200).json({
@@ -173,7 +173,8 @@ export const createManualReceipt = async (
 		// We cast validatedData to any because our service expects the full type
 		const savedReceipt = await receiptService.createManualReceipt(
 			userId,
-			validatedData as any
+			validatedData as any,
+			req.user!.token
 		);
 
 		res.status(201).json({
@@ -209,11 +210,11 @@ export const updateReceipt = async (
 
 		const validatedData = validationResult.data;
 
-		// Delegate to service
 		const updatedReceipt = await receiptService.updateReceipt(
 			id,
 			userId,
-			validatedData as any
+			validatedData as any,
+			req.user!.token
 		);
 
 		res.status(200).json({
@@ -255,7 +256,7 @@ export const getReceiptById = async (
 	try {
 		const { id } = req.params;
 
-		const receipt = await getReceiptByIdService(id);
+		const receipt = await getReceiptByIdService(id, req.user!.token);
 
 		if (!receipt) {
 			res.status(404).json({ error: "Receipt not found" });
@@ -292,7 +293,7 @@ export const getUserReceipts = async (
 			? parseInt(req.query.limit as string, 10)
 			: 50;
 
-		const receipts = await getReceiptsByUserId(userId, limit);
+		const receipts = await getReceiptsByUserId(userId, limit, req.user!.token);
 
 		res.status(200).json({
 			success: true,

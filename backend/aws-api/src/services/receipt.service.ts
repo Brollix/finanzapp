@@ -33,11 +33,12 @@ export const receiptService = {
 	 */
 	async createManualReceipt(
 		userId: string,
-		receiptData: ReceiptData
+		receiptData: ReceiptData,
+		token?: string
 	): Promise<Receipt> {
 		// Note: Totals calculation logic is handled inside saveReceipt in database.service
 		logger.info("Saving manual receipt to database...");
-		const savedReceipt = await saveReceipt(userId, receiptData);
+		const savedReceipt = await saveReceipt(userId, receiptData, undefined, token);
 		logger.info("Manual receipt saved successfully");
 		return savedReceipt;
 	},
@@ -48,13 +49,15 @@ export const receiptService = {
 	async updateReceipt(
 		receiptId: string,
 		userId: string,
-		receiptData: ReceiptData
+		receiptData: ReceiptData,
+		token?: string
 	): Promise<Receipt> {
 		logger.info("Updating receipt in database...");
 		const updatedReceipt = await updateReceiptInDb(
 			receiptId,
 			userId,
-			receiptData
+			receiptData,
+			token
 		);
 		logger.info("Receipt updated successfully");
 		return updatedReceipt;

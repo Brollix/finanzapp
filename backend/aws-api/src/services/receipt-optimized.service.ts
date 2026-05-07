@@ -1,5 +1,5 @@
 import { extractTextFromImageOptimized } from "./textract-optimized.service.js";
-import { formatReceiptWithBedrockParallel } from "./bedrock.service.js";
+import { formatReceiptWithBedrock } from "./bedrock.service.js";
 import {
 	saveReceiptFast,
 	processReceiptItemsInBackground,
@@ -28,7 +28,7 @@ export const receiptServiceOptimized = {
 		imageBuffer: Buffer,
 		fileDetails?: { size: number; mimetype: string; originalname: string },
 		jobId?: string,
-		options: { preview?: boolean } = {}
+		options: { preview?: boolean; token?: string } = {}
 	): Promise<Receipt> {
 		const startTime = Date.now();
 
@@ -66,6 +66,7 @@ export const receiptServiceOptimized = {
 				undefined,
 				{
 					dryRun: options.preview,
+					token: options.token,
 				}
 			);
 
@@ -149,10 +150,10 @@ export const receiptServiceOptimized = {
 			});
 		}
 
-		// Step 2: Format with Bedrock (parallel processing)
-		logger.info("Step 2: Formatting receipt with Bedrock (parallel)...");
+		// Step 2: Format with Bedrock
+		logger.info("Step 2: Formatting receipt with Bedrock...");
 		const bedrockStart = Date.now();
-		const receiptData = await formatReceiptWithBedrockParallel(ocrText);
+		const receiptData = await formatReceiptWithBedrock(ocrText);
 
 		logPerformance("bedrock_processing", Date.now() - bedrockStart, {
 			supermarket: receiptData.supermarket,
@@ -183,6 +184,7 @@ export const receiptServiceOptimized = {
 		const dbStart = Date.now();
 		const savedReceipt = await saveReceiptFast(userId, receiptData, undefined, {
 			dryRun: options.preview,
+			token: options.token,
 		});
 
 		logPerformance("database_save", Date.now() - dbStart, {
@@ -203,7 +205,6 @@ export const receiptServiceOptimized = {
 			progressTracker.completeJob(jobId, savedReceipt.id);
 		}
 
-		// Step 5: Process products in background (non-blocking)
 		// Step 5: Process products in background (non-blocking) - SKIP IF PREVIEW
 		if (!options.preview) {
 			logger.info("Step 5: Starting background processing of products...");
