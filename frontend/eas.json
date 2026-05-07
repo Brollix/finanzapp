@@ -22,8 +22,8 @@
 			"distribution": "internal",
 			"env": {
 				"EXPO_PUBLIC_BACKEND_URL": "https://d245522eugz5ge.cloudfront.net",
-				"EXPO_PUBLIC_SUPABASE_URL": "https://bluhllaqxvvflaguamwe.supabase.co",
-				"EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_5InsdEEVCaEQ9l6t4i3VLQ_Snc5xulb"
+				"EXPO_PUBLIC_SUPABASE_URL": "https://rayvycxqdcnkowjrzqzm.supabase.co",
+				"EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_FXAbvxOWsmPoncNuADZQew_ursWR6pN"
 			},
 			"android": {
 				"buildType": "apk"
@@ -35,8 +35,8 @@
 		"production": {
 			"env": {
 				"EXPO_PUBLIC_BACKEND_URL": "https://d245522eugz5ge.cloudfront.net",
-				"EXPO_PUBLIC_SUPABASE_URL": "https://bluhllaqxvvflaguamwe.supabase.co",
-				"EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_5InsdEEVCaEQ9l6t4i3VLQ_Snc5xulb"
+				"EXPO_PUBLIC_SUPABASE_URL": "https://rayvycxqdcnkowjrzqzm.supabase.co",
+				"EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_FXAbvxOWsmPoncNuADZQew_ursWR6pN"
 			},
 			"android": {
 				"buildType": "apk"
