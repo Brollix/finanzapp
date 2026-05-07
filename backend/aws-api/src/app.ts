@@ -79,10 +79,7 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Global rate limiter
-app.use(apiLimiter);
-
-// Health check endpoints
+// Health check endpoints (Accessed by Nginx/ALB/CloudFront)
 app.get("/api/health", (req: Request, res: Response) => {
 	res.status(200).json({
 		status: "healthy",
@@ -104,19 +101,15 @@ app.get("/api/health/ready", async (req: Request, res: Response) => {
 		const { error } = await supabase.from("receipts").select("id").limit(1);
 
 		if (error && error.code !== "PGRST116") {
-			// PGRST116 is "no rows returned" which is fine for health check
 			return res.status(503).json({
 				status: "not ready",
 				reason: "Database connection failed",
 			});
 		}
 
-		// AWS connectivity is checked implicitly when services are called
 		res.status(200).json({
 			status: "ready",
-			checks: {
-				database: "ok",
-			},
+			checks: { database: "ok" },
 		});
 	} catch (error) {
 		logger.error(`Readiness check failed: ${String(error)}`);
@@ -126,6 +119,9 @@ app.get("/api/health/ready", async (req: Request, res: Response) => {
 		});
 	}
 });
+
+// Global rate limiter (Apply only to API business routes)
+app.use(apiLimiter);
 
 // API Routes
 app.use("/api/receipt", receiptRoutes);
