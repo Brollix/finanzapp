@@ -1,6 +1,5 @@
 import { ReceiptData, Receipt, ReceiptItem } from "../types/receipt.types.js";
-import { supabase } from "../config/supabase.js";
-import { generateEmbedding, suggestCategory } from "./bedrock.service.js";
+import { supabase, createAuthClient } from "../config/supabase.js";
 import logger from "../utils/logger.js";
 
 /**
@@ -8,7 +7,8 @@ import logger from "../utils/logger.js";
  * Much faster than individual queries for receipts with many items
  */
 async function getOrCreateProductsBatch(
-	items: ReceiptItem[]
+	items: ReceiptItem[],
+	dbClient = supabase
 ): Promise<Map<string, string>> {
 	const productMap = new Map<string, string>();
 
@@ -21,7 +21,7 @@ async function getOrCreateProductsBatch(
 
 	try {
 		// 1. Search for all existing products in a single query
-		const { data: existingProducts, error: searchError } = await supabase
+		const { data: existingProducts, error: searchError } = await dbClient
 			.from("products")
 			.select("id, name, brand")
 			.in("name", productNames);
@@ -63,7 +63,7 @@ async function getOrCreateProductsBatch(
 				embedding: null,
 			}));
 
-			const { data: created, error: insertError } = await supabase
+			const { data: created, error: insertError } = await dbClient
 				.from("products")
 				.insert(newProducts)
 				.select("id, name, brand");
@@ -76,7 +76,7 @@ async function getOrCreateProductsBatch(
 						`Race condition detected, retrying search for ${newProducts.length} products`
 					);
 					const retryNames = newProducts.map((p) => p.name);
-					const { data: retryProducts } = await supabase
+					const { data: retryProducts } = await dbClient
 						.from("products")
 						.select("id, name, brand")
 						.in("name", retryNames);
@@ -111,96 +111,33 @@ async function getOrCreateProductsBatch(
 	}
 }
 
-async function getOrCreateProduct(item: ReceiptItem): Promise<string> {
-	let query = supabase.from("products").select("id").eq("name", item.product);
 
-	if (item.brand) {
-		query = query.eq("brand", item.brand);
-	} else {
-		query = query.is("brand", null);
-	}
-
-	const { data: existing } = await query.single();
-
-	if (existing) {
-		return existing.id;
-	}
-
-	// Product doesn't exist, let's categorize it
-	let category = "Otros";
-	let embedding: number[] | null = null;
-
-	try {
-		// 1. Generate embedding
-		// embedding = await generateEmbedding(item.product);
-		// 2. Search for similar products to reuse category
-		// const { data: similarProducts } = await supabase.rpc("match_products", {
-		// 	query_embedding: embedding,
-		// 	match_threshold: 0.85, // High similarity threshold
-		// 	match_count: 1,
-		// });
-		// if (similarProducts && similarProducts.length > 0) {
-		// 	category = similarProducts[0].category;
-		// 	logger.debug(
-		// 		`Matched product "${item.product}" with "${similarProducts[0].name}" (Category: ${category})`
-		// 	);
-		// } else {
-		// 3. If no match, ask Claude
-		// category = await suggestCategory(item.product);
-		// logger.debug(`Suggested category for "${item.product}": ${category}`);
-		// }
-	} catch (error) {
-		logger.error(`Error in product categorization: ${error}`);
-		// Fallback to default category if anything fails
-	}
-
-	const { data: newProduct, error } = await supabase
-		.from("products")
-		.insert({
-			name: item.product,
-			brand: item.brand || null,
-			is_weight: item.is_weight || false,
-			category: category,
-			embedding: embedding,
-		})
-		.select("id")
-		.single();
-
-	if (error) {
-		// Handle race condition where product was created between check and insert
-		if (error.code === "23505") {
-			// Unique violation
-			const { data: retry } = await query.single();
-			if (retry) return retry.id;
-		}
-		throw error;
-	}
-
-	return newProduct.id;
-}
 
 export async function saveReceipt(
 	userId: string,
 	receiptData: ReceiptData,
-	imageUrl?: string
+	imageUrl?: string,
+	token?: string
 ): Promise<Receipt> {
+	const dbClient = token ? createAuthClient(token) : supabase;
 	try {
-		// 1. Process items to get/create products in PARALLEL
-		const receiptItemsForDb = await Promise.all(
-			receiptData.items.map(async (item) => {
-				const productId = await getOrCreateProduct(item);
-				item.product_id = productId; // Update the item with the ID
+		// 1. Process items to get/create products in BATCH
+		const productMap = await getOrCreateProductsBatch(receiptData.items, dbClient);
+		
+		const receiptItemsForDb = receiptData.items.map((item) => {
+			const key = `${item.product}|${item.brand || ""}`;
+			const productId = productMap.get(key) || "";
+			item.product_id = productId; // Update the item with the ID
 
-				return {
-					product_id: productId,
-					quantity: item.quantity,
-					price: item.quantity ? item.price / item.quantity : 0, // Unit price
-					total: item.price,
-					discount: item.discount || 0,
-					promotion: item.promotion || null,
-				};
-			})
-		);
+			return {
+				product_id: productId,
+				quantity: item.quantity,
+				price: item.quantity ? item.price / item.quantity : 0, // Unit price
+				total: item.price,
+				discount: item.discount || 0,
+				promotion: item.promotion || null,
+			};
+		});
 
 		// 2. VALIDATE AND CORRECT TOTALS FROM ITEMS
 		// Calculate subtotal from items (sum of all item prices)
@@ -280,7 +217,7 @@ export async function saveReceipt(
 			total_saved: finalTotalSaved,
 		};
 
-		const { data, error } = await supabase
+		const { data, error } = await dbClient
 			.from("receipts")
 			.insert(newReceipt)
 			.select()
@@ -297,7 +234,7 @@ export async function saveReceipt(
 				receipt_id: data.id,
 			}));
 
-			const { error: itemsError } = await supabase
+			const { error: itemsError } = await dbClient
 				.from("receipt_items")
 				.insert(itemsWithReceiptId);
 
@@ -327,11 +264,13 @@ export async function saveReceipt(
 export async function updateReceipt(
 	receiptId: string,
 	userId: string,
-	receiptData: ReceiptData
+	receiptData: ReceiptData,
+	token?: string
 ): Promise<Receipt> {
+	const dbClient = token ? createAuthClient(token) : supabase;
 	try {
 		// 1. Verify the receipt exists and belongs to the user
-		const existingReceipt = await getReceiptById(receiptId);
+		const existingReceipt = await getReceiptById(receiptId, token);
 		if (!existingReceipt) {
 			throw new Error("Receipt not found");
 		}
@@ -339,24 +278,25 @@ export async function updateReceipt(
 			throw new Error("Unauthorized: Receipt does not belong to user");
 		}
 
-		// 1. Process items to get/create products in PARALLEL
-		const receiptItemsForDb = await Promise.all(
-			receiptData.items.map(async (item) => {
-				const productId = await getOrCreateProduct(item);
-				item.product_id = productId; // Update the item with the ID
+		// 1. Process items to get/create products in BATCH
+		const productMap = await getOrCreateProductsBatch(receiptData.items, dbClient);
+		
+		const receiptItemsForDb = receiptData.items.map((item) => {
+			const key = `${item.product}|${item.brand || ""}`;
+			const productId = productMap.get(key) || "";
+			item.product_id = productId; // Update the item with the ID
 
-				return {
-					product_id: productId,
-					quantity: item.quantity,
-					price: item.quantity ? item.price / item.quantity : 0, // Unit price
-					total: item.price,
-					discount: item.discount || 0,
-					promotion: item.promotion || null,
-				};
-			})
-		);
+			return {
+				product_id: productId,
+				quantity: item.quantity,
+				price: item.quantity ? item.price / item.quantity : 0, // Unit price
+				total: item.price,
+				discount: item.discount || 0,
+				promotion: item.promotion || null,
+			};
+		});
 
-		// 3. VALIDATE AND CORRECT TOTALS FROM ITEMS
+		// 2. VALIDATE AND CORRECT TOTALS FROM ITEMS
 		// Calculate subtotal from items (sum of all item prices)
 		const calculatedSubtotal = receiptData.items.reduce(
 			(sum, item) => sum + (item.price || 0),
@@ -373,30 +313,13 @@ export async function updateReceipt(
 		let finalSubtotal = calculatedSubtotal;
 		let finalTotalSaved = 0;
 
-		// Logic to determine final total and savings
-		if (
-			receiptData.total &&
-			receiptData.total > 0 &&
-			receiptData.total < calculatedSubtotal
-		) {
-			// Case 1: AI Total is valid and less than subtotal -> Trust AI Total (Net)
+		// Priority: Trust the OCR-detected total if it exists and is positive
+		if (receiptData.total && receiptData.total > 0) {
 			finalTotal = receiptData.total;
-			finalTotalSaved = calculatedSubtotal - finalTotal;
-			logger.info(
-				`Using AI Total (${finalTotal}) which is less than Subtotal (${calculatedSubtotal}). Inferred Savings: ${finalTotalSaved.toFixed(
-					2
-				)}`
-			);
+			finalTotalSaved = Math.max(0, calculatedSubtotal - finalTotal);
 		} else {
-			// Case 2: Fallback to standard calculation
 			finalTotal = calculatedSubtotal - explicitItemSavings;
 			finalTotalSaved = explicitItemSavings;
-
-			if (receiptData.total && Math.abs(receiptData.total - finalTotal) > 1.0) {
-				logger.warn(
-					`AI Total (${receiptData.total}) mismatch with calculated (${finalTotal}). Using calculated.`
-				);
-			}
 		}
 
 		// Build discounts array
@@ -409,7 +332,6 @@ export async function updateReceipt(
 				0
 			);
 
-			// If explicit discounts don't match total saved, add a general discount entry
 			if (Math.abs(finalTotalSaved - existingSavings) > 1.0) {
 				const diff = finalTotalSaved - existingSavings;
 				if (diff > 0) {
@@ -420,12 +342,6 @@ export async function updateReceipt(
 				}
 			}
 		}
-
-		logger.info(
-			`Receipt totals - Subtotal: ${finalSubtotal.toFixed(
-				2
-			)}, Total: ${finalTotal.toFixed(2)}, Saved: ${finalTotalSaved.toFixed(2)}`
-		);
 
 		// 4. Update the receipt
 		const updatedReceipt = {
@@ -438,7 +354,7 @@ export async function updateReceipt(
 			total_saved: finalTotalSaved,
 		};
 
-		const { data, error } = await supabase
+		const { data, error } = await dbClient
 			.from("receipts")
 			.update(updatedReceipt)
 			.eq("id", receiptId)
@@ -451,7 +367,7 @@ export async function updateReceipt(
 		}
 
 		// 4. Delete old receipt items
-		const { error: deleteError } = await supabase
+		const { error: deleteError } = await dbClient
 			.from("receipt_items")
 			.delete()
 			.eq("receipt_id", receiptId);
@@ -468,7 +384,7 @@ export async function updateReceipt(
 				receipt_id: data.id,
 			}));
 
-			const { error: itemsError } = await supabase
+			const { error: itemsError } = await dbClient
 				.from("receipt_items")
 				.insert(itemsWithReceiptId);
 
@@ -496,10 +412,12 @@ export async function updateReceipt(
 }
 
 export async function getReceiptById(
-	receiptId: string
+	receiptId: string,
+	token?: string
 ): Promise<Receipt | null> {
+	const dbClient = token ? createAuthClient(token) : supabase;
 	try {
-		const { data, error } = await supabase
+		const { data, error } = await dbClient
 			.from("receipts")
 			.select("*")
 			.eq("id", receiptId)
@@ -546,10 +464,12 @@ function ensureUnitPrice(items: ReceiptItem[]): ReceiptItem[] {
 
 export async function getReceiptsByUserId(
 	userId: string,
-	limit = 50
+	limit = 50,
+	token?: string
 ): Promise<Receipt[]> {
+	const dbClient = token ? createAuthClient(token) : supabase;
 	try {
-		const { data, error } = await supabase
+		const { data, error } = await dbClient
 			.from("receipts")
 			.select("*")
 			.eq("user_id", userId)
@@ -584,8 +504,9 @@ export async function saveReceiptFast(
 	userId: string,
 	receiptData: ReceiptData,
 	imageUrl?: string,
-	options: { dryRun?: boolean } = {}
+	options: { dryRun?: boolean; token?: string } = {}
 ): Promise<Receipt> {
+	const dbClient = options.token ? createAuthClient(options.token) : supabase;
 	try {
 		// Calculate subtotal from items (sum of all item prices)
 		const calculatedSubtotal = receiptData.items.reduce(
@@ -678,7 +599,7 @@ export async function saveReceiptFast(
 			};
 		}
 
-		const { data, error } = await supabase
+		const { data, error } = await dbClient
 			.from("receipts")
 			.insert(newReceipt)
 			.select()
