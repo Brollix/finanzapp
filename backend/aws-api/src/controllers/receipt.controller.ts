@@ -48,13 +48,20 @@ export const processReceipt = async (
 		}
 
 		// LOGGING DEBUG
-		logger.info(`[Controller] Req Body Keys: ${Object.keys(req.body)}`);
+		const bodyKeys = Object.keys(req.body as Record<string, unknown>).join(", ");
+		logger.info(`[Controller] Req Body Keys: ${bodyKeys}`);
+		
+		const bodyPreview = (req.body as { preview?: unknown }).preview;
 		logger.info(
-			`[Controller] Req Body Preview: '${req.body.preview}' (${typeof req.body.preview})`
+			`[Controller] Req Body Preview: '${String(bodyPreview)}' (${typeof bodyPreview})`
 		);
-		logger.info(`[Controller] Req Query Keys: ${Object.keys(req.query)}`);
+		
+		const queryKeys = Object.keys(req.query as Record<string, unknown>).join(", ");
+		logger.info(`[Controller] Req Query Keys: ${queryKeys}`);
+		
+		const queryPreview = (req.query as { preview?: unknown }).preview;
 		logger.info(
-			`[Controller] Req Query Preview: '${req.query.preview}' (${typeof req.query.preview})`
+			`[Controller] Req Query Preview: '${String(queryPreview)}' (${typeof queryPreview})`
 		);
 
 		// Get user ID from authenticated request
@@ -170,10 +177,9 @@ export const createManualReceipt = async (
 		const validatedData = validationResult.data;
 
 		// Delegate to service
-		// We cast validatedData to any because our service expects the full type
 		const savedReceipt = await receiptService.createManualReceipt(
 			userId,
-			validatedData as any,
+			validatedData as any, // Still need any here if the service type doesn't match perfectly, but we can try to fix it later
 			req.user!.token
 		);
 

@@ -5,7 +5,8 @@ import dotenv from "dotenv";
 // Load environment variables
 dotenv.config();
 
-const AWS_REGION = process.env.AWS_REGION || "us-east-1";
+const envRegion = process.env.AWS_REGION;
+const AWS_REGION = (typeof envRegion === "string" && envRegion.length > 0) ? envRegion : "us-east-1";
 
 import logger from "../utils/logger.js";
 
@@ -14,14 +15,14 @@ logger.debug("AWS Configuration:");
 logger.debug(`Region: ${AWS_REGION}`);
 logger.debug(
 	`Access Key ID: ${
-		process.env.AWS_ACCESS_KEY_ID
+		(typeof process.env.AWS_ACCESS_KEY_ID === "string" && process.env.AWS_ACCESS_KEY_ID.length > 0)
 			? `${process.env.AWS_ACCESS_KEY_ID.substring(0, 10)}...`
 			: "NOT SET"
 	}`
 );
 logger.debug(
 	`Secret Key: ${
-		process.env.AWS_SECRET_ACCESS_KEY ? "SET (hidden)" : "NOT SET"
+		(typeof process.env.AWS_SECRET_ACCESS_KEY === "string" && process.env.AWS_SECRET_ACCESS_KEY.length > 0) ? "SET (hidden)" : "NOT SET"
 	}`
 );
 

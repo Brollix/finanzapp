@@ -6,14 +6,17 @@ import logger from "../utils/logger.js";
  * Initialize Sentry for error tracking and performance monitoring
  */
 export function initSentry(): void {
-	if (!process.env.SENTRY_DSN) {
+	const dsn = process.env.SENTRY_DSN;
+	if (typeof dsn !== "string" || dsn.length === 0) {
 		logger.warn("Sentry DSN not configured, skipping Sentry initialization");
 		return;
 	}
 
+	const env = process.env.NODE_ENV;
+
 	Sentry.init({
-		dsn: process.env.SENTRY_DSN,
-		environment: process.env.NODE_ENV || "development",
+		dsn: dsn,
+		environment: (typeof env === "string" && env.length > 0) ? env : "development",
 		integrations: [nodeProfilingIntegration()],
 		// Performance Monitoring
 		tracesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1.0, // 10% in prod, 100% in dev

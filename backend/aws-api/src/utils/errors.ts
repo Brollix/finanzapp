@@ -36,7 +36,7 @@ export class ValidationError extends Error {
 	code = "VALIDATION_ERROR";
 	constructor(
 		message: string,
-		public details?: any
+		public details?: unknown
 	) {
 		super(message);
 		this.name = "ValidationError";
@@ -89,6 +89,6 @@ export function isErrorWithCode(
 	return (
 		error instanceof Error &&
 		"code" in error &&
-		typeof (error as any).code === "string"
+		typeof (error as Record<string, unknown>).code === "string"
 	);
 }

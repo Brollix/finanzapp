@@ -56,14 +56,14 @@ const corsOptions = {
 	credentials: true,
 	origin: (() => {
 		const allowedOrigins = process.env.CORS_ALLOWED_ORIGINS;
-		if (allowedOrigins) {
+		if (typeof allowedOrigins === "string" && allowedOrigins.length > 0) {
 			// Parse comma-separated list of allowed origins
 			const origins = allowedOrigins.split(",").map((o) => o.trim());
 			return (
 				origin: string | undefined,
 				callback: (err: Error | null, allow?: boolean) => void
 			) => {
-				if (!origin || origins.includes(origin)) {
+				if (typeof origin === "undefined" || origins.includes(origin)) {
 					callback(null, true);
 				} else {
 					callback(new Error("Not allowed by CORS"));
@@ -119,7 +119,7 @@ app.get("/api/health/ready", async (req: Request, res: Response) => {
 			},
 		});
 	} catch (error) {
-		logger.error(`Readiness check failed: ${error}`);
+		logger.error(`Readiness check failed: ${String(error)}`);
 		res.status(503).json({
 			status: "not ready",
 			reason: "Health check failed",
@@ -140,7 +140,7 @@ app.use((req: Request, res: Response) => {
 });
 
 // Global error handler
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
 	// Log error with stack trace in development
 	if (process.env.NODE_ENV === "development") {
 		logger.error(`Unhandled error: ${err.message}`, { stack: err.stack });
@@ -150,10 +150,11 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 
 	// Capture error in Sentry (only for non-validation errors)
 	if (!(err instanceof ValidationError)) {
+		const userId = (req as { user?: { id: string } }).user?.id;
 		captureException(err, {
 			url: req.url,
 			method: req.method,
-			user: (req as any).user?.id,
+			user: userId,
 		});
 	}
 
@@ -168,12 +169,12 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 						? 401
 						: 500;
 
+		const details = (err instanceof ValidationError) ? err.details : undefined;
+
 		return res.status(statusCode).json({
 			error: err.code,
 			message: err.message,
-			...(err instanceof ValidationError && err.details
-				? { details: err.details }
-				: {}),
+			...(details ? { details } : {}),
 		});
 	}
 
