@@ -121,6 +121,7 @@ describe("authenticate middleware", () => {
 		expect(mockRequest.user).toEqual({
 			id: "user-123",
 			email: "test@example.com",
+			token: "valid-token",
 		});
 		expect(nextFunction).toHaveBeenCalled();
 		expect(mockResponse.status).not.toHaveBeenCalled();

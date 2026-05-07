@@ -151,7 +151,7 @@ describe("Receipt Controller - Additional Tests", () => {
 				mockRes as Response
 			);
 
-			expect(getReceiptsByUserId).toHaveBeenCalledWith("test-user-id", 10);
+			expect(getReceiptsByUserId).toHaveBeenCalledWith("test-user-id", 10, "mock-token");
 		});
 
 		it("should use default limit when not provided", async () => {
@@ -166,7 +166,7 @@ describe("Receipt Controller - Additional Tests", () => {
 				mockRes as Response
 			);
 
-			expect(getReceiptsByUserId).toHaveBeenCalledWith("test-user-id", 50);
+			expect(getReceiptsByUserId).toHaveBeenCalledWith("test-user-id", 50, "mock-token");
 		});
 	});
 
