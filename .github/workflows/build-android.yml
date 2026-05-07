@@ -6,6 +6,9 @@ on:
       - "v*" # Se dispara cuando se hace push de un tag que comience con 'v'
   workflow_dispatch: # Permite ejecutar manualmente desde GitHub
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build:
     name: EAS Build (Android)
@@ -13,10 +16,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 20
           cache: "npm"
