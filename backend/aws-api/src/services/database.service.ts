@@ -153,7 +153,7 @@ export async function saveReceipt(
 		);
 
 		let finalTotal = 0;
-		let finalSubtotal = calculatedSubtotal;
+		const finalSubtotal = calculatedSubtotal;
 		let finalTotalSaved = 0;
 
 		// Priority: Trust the OCR-detected total if it exists and is positive
@@ -178,7 +178,7 @@ export async function saveReceipt(
 		}
 
 		// Build discounts array
-		let finalDiscounts = receiptData.discounts || [];
+		const finalDiscounts = receiptData.discounts || [];
 
 		// If we have savings but no discount entries, try to populate them
 		if (finalTotalSaved > 0) {
@@ -310,7 +310,7 @@ export async function updateReceipt(
 		);
 
 		let finalTotal = 0;
-		let finalSubtotal = calculatedSubtotal;
+		const finalSubtotal = calculatedSubtotal;
 		let finalTotalSaved = 0;
 
 		// Priority: Trust the OCR-detected total if it exists and is positive
@@ -323,7 +323,7 @@ export async function updateReceipt(
 		}
 
 		// Build discounts array
-		let finalDiscounts = receiptData.discounts || [];
+		const finalDiscounts = receiptData.discounts || [];
 
 		// If we have savings but no discount entries, try to populate them
 		if (finalTotalSaved > 0) {
@@ -521,7 +521,7 @@ export async function saveReceiptFast(
 		);
 
 		let finalTotal = 0;
-		let finalSubtotal = calculatedSubtotal;
+		const finalSubtotal = calculatedSubtotal;
 		let finalTotalSaved = 0;
 
 		// Priority: Trust the OCR-detected total if it exists and is positive
@@ -546,7 +546,7 @@ export async function saveReceiptFast(
 		}
 
 		// Build discounts array
-		let finalDiscounts = receiptData.discounts || [];
+		const finalDiscounts = receiptData.discounts || [];
 		if (finalTotalSaved > 0) {
 			const existingSavings = finalDiscounts.reduce(
 				(sum: number, d: any) => sum + (d.amount || 0),
