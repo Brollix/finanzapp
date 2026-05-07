@@ -172,6 +172,8 @@ jobs:
       - name: Health Check
         env:
           API_URL: ${{ secrets.EC2_API_URL }}
+          SSH_HOST: ${{ secrets.EC2_HOST }}
+          SSH_USER: ${{ secrets.EC2_USER }}
         run: |
           echo "🏥 Checking API health..."
           sleep 10
@@ -190,7 +192,8 @@ jobs:
           done
 
           if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
-            echo "❌ API health check failed"
+            echo "❌ API health check failed. Diagnosticating..."
+            ssh $SSH_USER@$SSH_HOST "docker logs --tail 50 finanzapp-api && sudo tail -n 20 /var/log/nginx/error.log"
             exit 1
           fi
 
