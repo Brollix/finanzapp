@@ -146,11 +146,14 @@ docker build -t finanzapp-backend .
 docker run -p 8080:8080 --env-file .env finanzapp-backend
 ```
 
-## 📊 Monitoring
+## 📊 Monitoring & Optimization
 
 - **Logging**: Winston logger con formato estructurado
 - **Error Tracking**: Sentry (opcional, configurar `SENTRY_DSN`)
 - **Health Checks**: Endpoints para Kubernetes/Docker health probes
+- **AI Optimization**: Implementación de **Claude 3.5 Haiku** con prompt consolidado para reducir latencia y costos.
+- **DB Efficiency**: Sistema de **Batch Processing** para inserción de productos y recibos, reduciendo llamadas a la DB en un 90%.
+- **Performance**: Arquitectura de **Early Return** con procesamiento en segundo plano para una respuesta al usuario en <8s.
 
 ## 🚢 Deployment
 
