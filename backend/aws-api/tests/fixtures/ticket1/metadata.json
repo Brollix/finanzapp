@@ -16,6 +16,5 @@
     "bedrock_sonnet_model": "global.anthropic.claude-sonnet-4-20250514-v1:0"
   },
   "last_run_timestamp": "2025-12-29T13:32:46.487Z",
-  "execution_time_s": 19.502,
-  "execution_time_ms": 18586
+  "execution_time_s": 19.502
 }
