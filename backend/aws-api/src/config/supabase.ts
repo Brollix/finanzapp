@@ -3,17 +3,22 @@ dotenv.config();
 import { createClient } from "@supabase/supabase-js";
 import logger from "../utils/logger.js";
 
-const supabaseUrl = process.env.SUPABASE_URL || "";
-const supabaseKey =
-	process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || "";
+const envUrl = process.env.SUPABASE_URL;
+const supabaseUrl = (typeof envUrl === "string" && envUrl.length > 0) ? envUrl : "";
 
-if (!supabaseUrl || !supabaseKey) {
+const envServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const envAnonKey = process.env.SUPABASE_ANON_KEY;
+const supabaseKey = (typeof envServiceKey === "string" && envServiceKey.length > 0) 
+	? envServiceKey 
+	: (typeof envAnonKey === "string" && envAnonKey.length > 0) ? envAnonKey : "";
+
+if (supabaseUrl.length === 0 || supabaseKey.length === 0) {
 	throw new Error(
 		"Missing Supabase credentials. Please set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (or SUPABASE_ANON_KEY) in .env"
 	);
 }
 
-const isServiceRole = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
+const isServiceRole = typeof process.env.SUPABASE_SERVICE_ROLE_KEY === "string" && process.env.SUPABASE_SERVICE_ROLE_KEY.length > 0;
 logger.info(
 	`Supabase Client Initialized. Using Service Role Key: ${isServiceRole}`
 );
@@ -23,7 +28,8 @@ export const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Auth client generator for RLS operations
 export const createAuthClient = (token: string) => {
-	const anonKey = process.env.SUPABASE_ANON_KEY || supabaseKey;
+	const envAnon = process.env.SUPABASE_ANON_KEY;
+	const anonKey = (typeof envAnon === "string" && envAnon.length > 0) ? envAnon : supabaseKey;
 	return createClient(supabaseUrl, anonKey, {
 		global: {
 			headers: {

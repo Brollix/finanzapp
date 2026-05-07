@@ -1,13 +1,13 @@
 export interface ReceiptItem {
 	product: string; // Product name without brand
-	brand?: string; // Brand name (optional)
+	brand?: string | null; // Brand name (optional)
 	quantity: number;
 	price: number;
 	unit_price?: number; // Price per unit or per kg (optional for backwards compatibility)
 	is_weight?: boolean; // True if item is sold by weight (kg, g)
 	product_id?: string; // ID from products table
 	discount?: number; // Discount amount for this item
-	promotion?: string; // Promotion description (e.g., "2x1", "50% 2da u.")
+	promotion?: string | null; // Promotion description (e.g., "2x1", "50% 2da u.")
 }
 
 export interface Discount {
@@ -18,7 +18,7 @@ export interface Discount {
 export interface ReceiptData {
 	supermarket: string;
 	datetime: string;
-	total: number; // Final price paid (with discounts applied)
+	total?: number; // Final price paid (with discounts applied)
 	subtotal?: number; // Price before discounts
 	items: ReceiptItem[];
 	discounts?: Discount[]; // List of all discounts found

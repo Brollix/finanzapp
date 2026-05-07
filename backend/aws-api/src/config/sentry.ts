@@ -23,11 +23,14 @@ export function initSentry(): void {
 		// Profiling
 		profilesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1.0,
 		// Release tracking
-		release: process.env.npm_package_version || "unknown",
+		release: (typeof process.env.npm_package_version === "string" && process.env.npm_package_version.length > 0) 
+			? process.env.npm_package_version 
+			: "unknown",
 		// Filter out health checks from traces
-		beforeSend(event, hint) {
+		beforeSend(event, _hint) {
 			// Don't send events for health checks
-			if (event.request?.url?.includes("/api/health")) {
+			const url = event.request?.url;
+			if (typeof url === "string" && url.includes("/api/health")) {
 				return null;
 			}
 			return event;
@@ -40,7 +43,7 @@ export function initSentry(): void {
  */
 export function captureException(
 	error: Error,
-	context?: Record<string, any>
+	context?: Record<string, unknown>
 ): void {
 	if (context) {
 		Sentry.setContext("additional", context);

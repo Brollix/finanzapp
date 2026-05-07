@@ -123,12 +123,12 @@ describe.skip("Receipt Processing Integration Tests (Real AWS)", () => {
 		const receiptData = await formatReceiptWithBedrock(ocrText);
 
 		// Total should be close to expected (within 1% tolerance for AI variation)
-		const expectedTotal = expectedReceiptData.total;
+		const expectedTotal = expectedReceiptData.total ?? 0;
+		const actualTotal = receiptData.total ?? 0;
 		const tolerance = expectedTotal * 0.01; // 1% tolerance
-		expect(receiptData.total).toBeGreaterThanOrEqual(
-			expectedTotal - tolerance
-		);
-		expect(receiptData.total).toBeLessThanOrEqual(expectedTotal + tolerance);
+		
+		expect(actualTotal).toBeGreaterThanOrEqual(expectedTotal - tolerance);
+		expect(actualTotal).toBeLessThanOrEqual(expectedTotal + tolerance);
 	}, 120000);
 
 	it("should have valid item structure", async () => {
