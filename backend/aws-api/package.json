@@ -44,7 +44,7 @@
     "@sentry/profiling-node": "^8.48.0",
     "sharp": "^0.33.5",
     "p-retry": "^4.6.0",
-    "uuid": "^9.0.1",
+    "uuid": "^14.0.0",
     "winston": "^3.18.3",
     "zod": "^4.1.13"
   },
